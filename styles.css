@@ -131,3 +131,73 @@ input[type="password"] {
   text-decoration: underline;
   font-weight: bold;
 }
+
+
+
+
+
+
+
+
+
+
+/* ===============================
+   Responsive Design for Tablets
+   =============================== */
+@media (max-width: 768px) {
+  .login-box {
+    width: 90%; 
+    padding: 30px 25px; 
+  }
+
+  .logo img {
+    width: 60px; 
+  }
+
+  h2 {
+    font-size: 22px;
+  }
+
+  input[type="email"],
+  input[type="password"] {
+    font-size: 14px;
+    padding: 10px;
+  }
+
+  .login-btn,
+  .google-btn {
+    font-size: 14px;
+    padding: 10px;
+  }
+
+  .forgot-password {
+    font-size: 11px;
+  }
+
+  .signup {
+    font-size: 12px;
+  }
+}
+
+/* ===============================
+   Responsive Design for Phones
+   =============================== */
+@media (max-width: 480px) {
+  .login-box {
+    width: 95%; 
+    margin: 0 10px;
+    border-radius: 8px;
+  }
+
+  .login-btn,
+  .google-btn {
+    flex-direction: column; 
+    gap: 6px;
+    font-size: 13px;
+  }
+
+  .google-btn img {
+    width: 18px;
+    height: 18px;
+  }
+}
