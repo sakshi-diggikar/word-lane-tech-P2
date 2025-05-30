@@ -5,12 +5,13 @@
 }
 
 body {
-  font-family: 'Poppins', sans-serif;
-  /* background: url('abstract\ bg.jpg') no-repeat center center fixed; */
+  font-family: 'Poppins';
+  
   background: 
-    linear-gradient(rgba(0, 0, 0, 0.4), rgba(0,0,0,0.4)),
-    /* url('main bg.jpg') no-repeat center center fixed, */
-    url('abstract\ bg.jpg') no-repeat center center fixed;
+    linear-gradient(rgba(0, 0, 0, 0.1), rgba(0,0,0,0.1)),
+    url('main\ bg.png') no-repeat center center fixed,
+    url('main\ bg.jpg') no-repeat center center fixed;
+
   background-size: cover;
   height: 100vh;
   display: flex;
@@ -25,14 +26,13 @@ body {
 }
 
 .login-box {
-  /* background: url('main\ bg.jpg') no-repeat center center;
-  background-size: cover; */
-  background: transparent;
-  border: 2px solid rgba(255, 255, 255, 0.793);
+  /* background: transparent; */
+  background: rgba(0, 0, 0, 0.12);
+  border: 2.2px solid rgb(255, 255, 255);
   padding: 40px 50px;
-  border-radius: 20px;
+  border-radius: 10px;
   backdrop-filter: blur(10px);
-  box-shadow: 0 0 20px rgb(255, 253, 253);
+  box-shadow: 0 0 15px rgb(255, 253, 253);
   text-align: center;
   width: 500px;
 }
@@ -50,11 +50,13 @@ h2 {
 
 input[type="email"],
 input[type="password"] {
+  font-family: 'Poppins';
+  font-size: 16px;
   width: 100%;
   padding: 12px;
   margin: 10px 0;
   border-radius: 30px;
-  border: 2px solid rgba(255, 255, 255, 0.793);
+  border: 2.2px solid rgb(255, 255, 255);
   outline: none;
   padding-left: 20px;
   background-color: transparent;
@@ -68,12 +70,14 @@ input[type="password"] {
 }
 
 .forgot-password a {
+  font-family: 'Poppins';
   color: #878786;
   font-size: 12px;
   text-decoration: underline;
 }
 
 .login-btn {
+  font-family: 'Poppins';
   width: 100%;
   padding: 12px;
   background: linear-gradient(to left, #4FBEDA, #076FA0);
@@ -90,6 +94,7 @@ input[type="password"] {
 }
 
 .google-btn {
+  font-family: 'Poppins';
   width: 100%;
   padding: 12px;
   background: white;
@@ -114,12 +119,14 @@ input[type="password"] {
 }
 
 .signup {
+  font-family: 'Poppins';
   margin-top: 15px;
   color: #878786;
   font-size: 13px;
 }
 
 .signup a {
+  font-family: 'Poppins';
   color: #878786;
   text-decoration: underline;
   font-weight: bold;
