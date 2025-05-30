@@ -1,0 +1,126 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Poppins', sans-serif;
+  /* background: url('abstract\ bg.jpg') no-repeat center center fixed; */
+  background: 
+    linear-gradient(rgba(0, 0, 0, 0.4), rgba(0,0,0,0.4)),
+    /* url('main bg.jpg') no-repeat center center fixed, */
+    url('abstract\ bg.jpg') no-repeat center center fixed;
+  background-size: cover;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.login-box {
+  /* background: url('main\ bg.jpg') no-repeat center center;
+  background-size: cover; */
+  background: transparent;
+  border: 2px solid rgba(255, 255, 255, 0.793);
+  padding: 40px 50px;
+  border-radius: 20px;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 0 20px rgb(255, 253, 253);
+  text-align: center;
+  width: 500px;
+}
+
+
+.logo img {
+  width: 80px;
+  /* margin-bottom: 10px; */
+}
+
+h2 {
+  color: #fff;
+  margin-bottom: 20px;
+}
+
+input[type="email"],
+input[type="password"] {
+  width: 100%;
+  padding: 12px;
+  margin: 10px 0;
+  border-radius: 30px;
+  border: 2px solid rgba(255, 255, 255, 0.793);
+  outline: none;
+  padding-left: 20px;
+  background-color: transparent;
+  color: #AAAAAA;
+}
+
+.forgot-password {
+  text-align: left;
+  margin-bottom: 25px;
+  padding-left: 10px;
+}
+
+.forgot-password a {
+  color: #878786;
+  font-size: 12px;
+  text-decoration: underline;
+}
+
+.login-btn {
+  width: 100%;
+  padding: 12px;
+  background: linear-gradient(to left, #4FBEDA, #076FA0);
+  color: #fff;
+  border: none;
+  border-radius: 30px;
+  margin-bottom: 15px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.login-btn:hover {
+  opacity: 0.9;
+}
+
+.google-btn {
+  width: 100%;
+  padding: 12px;
+  background: white;
+  color: #444;
+  border: none;
+  border-radius: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.google-btn:hover {
+  background-color: #f1f1f1;
+}
+
+.google-btn img {
+  width: 20px;
+  height: 20px;
+}
+
+.signup {
+  margin-top: 15px;
+  color: #878786;
+  font-size: 13px;
+}
+
+.signup a {
+  color: #878786;
+  text-decoration: underline;
+  font-weight: bold;
+}
