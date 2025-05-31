@@ -9,8 +9,8 @@ body {
   
   background: 
     linear-gradient(rgba(0, 0, 0, 0.1), rgba(0,0,0,0.1)),
-    url('main\ bg.png') no-repeat center center fixed,
-    url('main\ bg.jpg') no-repeat center center fixed;
+    url('images/main bg.png') no-repeat center center fixed,
+    url('images/main bg.jpg') no-repeat center center fixed;
 
   background-size: cover;
   height: 100vh;
@@ -65,15 +65,49 @@ input[type="password"] {
 
 .forgot-password {
   text-align: left;
-  margin-bottom: 25px;
+  margin-bottom: 0px;
   padding-left: 10px;
+  
 }
 
+.options-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 10px;
+  margin-bottom: 20px;
+  padding: 0 5px;
+  font-family: 'Poppins', sans-serif;
+}
+
+.remember-me {
+  display: flex;
+  align-items: center;
+  font-size: 15px;
+  color: #AAAAAA;
+}
+
+.remember-me input[type="checkbox"] {
+  margin-right: 6px;
+  accent-color: #4FBEDA;
+  /* Modern checkbox color */
+}
+@media (max-width: 480px) {
+  .options-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .forgot-password {
+    align-self: flex-end;
+  }
+}
 .forgot-password a {
-  font-family: 'Poppins';
-  color: #878786;
-  font-size: 12px;
+  color: #AAAAAA;
+  font-size: 13px;
   text-decoration: underline;
+  font-family: 'Poppins', sans-serif;
 }
 
 .login-btn {
@@ -81,10 +115,11 @@ input[type="password"] {
   width: 100%;
   padding: 12px;
   background: linear-gradient(to left, #4FBEDA, #076FA0);
-  color: #fff;
+  color:white;
   border: none;
   border-radius: 30px;
   margin-bottom: 15px;
+  margin-top: 15px;
   cursor: pointer;
   font-weight: bold;
 }
@@ -134,8 +169,27 @@ input[type="password"] {
 
 
 
+.password-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
 
+.password-wrapper input {
+  width: 100%;
+  padding-right: 48px;
+  /* slightly more padding for tighter spacing */
+  box-sizing: border-box;
+}
 
+.toggle-password {
+  position: absolute;
+  right: 20px;
+  /* Increase this value to move icon slightly left */
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
+}
 
 
 
@@ -200,4 +254,6 @@ input[type="password"] {
     width: 18px;
     height: 18px;
   }
+
+  
 }

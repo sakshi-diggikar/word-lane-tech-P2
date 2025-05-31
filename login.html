@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -7,27 +8,38 @@
   <link rel="stylesheet" href="styles.css">
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
 </head>
+
 <body>
   <div class="container">
     <div class="login-box">
       <div class="logo">
-        <img src="wlt-logo.png" alt="Logo" loading="lazy"/>
+        <img src="/images/wlt-logo.png" alt="Logo" loading="lazy" />
       </div>
       <h2>Welcome Back !</h2>
       <form>
         <input type="text" placeholder="Email or Login Id" required>
         <input type="password" placeholder="Password" required>
-        <div class="forgot-password"><a href="#">Forgot Password</a></div>
+        <div class="options-row">
+          <label class="remember-me">
+            <input type="checkbox">
+            Remember me
+          </label>
+          <div class="forgot-password">
+            <a href="forget-password.html">Forgot Password?</a>
+          </div>
+        </div>
+
         <button class="login-btn" type="submit">Login</button>
         <button class="google-btn" type="button">
-          <img src="Google Logo.webp" alt="Google logo" />
+          <img src="images/Google Logo.webp" alt="Google logo" />
           Continue with Google
         </button>
       </form>
       <div class="signup">
-        Don’t have an account? <a href="#">Create Account</a>
+        Don’t have an account? <a href="">Create Account</a>
       </div>
     </div>
   </div>
 </body>
+
 </html>
