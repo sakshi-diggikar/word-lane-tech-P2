@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Signup Page</title>
   <link rel="stylesheet" href="styles.css" />
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet" />
+
   <style>
     .password-wrapper {
       position: relative;
@@ -28,19 +30,20 @@
       <img src="images/wlt-logo.png" alt="Logo" loading="lazy" />
       </div>
       <h2>Create Your Account</h2>
-      <form>
+      <form id="signup-form">
         <!-- ✅ Full Name Field -->
-        <input type="text" placeholder="Full Name" required />
+        <input type="text" name="fullname" placeholder="Full Name" required />
 
         <!-- Email Field -->
-        <input type="text" placeholder="Email or Login ID" required />
+         
+        <input type="email" name="emailid" placeholder="Email or Login ID" required />
 
         <!-- Phone Number Field -->
-        <input type="text" placeholder="Phone Number" required />
+        <input type="tel" name="phonenumber" placeholder="Phone Number" required />
 
         <!-- Password Field -->
         <div style="position: relative; margin: 10px 0;">
-          <input type="password" id="password" placeholder="Password" required style="width: 100%; padding-right: 40px;" />
+          <input type="password" name="password" id="password" placeholder="Password" required style="width: 100%; padding-right: 40px;" />
           <svg id="eye-password" onclick="togglePasswordVisibility('password', 'eye-password')" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="#666" viewBox="0 0 24 24" style="position: absolute; right: 20px; top: 50%; transform: translateY(-50%); cursor: pointer;">
             <path d="M12 4.5C7.305 4.5 3.236 7.541 1.5 12c1.736 4.459 5.805 7.5 10.5 7.5s8.764-3.041 10.5-7.5C20.764 7.541 16.695 4.5 12 4.5zm0 12a4.5 4.5 0 1 1 0-9 4.5 4.5 0 0 1 0 9zM12 10a2 2 0 1 0 0 4 2 2 0 0 0 0-4z"/>
           </svg>
@@ -48,13 +51,13 @@
 
         <!-- Confirm Password Field -->
         <div style="position: relative; margin: 10px 0;">
-          <input type="password" id="confirmPassword" placeholder="Confirm Password" required style="width: 100%; padding-right: 40px;" />
+          <input type="password" name="confirmPassword" id="confirmPassword" placeholder="Confirm Password" required style="width: 100%; padding-right: 40px;" />
           <svg id="eye-confirm" onclick="togglePasswordVisibility('confirmPassword', 'eye-confirm')" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="#666" viewBox="0 0 24 24" style="position: absolute; right: 20px; top: 50%; transform: translateY(-50%); cursor: pointer;">
             <path d="M12 4.5C7.305 4.5 3.236 7.541 1.5 12c1.736 4.459 5.805 7.5 10.5 7.5s8.764-3.041 10.5-7.5C20.764 7.541 16.695 4.5 12 4.5zm0 12a4.5 4.5 0 1 1 0-9 4.5 4.5 0 0 1 0 9zM12 10a2 2 0 1 0 0 4 2 2 0 0 0 0-4z"/>
           </svg>
         </div>
 
-        <button class="login-btn" type="submit">Sign Up</button>
+        <button class="login-btn" type="submit" href="h">Sign Up</button>
       </form>
       <div class="signup">
         Already have an account? <a href="login.html">Log In</a>
@@ -62,15 +65,8 @@
     </div>
   </div>
 
-  <script>
-    function togglePasswordVisibility(inputId, iconId) {
-      const input = document.getElementById(inputId);
-      const icon = document.getElementById(iconId);
-      const isPassword = input.type === "password";
-
-      input.type = isPassword ? "text" : "password";
-      icon.setAttribute("fill", isPassword ? "#333" : "#666");
-    }
+  <script type="module" src="auth.js">
+   
   </script>
 </body>
 </html>
