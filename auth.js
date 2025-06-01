@@ -65,8 +65,38 @@ document.getElementById('signup-form').addEventListener('submit', async (e) => {
         window.location.href = "homepage.html";
 
     } catch (error) {
-        console.error("Firebase Error:", error);  // <--- place here
-        alert("Error: " + error.message);         // <--- place here
+        console.error("Firebase Error:", error);
+
+        // Remove any existing message boxes (optional cleanup)
+        const existingBox = document.getElementById("message-box");
+        if (existingBox) existingBox.remove();
+
+        const messageBox = document.createElement('div');
+        messageBox.id = "message-box";
+        messageBox.innerText =
+            error.code === 'auth/email-already-in-use'
+                ? "This account already exists. Redirecting to login page..."
+                : "Error: " + error.message;
+
+        messageBox.style.position = 'fixed';
+        messageBox.style.top = '20px';
+        messageBox.style.left = '50%';
+        messageBox.style.transform = 'translateX(-50%)';
+        messageBox.style.backgroundColor = '#f44336';
+        messageBox.style.color = '#fff';
+        messageBox.style.padding = '12px 24px';
+        messageBox.style.borderRadius = '8px';
+        messageBox.style.zIndex = '9999';
+        messageBox.style.boxShadow = '0 2px 6px rgba(0, 0, 0, 0.3)';
+        document.body.appendChild(messageBox);
+
+        if (error.code === 'auth/email-already-in-use') {
+            // Redirect silently after 2 seconds
+            setTimeout(() => {
+                window.location.href = "login.html";
+            }, 2000);
+        }
     }
+    
 });
 
