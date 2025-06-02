@@ -7,6 +7,9 @@
   <title>Login Page</title>
   <link rel="stylesheet" href="styles.css">
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+  <script type="module" src="auth.js"></script>
+  
+
 </head>
 
 <body>
@@ -17,7 +20,7 @@
       </div>
       <h2>Welcome Back !</h2>
       <form>
-        <input type="text" placeholder="Email or Login Id" required>
+        <input type="text"  placeholder="Email or Login Id" required>
         <input type="password" placeholder="Password" required>
         <div class="options-row">
           <label class="remember-me">
@@ -30,10 +33,12 @@
         </div>
 
         <button class="login-btn" type="submit">Login</button>
+
         <button class="google-btn" type="button">
           <img src="images/Google Logo.webp" alt="Google logo" />
           Continue with Google
         </button>
+        
       </form>
       <div class="signup">
         Don’t have an account? <a href="signup.html">Create Account</a>
