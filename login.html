@@ -1,50 +1,172 @@
 <!DOCTYPE html>
 <html lang="en">
-
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Login Page</title>
-  <link rel="stylesheet" href="styles.css">
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
-  <script type="module" src="auth.js"></script>
-  
-
-</head>
-
-<body>
+ <head>
+  <meta charset="utf-8"/>
+  <meta content="IE=edge" http-equiv="X-UA-Compatible"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <title>
+   Admin Dashboard
+  </title>
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Sharp" rel="stylesheet"/>
+  <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet"/>
+  <link href="./css/style.css" rel="stylesheet">
+  </link>
+  <link href="css/login.css" rel="stylesheet"/>
+ </head>
+ <body>
   <div class="container">
-    <div class="login-box">
-      <div class="logo">
-        <img src="images/wlt-logo.png" alt="Logo" loading="lazy" />
-      </div>
-      <h2>Welcome !</h2>
-      <form>
-        <input type="text"  placeholder="Email or Login Id" required>
-        <input type="password" placeholder="Password" required>
-        <div class="options-row">
-          <label class="remember-me">
-            <input type="checkbox">
-            Remember me
-          </label>
-          <div class="forgot-password">
-            <a href="forget-password.html">Forgot Password?</a>
-          </div>
-        </div>
-
-        <button class="login-btn" type="submit">Login</button>
-
-        <button class="google-btn" type="button">
-          <img src="images/Google Logo.webp" alt="Google logo" />
-          Continue with Google
-        </button>
-        
-      </form>
-      <div class="signup">
-        Don’t have an account? <a href="signup.html">Create Account</a>
-      </div>
+   <aside>
+    <div class="top">
+     <div class="logo">
+      <img alt="Logo" src="./images/wlt-logo.png"/>
+      <h2>
+       Word
+       <span class="danger">
+        Lane Tech
+       </span>
+      </h2>
+     </div>
+     <div class="close" id="close-btn">
+      <span class="material-icons-sharp">
+       close
+      </span>
+     </div>
     </div>
+    <div class="sidebar">
+     <a class="active" href="#">
+      <span class="material-icons-sharp">
+       dashboard
+      </span>
+      <h3>
+       Dashboard
+      </h3>
+     </a>
+     <a href="projects.html">
+      <span class="material-icons-sharp">
+       person_outline
+      </span>
+      <h3>
+       Projects
+      </h3>
+     </a>
+     <a href="analytics.html">
+      <span class="material-icons-sharp">
+       insights
+      </span>
+      <h3>
+       Analytics
+      </h3>
+     </a>
+     <a href="messages.html">
+      <span class="material-icons-sharp">
+       mail_outline
+      </span>
+      <h3>
+       Messages
+      </h3>
+      <span class="message-count">
+       26
+      </span>
+     </a>
+     <a href="attachment.html">
+      <span class="material-icons-sharp">
+       attach_file
+      </span>
+      <h3>
+       Attachment
+      </h3>
+     </a>
+     <a href="attendance.html">
+      <span class="material-icons-sharp">
+       event_note
+      </span>
+      <h3>
+       Attendance
+      </h3>
+     </a>
+     <a href="HrMangement.html">
+      <span class="material-icons-sharp">
+       HR Portal
+      </span>
+      <h3>
+       HR Portal
+      </h3>
+     </a>
+     <a href="sign_up_login.html">
+      <span class="material-icons-sharp">
+       logout
+      </span>
+      <h3>
+       Logout
+      </h3>
+     </a>
+    </div>
+   </aside>
+   <main>
+    <!-- Rest of your existing content -->
+   </main>
+   <div class="right">
+    <!-- Rest of your existing content -->
+   </div>
   </div>
-</body>
-
+  <!-- Login Overlay -->
+  <div class="login-overlay" id="loginOverlay">
+   <div class="login-box">
+    <div class="login-header">
+     <h2>
+      Welcome to WordLane Tech
+     </h2>
+     <p>
+      Enter your credentials to access the dashboard
+     </p>
+    </div>
+    <form class="login-form" id="loginForm">
+     <div class="input-group">
+      <i class="bx bx-id-card">
+      </i>
+      <input id="loginId" placeholder="Employee ID" required="" type="text"/>
+     </div>
+     <div class="input-group">
+      <i class="bx bx-envelope">
+      </i>
+      <input id="loginEmail" placeholder="Company Email" required="" type="email"/>
+     </div>
+     <div class="input-group">
+      <i class="bx bx-lock-alt">
+      </i>
+      <input id="loginPassword" placeholder="Password" required="" type="password"/>
+      <span class="toggle-password" style="cursor: pointer; position: absolute; right: 16px; top: 50%; transform: translateY(-50%);">
+       <i class="bx bx-show">
+       </i>
+      </span>
+     </div>
+     <div class="remember-forgot">
+      <label>
+       <input type="checkbox"/>
+       Remember me
+      </label>
+      <a href="reset-confirmed.html">
+       Forgot password?
+      </a>
+     </div>
+     <button class="login-btn" type="submit">
+      Login
+     </button>
+    </form>
+    <div class="login-footer">
+     <p>
+      New employee?
+      <a href="#" id="showSignup">
+       Request access
+      </a>
+     </p>
+    </div>
+   </div>
+  </div>
+  <!-- Toast message container -->
+  <div id="toast">
+  </div>
+  <script src="js/login.js">
+  </script>
+ </body>
 </html>

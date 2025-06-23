@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>
+        Reports | WordLane Tech
+    </title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Sharp" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&amp;display=swap"
+        rel="stylesheet" />
+    <link href="css/hr_management.css" rel="stylesheet" />
+</head>
+
+<body>
+    <div class="container">
+        <!-- Sidebar Navigation -->
+        <aside>
+            <div class="top">
+                <div class="logo">
+                    <img alt="Logo" src="./images/wlt-logo.png" />
+                    <h2>
+                        Word
+                        <span class="danger">
+                            Lane
+                        </span>
+                    </h2>
+                </div>
+                <div class="close">
+                    <span class="material-icons-sharp">
+                        close
+                    </span>
+                </div>
+            </div>
+            <div class="sidebar">
+                <a href="index.html">
+                    <span class="material-icons-sharp">
+                        dashboard
+                    </span>
+                    <h3>
+                        Dashboard
+                    </h3>
+                </a>
+                <a href="projects.html">
+                    <span class="material-icons-sharp">
+                        person_outline
+                    </span>
+                    <h3>
+                        Projects
+                    </h3>
+                </a>
+                <a href="analytics.html">
+                    <span class="material-icons-sharp">
+                        insights
+                    </span>
+                    <h3>
+                        Analytics
+                    </h3>
+                </a>
+                <a href="messages.html">
+                    <span class="material-icons-sharp">
+                        mail_outline
+                    </span>
+                    <h3>
+                        Messages
+                    </h3>
+                    <span class="message-count">
+                        26
+                    </span>
+                </a>
+                <a href="attachment.html">
+                    <span class="material-icons-sharp">
+                        attach_file
+                    </span>
+                    <h3>
+                        Attachments
+                    </h3>
+                </a>
+                <a href="attendance.html">
+                    <span class="material-icons-sharp">
+                        event_note
+                    </span>
+                    <h3>
+                        Attendance
+                    </h3>
+                </a>
+                <a class="active" href="#">
+                    <span class="material-icons-sharp">
+                        report_gmailerrorred
+                    </span>
+                    <h3>
+                        Reports
+                    </h3>
+                </a>
+                <a href="#">
+                    <span class="material-icons-sharp">
+                        logout
+                    </span>
+                    <h3>
+                        Logout
+                    </h3>
+                </a>
+            </div>
+        </aside>
+        <!-- Main Content -->
+        <main>
+            <!-- Top Navigation -->
+            <div class="top-nav">
+                <button class="menu-btn">
+                    <span class="material-icons-sharp">
+                        menu
+                    </span>
+                </button>
+                <div class="profile">
+                    <div class="info">
+                        <p>
+                            Hey,
+                            <b>
+                                Bruno
+                            </b>
+                        </p>
+                        <small class="text-muted">
+                            Admin
+                        </small>
+                    </div>
+                    <div class="profile-photo">
+                        <!-- Profile photo placeholder -->
+                    </div>
+                </div>
+            </div>
+            <!-- Reports Dashboard -->
+            <div class="reports-container">
+                <div class="reports-header">
+                    <h2 id="reportTitle">
+                        Reports Dashboard
+                    </h2>
+                    <div class="report-controls">
+                        <button class="report-btn" id="addEmployeeBtn">
+                            <span class="material-icons-sharp">
+                                add
+                            </span>
+                            Add Employee
+                        </button>
+                        <button class="report-btn outline" id="exportAllBtn">
+                            <span class="material-icons-sharp">
+                                import_export
+                            </span>
+                            Export All
+                        </button>
+                    </div>
+                </div>
+                <!-- Report Cards -->
+                <div class="report-cards">
+                    <div class="report-card" data-category="admin" id="adminCard">
+                        <div class="header">
+                            <h3>
+                                Admin Reports
+                            </h3>
+                            <div class="icon">
+                                <span class="material-icons-sharp">
+                                    admin_panel_settings
+                                </span>
+                            </div>
+                        </div>
+                        <div class="count">
+                            <p>
+                                Total Admins:
+                                <span id="totalAdmins">
+                                    0
+                                </span>
+                            </p>
+                        </div>
+                    </div>
+                    <div class="report-card" data-category="hr" id="hrCard">
+                        <div class="header">
+                            <h3>
+                                HR Reports
+                            </h3>
+                            <div class="icon">
+                                <span class="material-icons-sharp">
+                                    work
+                                </span>
+                            </div>
+                        </div>
+                        <div class="count">
+                            <p>
+                                Total HRs:
+                                <span id="totalHRs">
+                                    0
+                                </span>
+                            </p>
+                        </div>
+                    </div>
+                    <div class="report-card" data-category="employee" id="employeeCard">
+                        <div class="header">
+                            <h3>
+                                Employee Reports
+                            </h3>
+                            <div class="icon">
+                                <span class="material-icons-sharp">
+                                    people
+                                </span>
+                            </div>
+                        </div>
+                        <div class="count">
+                            <p>
+                                Total Employees:
+                                <span id="totalEmployees">
+                                    0
+                                </span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Detailed Reports Section -->
+                <div class="detailed-header">
+                    <h2 id="detailedReportTitle">
+                        Detailed Employee Reports
+                    </h2>
+                    <div class="filter-controls-inline">
+                        <div class="filter-group">
+                            <label for="roleFilter">
+                                Filter by Role
+                            </label>
+                            <select id="roleFilter">
+                                <option value="all">
+                                    All
+                                </option>
+                                <option value="admin">
+                                    Admin
+                                </option>
+                                <option value="hr">
+                                    HR
+                                </option>
+                                <option value="employee">
+                                    Employee
+                                </option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label for="dateFilter">
+                            </label>
+                            <input id="dateFilter" type="date" />
+                        </div>
+                        <button class="report-btn outline" id="refreshTableBtn" title="Refresh Table">
+                            <span class="material-icons-sharp">
+                                refresh
+                            </span>
+                        </button>
+                    </div>
+                </div>
+                <!-- Report Table -->
+                <table class="report-table" id="employeeTable">
+                    <thead>
+                        <tr>
+                            <th>
+                                <input id="selectAll" type="checkbox" />
+                            </th>
+                            <th>
+                                ID
+                            </th>
+                            <th>
+                                First Name
+                            </th>
+                            <th>
+                                Last Name
+                            </th>
+                            <th>
+                                Email
+                            </th>
+                            <th>
+                                Phone
+                            </th>
+                            <th>
+                                Gender
+                            </th>
+                            <th>
+                                DOB
+                            </th>
+                            <th>
+                                Joining Date
+                            </th>
+                            <th>
+                                Address
+                            </th>
+                            <th>
+                                Actions
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Sample Data Rows -->
+                        <tr data-id="1">
+                            <td>
+                                <input class="row-checkbox" type="checkbox" />
+                            </td>
+                            <td>
+                                EMP001
+                            </td>
+                            <td>
+                                Rajesh
+                            </td>
+                            <td>
+                                Sharma
+                            </td>
+                            <td>
+                                rajesh.sharma@example.com
+                            </td>
+                            <td>
+                                +91 9876543210
+                            </td>
+                            <td>
+                                Male
+                            </td>
+                            <td>
+                                1990-01-01
+                            </td>
+                            <td>
+                                2020-01-10
+                            </td>
+                            <td>
+                                123 Main St, City
+                            </td>
+                            <td>
+                                <span class="material-icons-sharp edit-btn">
+                                    edit
+                                </span>
+                                <span class="material-icons-sharp delete-btn">
+                                    delete
+                                </span>
+                            </td>
+                        </tr>
+                        <tr data-id="2">
+                            <td>
+                                <input class="row-checkbox" type="checkbox" />
+                            </td>
+                            <td>
+                                EMP002
+                            </td>
+                            <td>
+                                Priya
+                            </td>
+                            <td>
+                                Patel
+                            </td>
+                            <td>
+                                priya.patel@example.com
+                            </td>
+                            <td>
+                                +91 8765432109
+                            </td>
+                            <td>
+                                Female
+                            </td>
+                            <td>
+                                1992-02-02
+                            </td>
+                            <td>
+                                2021-02-15
+                            </td>
+                            <td>
+                                456 Elm St, City
+                            </td>
+                            <td>
+                                <span class="material-icons-sharp edit-btn">
+                                    edit
+                                </span>
+                                <span class="material-icons-sharp delete-btn">
+                                    delete
+                                </span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <!-- Pagination -->
+                <div class="report-pagination">
+                    <button class="page-btn active">
+                        1
+                    </button>
+                    <button class="page-btn">
+                        2
+                    </button>
+                    <button class="page-btn">
+                        3
+                    </button>
+                    <button class="page-btn">
+                        Next
+                    </button>
+                </div>
+            </div>
+        </main>
+    </div>
+    <!-- Employee Form Modal -->
+    <div class="modal" id="employeeModal">
+        <div class="modal-content">
+            <span class="close-modal">
+                ×
+            </span>
+            <h2 id="modalTitle">
+                Add New Employee
+            </h2>
+            <form id="employeeForm">
+                <div class="form-group">
+                    <label for="empId">
+                        Employee ID
+                    </label>
+                    <input id="empId" readonly="" type="text" />
+                </div>
+                <div class="form-group">
+                    <label for="firstName">
+                        First Name
+                    </label>
+                    <input id="firstName" required="" type="text" />
+                </div>
+                <div class="form-group">
+                    <label for="lastName">
+                        Last Name
+                    </label>
+                    <input id="lastName" required="" type="text" />
+                </div>
+                <div class="form-group">
+                    <label for="empEmail">
+                        Email
+                    </label>
+                    <input id="empEmail" required="" type="email" />
+                </div>
+                <div class="form-group">
+                    <label for="empPhone">
+                        Phone
+                    </label>
+                    <input id="empPhone" required="" type="tel" />
+                </div>
+                <div class="form-group">
+                    <label for="gender">
+                        Gender
+                    </label>
+                    <select id="gender" required="">
+                        <option value="">
+                            Select Gender
+                        </option>
+                        <option value="1">
+                            Male
+                        </option>
+                        <option value="2">
+                            Female
+                        </option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="dob">
+                        Date of Birth
+                    </label>
+                    <input id="dob" required="" type="date" />
+                </div>
+                <div class="form-group">
+                    <label for="joiningDate">
+                        Joining Date
+                    </label>
+                    <input id="joiningDate" required="" type="date" />
+                </div>
+                <div class="form-group">
+                    <label for="address">
+                        Address
+                    </label>
+                    <textarea id="address" required=""></textarea>
+                </div>
+                <div class="form-actions">
+                    <button class="btn btn-outline cancel-btn" type="button">
+                        Cancel
+                    </button>
+                    <button class="btn btn-primary" type="submit">
+                        Save
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <script src="js/hr_management.js">
+    </script>
+</body>
+
+</html>

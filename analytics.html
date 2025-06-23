@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employee Analytics | WLT</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Sharp" rel="stylesheet">
+   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>    
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>  
+
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/emp_analytics.css">
+ 
+</head>
+
+<body>
+    <div class="container">
+        <!-- SIDEBAR -->
+        <aside>
+            <div class="top">
+                <div class="logo">
+                    <img src="assets/images/wlt-logo.png" alt="Logo" />
+                    <h2>Word<span class="danger">Lane Tech</span></h2>
+                </div>
+                <div class="close" id="close-btn">
+                    <span class="material-icons-sharp"> close </span>
+                </div>
+            </div>
+
+            <div class="sidebar">
+                <a href="index.html">
+                    <span class="material-icons-sharp"> dashboard </span>
+                    <h3>Dashboard</h3>
+                </a>
+                <a href="projects.html">
+                    <span class="material-icons-sharp"> person_outline </span>
+                    <h3>Projects</h3>
+                </a>
+                <a href="analytics.html" class="active">
+                    <span class="material-icons-sharp"> insights </span>
+                    <h3>Analytics</h3>
+                </a>
+                <a href="messages.html">
+                    <span class="material-icons-sharp"> mail_outline </span>
+                    <h3>Messages</h3>
+                    <span class="message-count">26</span>
+                </a>
+                <a href="report.html">
+                    <span class="material-icons-sharp"> report_gmailerrorred </span>
+                    <h3>Reports</h3>
+                </a>
+                <a href="attachment.html">
+                    <span class="material-icons-sharp"> attach_file </span>
+                    <h3>Attachment</h3>
+                </a>
+                <a href="#">
+                    <span class="material-icons-sharp"> add </span>
+                    <h3>Add Product</h3>
+                </a>
+                <a href="#">
+                    <span class="material-icons-sharp"> logout </span>
+                    <h3>Logout</h3>
+                </a>
+            </div>
+        </aside>
+
+      
+
+
+        <!-- MAIN CONTENT -->
+        <main class="analytics-main">
+            <h1>Employee Analytics</h1>
+            <div class="analytics-layout">
+                <!-- Employee Profile Card -->
+                <div class="employee-profile">
+                    <div class="profile-header">
+                        <h2>Prerna Patil</h2>
+                        <p class="designation">Web Developer Intern</p>
+                    </div>
+                    <div class="profile-details">
+                        <div class="detail-item">
+                            <span class="material-icons-sharp">badge</span>
+                            <div>
+                                <p class="detail-label">Employee ID</p>
+                                <p class="detail-value">EMP1234</p>
+                            </div>
+                        </div>
+                        <div class="detail-item">
+                            <span class="material-icons-sharp">email</span>
+                            <div>
+                                <p class="detail-label">Email</p>
+                                <p class="detail-value">prerna@gmail.com</p>
+                            </div>
+                        </div>
+                        <div class="detail-item">
+                            <span class="material-icons-sharp">work</span>
+                            <div>
+                                <p class="detail-label">Company Email</p>
+                                <p class="detail-value">prerna@wlt.com</p>
+                            </div>
+                        </div>
+                        <div class="detail-item">
+                            <span class="material-icons-sharp">groups</span>
+                            <div>
+                                <p class="detail-label">Teams</p>
+                                <p class="detail-value">WLT_P2, WLT_P5</p>
+                            </div>
+                        </div>
+                        <div class="detail-item">
+                            <span class="material-icons-sharp">person</span>
+                            <div>
+                                <p class="detail-label">Gender</p>
+                                <p class="detail-value">Female</p>
+                            </div>
+                        </div>
+                        <div class="detail-item">
+                            <span class="material-icons-sharp">call</span>
+                            <div>
+                                <p class="detail-label">Phone</p>
+                                <p class="detail-value">+91 9876543210</p>
+                            </div>
+                        </div>
+                        <div class="detail-item">
+                            <span class="material-icons-sharp">location_on</span>
+                            <div>
+                                <p class="detail-label">Location</p>
+                                <p class="detail-value">Mumbai, India</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+        
+
+           <!-- Right section beside employee profile -->
+            <div class="employee-analytics-right">
+
+                <!-- 4 Cards in One Horizontal Line -->
+                <div class="summary-cards-row">
+                    <div class="card" onclick="openForm('attendanceForm')">
+                        <h3>Attendance %</h3>
+                        <p>96%</p>
+                    </div>
+                    <div class="card" onclick="openForm('taskForm')">
+                        <h3>Tasks Completed</h3>
+                        <p>122/130</p>
+                    </div>
+                    <div class="card" onclick="openForm('leaveForm')">
+                        <h3>Leave Days</h3>
+                        <p>4</p>
+                    </div>
+                    <div class="card" onclick="openForm('feedbackForm')">
+                        <h3>Feedback</h3>
+                        <p>4 Entries</p>
+                    </div>
+                </div>
+
+                 <!-- Chart Grid Row 1 -->
+                    <div class="chart-grid">
+                        <div class="chart-box">
+                            <div class="chart-header">
+                                <h4>Monthly Attendance Trend</h4>
+                                <div class="chart-filter dropdown">
+                                    <span class="dropdown-toggle">☰</span>
+                                    <div class="dropdown-menu"></div>
+                                </div>
+                            </div>
+                            <canvas id="monthlyAttendanceChart"></canvas>
+                        </div>
+                        <div class="chart-box">
+                            <div class="chart-header">
+                                <h4>Task Completion Trend</h4>
+                                <div class="chart-filter dropdown">
+                                    <span class="dropdown-toggle">☰</span>
+                                    <div class="dropdown-menu"></div>
+                                </div>
+                            </div>
+                            <canvas id="taskCompletionChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Chart Grid Row 2 -->
+                    <div class="chart-grid">
+                        <div class="chart-box">
+                            <div class="chart-header">
+                                <h4>Working Hours (Last 7 Days)</h4>
+                                <div class="chart-filter dropdown">
+                                    <span class="dropdown-toggle">☰</span>
+                                    <div class="dropdown-menu"></div>
+                                </div>
+                            </div>
+                            <canvas id="workingHoursChart"></canvas>
+                        </div>
+                        <div class="chart-box">
+                            <div class="chart-header">
+                                <h4>Leave Type Breakdown</h4>
+                                <div class="chart-filter dropdown">
+                                    <span class="dropdown-toggle">☰</span>
+                                    <div class="dropdown-menu"></div>
+                                </div>
+                            </div>
+                            <canvas id="leaveBreakdownChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+
+
+
+            <!-- Slide Forms -->
+            <div class="slide-forms">
+                <!-- Attendance Form -->
+                <div id="attendanceForm" class="slide-form">
+                    <span class="close-btn" onclick="closeForm()">&times;</span>
+                    <h3>Attendance Details</h3>
+                    <div class="form-control">
+                        <label for="attendanceMonth">Select Month:</label>
+                        <input type="month" id="attendanceMonth">
+                    </div>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Day</th>
+                                    <th>Status</th>
+                                    <th>Percentage</th>
+                                </tr>
+                            </thead>
+                            <tbody id="attendanceTableBody">
+                                <!-- Attendance Data -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="attendanceChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Task Form -->
+                <div id="taskForm" class="slide-form">
+                    <span class="close-btn" onclick="closeForm()">&times;</span>
+                    <h3>Task Details</h3>
+                    <div class="form-control">
+                        <label for="taskFilter">Filter by Status:</label>
+                        <select id="taskFilter">
+                            <option value="all">All Tasks</option>
+                            <option value="completed">Completed</option>
+                            <option value="pending">Pending</option>
+                            <option value="overdue">Overdue</option>
+                        </select>
+                    </div>
+                    <div class="form-control">
+                        <label for="taskMonth">Select Month:</label>
+                        <input type="month" id="taskMonth">
+                    </div>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Task Name</th>
+                                    <th>Status</th>
+                                    <th>Due Date</th>
+                                    <th>Completion</th>
+                                </tr>
+                            </thead>
+                            <tbody id="taskTableBody">
+                                <!-- Task Data -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="taskChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Leave Form -->
+                <div id="leaveForm" class="slide-form">
+                    <span class="close-btn" onclick="closeForm()">&times;</span>
+                    <h3>Leave Applications</h3>
+                    <div class="form-control">
+                        <label for="leaveMonth">Select Month:</label>
+                        <input type="month" id="leaveMonth">
+                    </div>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Subject</th>
+                                    <th>Date</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="leaveTableBody">
+                                <!-- Leave Data -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Feedback Form -->
+                <div id="feedbackForm" class="slide-form">
+                    <span class="close-btn" onclick="closeForm()">&times;</span>
+                    <h3>Feedback Summary</h3>
+                    <div class="form-control">
+                        <label for="feedbackFilter">Filter by:</label>
+                        <select id="feedbackFilter">
+                            <option value="all">All Feedback</option>
+                            <option value="project">Project-wise</option>
+                            <option value="task">Task-wise</option>
+                        </select>
+                    </div>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Project/Task</th>
+                                    <th>Feedback</th>
+                                    <th>Date</th>
+                                    <th>Rating</th>
+                                </tr>
+                            </thead>
+                            <tbody id="feedbackTableBody">
+                                <!-- Feedback Data -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Project Form -->
+                <div id="projectForm" class="slide-form">
+                    <span class="close-btn" onclick="closeForm()">&times;</span>
+                    <h3>Project Analytics</h3>
+                    <div class="form-control">
+                        <label for="projectSearch">Search:</label>
+                        <input type="text" id="projectSearch" placeholder="Search by Project or Group">
+                    </div>
+                    <div class="form-control">
+                        <label for="groupFilter">Filter by Group:</label>
+                        <select id="groupFilter">
+                            <option value="all">All Groups</option>
+                            <option value="frontend">Frontend</option>
+                            <option value="backend">Backend</option>
+                            <option value="design">Design</option>
+                            <option value="qa">QA</option>
+                        </select>
+                    </div>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Group Name</th>
+                                    <th>Completed Projects</th>
+                                    <th>Total Projects</th>
+                                    <th>Completion %</th>
+                                </tr>
+                            </thead>
+                            <tbody id="projectTableBody">
+                                <!-- Project Data -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="projectChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <div class="right">
+            <div class="top">
+                <button id="menu-btn">
+                    <span class="material-icons-sharp"> menu </span>
+                </button>
+                <div class="theme-toggler">
+                    <span class="material-icons-sharp active"> light_mode </span>
+                    <span class="material-icons-sharp"> dark_mode </span>
+                </div>
+                <div class="profile">
+                    <div class="info">
+                        <p>Hey, <b>Bruno</b></p>
+                        <small class="text-muted">Admin</small>
+                    </div>
+                    <div class="profile-photo">
+                        <img src="./images/profile-1.jpg" alt="Profile Picture" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    </div>
+
+   
+
+    <script src="js/analytics.js"></script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
