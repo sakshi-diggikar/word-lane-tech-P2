@@ -98,6 +98,8 @@ app.post('/api/login', async (req, res) => {
         res.status(500).json({ success: false, message: 'Server error' });
     }
 });
+
+//admin dashboard summary
 app.get('/api/admin/summary', async (req, res) => {
     try {
         const [totalTasks] = await db.query('SELECT COUNT(*) AS count FROM task_tb');
@@ -114,6 +116,8 @@ app.get('/api/admin/summary', async (req, res) => {
         res.status(500).json({ error: 'Server error' });
     }
 });
+
+//Admin ProjectPage
 app.post('/api/admin/project', async (req, res) => {
     const { project_name, project_description, client_name, start_date, deadline_date, admin_id } = req.body;
 
@@ -130,6 +134,7 @@ app.post('/api/admin/project', async (req, res) => {
     }
 });
 
+//Admin Assign taskls
 app.get('/api/admin/assigned-tasks', async (req, res) => {
     try {
         const [rows] = await db.query(`
