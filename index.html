@@ -8,7 +8,7 @@
   <title>Admin Dashboard</title>
 
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Sharp" rel="stylesheet" />
-  <link rel="stylesheet" href="./css/style.css" />
+  <link rel="stylesheet" href="css/style.css" />
 </head>
 
 <body>
@@ -16,7 +16,7 @@
     <aside>
       <div class="top">
         <div class="logo">
-          <img src="assets/images/wlt-logo.png" alt="Logo" />
+          <img src="assets//images/wlt-logo.png" alt="Logo" />
           <h2>Word<span class="danger">Lane Tech</span></h2>
         </div>
         <div class="close" id="close-btn">
@@ -46,13 +46,13 @@
           <span class="material-icons-sharp"> attach_file </span>
           <h3>Attachment</h3>
         </a>
-        <a href="attendance.html">
+        <a href="leave_applications.html">
           <span class="material-icons-sharp"> event_note </span>
-          <h3>Attendance</h3>
+          <h3>Leave Applications</h3>
         </a>
-         <a href="HR_management.html">
-          <span class="material-icons-sharp"> HR </span>
-          <h3>HR Management</h3>
+        <a href="report.html">
+          <span class="material-icons-sharp"> Reports </span>
+          <h3>Reports</h3>
         </a>
         <a href="#">
           <span class="material-icons-sharp"> logout </span>
@@ -133,13 +133,13 @@
       <div class="recent-orders">
         <div class="orders-header">
           <h2>Assigned Task</h2>
-      
+
           <div class="controls">
             <div class="search-bar">
               <input type="text" placeholder="Search tasks..." id="task-search" />
               <span class="material-icons-sharp">search</span>
             </div>
-      
+
             <div class="dropdown">
               <span class="material-icons-sharp" id="sort-icon" style="cursor:pointer;">sort</span>
               <div id="sort-options" class="dropdown-content">
@@ -150,7 +150,7 @@
               </div>
             </div>
           </div>
-      
+
           <table id="recent-orders--table">
             <thead>
               <tr>
@@ -165,11 +165,11 @@
             </thead>
             <!-- tbody will be injected via JS -->
           </table>
-      
+
           <a href="#">Show All</a>
         </div>
       </div>
-      </main>
+    </main>
 
     <div class="right">
       <div class="top">
@@ -192,6 +192,22 @@
 
       </div>
 
+      <div class="recent-updates">
+        <h2>Recent Updates</h2>
+        <!-- Add updates div here | JS insertion -->
+      </div>
+
+      <!-- <div class="sales-analytics">
+        <h2>Sales Analytics</h2>
+        <div id="analytics">
+        </div>
+        <div class="item add-product">
+          <div>
+            <span class="material-icons-sharp"> add </span>
+            <h3>Add Product</h3>
+          </div>
+        </div>
+      </div> -->
     </div>
   </div>
 
@@ -220,8 +236,132 @@
   <script src="./constants/recent-order-data.js"></script>
   <script src="./constants/update-data.js"></script>
   <!-- <script src="./constants/sales-analytics-data.js"></script> -->
-  <script src="./js/index.js"></script>
+  <script src="js/index.js"></script>
 
+
+  <!-- Chatbot JS -->
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const toggleBtn = document.getElementById('chatbot-toggle-btn');
+      const panel = document.getElementById('chatbot-panel');
+      const closeBtn = document.getElementById('close-btn');
+      const messages = document.getElementById('messages');
+      const inputForm = document.getElementById('input-area');
+      const userInput = document.getElementById('user-input');
+
+      const LOCAL_STORAGE_KEY = 'selfLearningBotQAData';
+      let qaData = [];
+      let learningMode = false;
+      let pendingQuestion = '';
+
+      toggleBtn.onclick = () => panel.classList.toggle('active');
+      closeBtn.onclick = () => panel.classList.remove('active');
+
+      function loadQAData() {
+        try {
+          const saved = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY));
+          qaData = Array.isArray(saved) ? saved : [];
+        } catch {
+          qaData = [];
+        }
+
+        if (qaData.length === 0) {
+          qaData = [
+            { question: "How do I publish my book?", answer: "Submit your manuscript through our online portal." },
+            { question: "What formats do you publish?", answer: "Print, eBook, and audiobook." },
+            { question: "How much does publishing cost?", answer: "Packages start from ₹4999 depending on services." },
+            { question: "Do you offer marketing services?", answer: "Yes, we offer press releases, PR, and online marketing." },
+            { question: "How long does publishing take?", answer: "Typically 8–12 weeks after manuscript acceptance." },
+            { question: "Can I sell internationally?", answer: "Yes, we distribute globally via Amazon, Ingram, and more." },
+            { question: "Do you provide editing?", answer: "Yes, editing and proofreading are included or optional add-ons." },
+            { question: "How to get ISBN?", answer: "We assign ISBNs for free with every published book." },
+            { question: "Can I edit after publishing?", answer: "Minor changes are free, major ones may have a cost." },
+            { question: "What royalties will I receive?", answer: "Usually 10–15% of net sales depending on the plan." },
+          ];
+        }
+      }
+
+      function saveQAData() {
+        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(qaData));
+      }
+
+      function addMessage(text, type = 'bot') {
+        const msg = document.createElement('div');
+        msg.className = `message ${type}-message`;
+        msg.textContent = text;
+        messages.appendChild(msg);
+        messages.scrollTop = messages.scrollHeight;
+      }
+
+      function showInitialOptions() {
+        addMessage("Welcome! Choose a question or type your own:");
+        const btnContainer = document.createElement('div');
+        btnContainer.className = 'question-buttons';
+
+        qaData.slice(0, 10).forEach(qa => {
+          const btn = document.createElement('button');
+          btn.textContent = qa.question;
+          btn.onclick = () => {
+            addMessage(qa.question, 'user');
+            setTimeout(() => addMessage(qa.answer), 300);
+          };
+          btnContainer.appendChild(btn);
+        });
+
+        const customBtn = document.createElement('button');
+        customBtn.textContent = "Other Doubt";
+        customBtn.onclick = () => {
+          addMessage("Other Doubt", 'user');
+          setTimeout(() => addMessage("Please type your question below."), 300);
+        };
+        btnContainer.appendChild(customBtn);
+
+        messages.appendChild(btnContainer);
+        messages.scrollTop = messages.scrollHeight;
+      }
+
+      inputForm.addEventListener('submit', e => {
+        e.preventDefault();
+        const text = userInput.value.trim();
+        if (!text) return;
+        addMessage(text, 'user');
+        userInput.value = '';
+
+        if (learningMode) {
+          qaData.push({ question: pendingQuestion, answer: text });
+          saveQAData();
+          addMessage("Thanks! I’ve saved this answer.");
+          learningMode = false;
+          pendingQuestion = '';
+          return;
+        }
+
+        const match = qaData.find(q => q.question.toLowerCase() === text.toLowerCase());
+        if (match) {
+          setTimeout(() => addMessage(match.answer), 300);
+        } else {
+          setTimeout(() => {
+            addMessage(`I don't know the answer to "${text}". Please teach me the correct answer.`);
+            learningMode = true;
+            pendingQuestion = text;
+          }, 300);
+        }
+      });
+
+      loadQAData();
+      showInitialOptions();
+    });
+  </script>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const name = localStorage.getItem('userName') || 'User';
+      const role = localStorage.getItem('userRole') || '';
+
+      document.querySelector(".profile .info p").innerHTML = `Hey, <b>${name}</b>`;
+      document.querySelector(".profile .info small").textContent = role.charAt(0).toUpperCase() + role.slice(1);
+    });
+  </script>
 
 </body>
 
