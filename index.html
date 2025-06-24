@@ -9,6 +9,7 @@
 
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Sharp" rel="stylesheet" />
   <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/notification.css" />
 </head>
 
 <body>
@@ -16,7 +17,7 @@
     <aside>
       <div class="top">
         <div class="logo">
-          <img src="assets//images/wlt-logo.png" alt="Logo" />
+          <img src="assets/images/wlt-logo.png" alt="Logo" />
           <h2>Word<span class="danger">Lane Tech</span></h2>
         </div>
         <div class="close" id="close-btn">
@@ -29,13 +30,13 @@
           <span class="material-icons-sharp"> dashboard </span>
           <h3>Dashboard</h3>
         </a>
+        <a href="admin_analytics.html">
+          <span class="material-icons-sharp"> insights </span>
+          <h3>Analytics</h3>
+        </a>
         <a href="projects.html">
           <span class="material-icons-sharp"> person_outline </span>
           <h3>Projects</h3>
-        </a>
-        <a href="analytics.html">
-          <span class="material-icons-sharp"> insights </span>
-          <h3>Analytics</h3>
         </a>
         <a href="messages.html">
           <span class="material-icons-sharp"> mail_outline </span>
@@ -46,12 +47,9 @@
           <span class="material-icons-sharp"> attach_file </span>
           <h3>Attachment</h3>
         </a>
-        <a href="leave_applications.html">
+        <a href="attendance.html">
           <span class="material-icons-sharp"> event_note </span>
-          <h3>Leave Applications</h3>
-        </a><a href="admin_analytics.html">
-          <span class="material-icons-sharp"> admin_analytics </span>
-          <h3>Admin Analytics</h3>
+          <h3>Attendance</h3>
         </a>
         <a href="report.html">
           <span class="material-icons-sharp"> Reports </span>
@@ -183,6 +181,11 @@
           <span class="material-icons-sharp active"> light_mode </span>
           <span class="material-icons-sharp"> dark_mode </span>
         </div>
+        <!-- Notification Bell (from notification.html) -->
+        <div class="notification-bell">
+          <span class="material-icons-sharp" id="notification-bell-icon"> notifications </span>
+          <span class="notification-count" id="notification-count">0</span>
+        </div>
         <div class="profile">
           <div class="info">
             <p>Hey, <b>Bruno</b></p> <!-- This will be updated -->
@@ -195,29 +198,21 @@
 
       </div>
 
-      <div class="recent-updates">
-        <h2>Recent Updates</h2>
-        <!-- Add updates div here | JS insertion -->
+      <!-- Notification Drawer (from notification.html) -->
+      <div class="notification-drawer" id="notification-drawer">
+        <h2>Notifications</h2>
+        <div class="notifications-list" id="notifications-list">
+          <p class="no-notifications">No new notifications</p>
+        </div>
       </div>
-
-      <!-- <div class="sales-analytics">
-        <h2>Sales Analytics</h2>
-        <div id="analytics">
-        </div>
-        <div class="item add-product">
-          <div>
-            <span class="material-icons-sharp"> add </span>
-            <h3>Add Product</h3>
-          </div>
-        </div>
-      </div> -->
     </div>
   </div>
 
-  <script src="./constants/recent-order-data.js"></script>
-  <script src="./constants/update-data.js"></script>
+  <script src="js/constants/recent-order-data.js"></script>
+  <script src="js/constants/update-data.js"></script>
   <!-- <script src="./constants/sales-analytics-data.js"></script> -->
-  <script src="./index.js"></script>
+  <script src="js/index.js"></script>
+  <script src="js/notification.js"></script>
 
   <!-- Chatbot Toggle Button -->
   <button id="chatbot-toggle-btn">💬</button>
@@ -239,7 +234,7 @@
   <script src="./constants/recent-order-data.js"></script>
   <script src="./constants/update-data.js"></script>
   <!-- <script src="./constants/sales-analytics-data.js"></script> -->
-  <script src="js/index.js"></script>
+  <!-- <script src="./index.js"></script> -->
 
 
   <!-- Chatbot JS -->
