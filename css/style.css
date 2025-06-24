@@ -77,6 +77,10 @@ body {
     box-sizing: border-box;
 }
 
+main .top button {
+    display: none;
+}
+
 /* Main top bar */
 main .top {
   display: flex;
