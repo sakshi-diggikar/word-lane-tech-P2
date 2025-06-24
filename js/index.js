@@ -110,6 +110,12 @@ const buildSalesAnalytics = (element) => {
 
 // === MAIN INITIALIZER ===
 document.addEventListener("DOMContentLoaded", async () => {
+  // Changes made by Cursor: Initialize common event listeners
+  if (typeof setupCommonEventListeners === 'function') {
+    setupCommonEventListeners();
+  }
+  // End of changes made by Cursor
+
   // 1. Inject Assigned Task Table
   const tableBody = await buildTableBody();
   const recentOrdersTable = document.getElementById("recent-orders--table");

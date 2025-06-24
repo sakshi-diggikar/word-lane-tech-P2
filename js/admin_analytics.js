@@ -1,4 +1,10 @@
 document.addEventListener("DOMContentLoaded", () => {
+    // Changes made by Cursor: Initialize common event listeners
+    if (typeof setupCommonEventListeners === 'function') {
+        setupCommonEventListeners();
+    }
+    // End of changes made by Cursor
+
     const analyticsCards = document.querySelectorAll(".analytics-card");
     const detailsTitle = document.getElementById("details-title");
     const ganttChartContainer = document.getElementById("gantt-chart-container");
@@ -229,36 +235,6 @@ document.addEventListener("DOMContentLoaded", () => {
     // Initial load: Hide details until a card is selected
     ganttChartContainer.textContent = "Select a card above to view the Gantt chart.";
     populateTable({ headers: [], rows: [] });
-
-    // Sidebar & theme toggle (copied from index.js to ensure functionality on this page)
-    const menuBtn = document.querySelector("#menu-btn");
-    const closeBtn = document.querySelector("#close-btn");
-    const themeToggler = document.querySelector(".theme-toggler");
-
-    menuBtn?.addEventListener("click", () => {
-        document.querySelector("aside").style.display = "block";
-    });
-
-    closeBtn?.addEventListener("click", () => {
-        document.querySelector("aside").style.display = "none";
-    });
-
-    themeToggler?.addEventListener("click", () => {
-        document.body.classList.toggle("dark-theme-variables");
-        themeToggler
-            .querySelector("span:nth-child(1)")
-            ?.classList.toggle("active");
-        themeToggler
-            .querySelector("span:nth-child(2)")
-            ?.classList.toggle("active");
-    });
-
-    // Profile info (copied from index.js)
-    const name = localStorage.getItem("userName") || "User";
-    const role = localStorage.getItem("userRole") || "";
-    document.querySelector(".profile .info p").innerHTML = `Hey, <b>${name}</b>`;
-    document.querySelector(".profile .info small").textContent =
-        role.charAt(0).toUpperCase() + role.slice(1);
 });
 
 // Define a CSS variable for primary color to be used in JS
