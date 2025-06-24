@@ -151,12 +151,15 @@ aside .top {
 
 aside .logo {
     display: flex;
-    gap: 0.8rem;
+    align-items: center;
+    /* gap: 0.5rem; */
+    white-space: nowrap;
 }
 
 aside .logo img {
     width: 4rem;
     height: 4rem;
+    object-fit: contain;
 }
 
 aside .close {
@@ -623,77 +626,10 @@ main .theme-toggler span.active {
     color: var(--color-primary);
 }
 
-/* START RIGHT SECTION */
-/* .right {
-            margin-top: 1.4rem;
-        }
-
-        .right .top {
-            display: flex;
-            justify-content: end;
-            gap: 2rem;
-        }
-
-        .right .top button {
-            display: none;
-        }
-
-        .right .theme-toggler {
-            background: var(--color-light);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            height: 1.6rem;
-            width: 6.2rem;
-            cursor: pointer;
-            border-radius: var(--border-radius-1);
-        }
-
-        .right .theme-toggler span {
-            font-size: 1.2rem;
-            width: 50%;
-            height: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .right .theme-toggler span.active {
-            background: var(--color-primary);
-            color: white;
-            border-radius: var(--border-radius-1);
-        }
-
-        .right .top .profile {
-            display: flex;
-            gap: 2rem;
-            text-align: right;
-        } */
-
 /* Navigation breadcrumb inside main content */
 #breadcrumb {
     display: none !important;
 }
-
-/* #breadcrumb {
-            display: flex;
-            align-items: center;
-            gap: 0.8rem;
-            margin-bottom: 1rem;
-            font-size: 0.9rem;
-            color: var(--color-info-dark);
-            user-select: text;
-        }
-
-        #breadcrumb span {
-            cursor: pointer;
-            color: var(--color-primary);
-            font-weight: 600;
-        }
-
-        #breadcrumb span:hover {
-            text-decoration: underline;
-        } */
 
 /* MEDIA QUERIES */
 @media screen and (max-width: 1200px) {
@@ -703,7 +639,7 @@ main .theme-toggler span.active {
     }
 
     aside .logo h2 {
-        display: none;
+        white-space: nowrap;
     }
 
     aside .sidebar h3 {
@@ -751,6 +687,8 @@ main .theme-toggler span.active {
 
     aside .logo h2 {
         display: inline;
+        white-space: nowrap;
+        /* Show logo text on mobile sidebar and keep on one line */
     }
 
     aside .sidebar h3 {
@@ -825,25 +763,6 @@ main .theme-toggler span.active {
     }
 }
 
-/* .project-card::after, .task-card::after {
-            content: "Double click for details";
-            position: absolute;
-            bottom: 8px;
-            right: 8px;
-            font-size: 0.8em;
-            color: #7380ec;
-            opacity: 0;
-            transition: opacity 0.2s;
-            background: rgba(255, 255, 255, 0.9);
-            padding: 4px 8px;
-            border-radius: 4px;
-        }
-
-        .project-card:hover::after, .task-card:hover::after {
-            opacity: 0.9;
-        } */
-
-
 
 .details-btn {
     position: absolute;
@@ -912,4 +831,9 @@ main .theme-toggler span.active {
     margin-left: 0.5em;
     cursor: pointer;
     font-weight: bold;
+}
+
+aside .logo h2 {
+    font-size: 1.1rem;
+    white-space: nowrap;
 }
