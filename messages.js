@@ -18,7 +18,7 @@ document.addEventListener("DOMContentLoaded", () => {
       // Get data attributes
       const name = item.getAttribute("data-name") || "Unknown";
       const status = item.getAttribute("data-status") || "";
-      const img = item.getAttribute("data-img") || "images/default.jpg";
+      const img = item.getAttribute("data-img") || "assets/images/default.jpg";
       const type = item.getAttribute("data-type") || "single";
 
       // Update chat header
@@ -336,7 +336,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const name = newMemberNameInput.value.trim();
     if (name) {
       const li = document.createElement("li");
-      li.innerHTML = `<img src="images/profile-1.jpeg"> ${name}`;
+      li.innerHTML = `<img src="assets/images/profile-1.jpeg"> ${name}`;
       membersList.appendChild(li);
       closeModal();
     } else {
@@ -527,7 +527,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (!name) return alert("Please enter a name.");
 
-    let imgUrl = currentChatType === "group" ? "images/wlt-logo.png" : "images/profile-1.jpg";
+    let imgUrl = currentChatType === "group" ? "assets/images/wlt-logo.png" : "assets/images/profile-1.jpg";
 
     if (imgFile) {
       imgUrl = URL.createObjectURL(imgFile);
@@ -567,7 +567,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const name = item.getAttribute("data-name") || "Unknown";
         const status = item.getAttribute("data-status") || "";
-        const img = item.getAttribute("data-img") || "images/default.jpg";
+        const img = item.getAttribute("data-img") || "assets/images/default.jpg";
         const type = item.getAttribute("data-type") || "single";
 
         const chatBox = document.getElementById("chat-box");
