@@ -158,13 +158,16 @@ aside .top {
 }
 
 aside .logo {
-  display: flex;
-  gap: 0.8rem;
+    display: flex;
+    align-items: center;
+    /* gap: 0.5rem; */
+    white-space: nowrap;
 }
 
 aside .logo img {
-  width: 2rem;
-  height: 2rem;
+    width: 4rem;
+    height: 4rem;
+    object-fit: contain;
 }
 
 aside .close {
@@ -239,6 +242,12 @@ aside .sidebar .message-count {
   padding: 2px 10px;
   font-size: 11px;
   border-radius: var(--border-radius-1);
+}
+
+aside .logo h2 {
+    font-size: 1.1rem;
+    white-space: nowrap;
+    margin: 0;
 }
 
 /* END SIDEBAR */
