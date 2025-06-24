@@ -1,4 +1,3 @@
-
 // Elements ref
 const createProjectBtn = document.getElementById("create-project-btn");
 const createTeamBtn = document.getElementById("create-team-btn");
@@ -688,8 +687,22 @@ function createSubtaskCard(subtask) {
     let attachments = subtask.attachments || [];
     let attachmentLinks = '';
     if (attachments.length > 0) {
-        // Always show a single link/button for all files, even if only 1
         attachmentLinks = `<a href="#" class="download-all-attachments" style="font-size:1.1em;color:#7380ec;text-decoration:underline;cursor:pointer;" title="Download all attachments">${attachments.length} file${attachments.length > 1 ? 's' : ''} attached <span class="material-icons-sharp" style="font-size:1em;vertical-align:middle;">download</span></a>`;
+    }
+
+    // Uploaded task files (from submit in subtask details)
+    let uploadedTaskFiles = subtask.uploadedTaskFiles || [];
+    let uploadedTaskFilesLinks = '';
+    if (uploadedTaskFiles.length > 0) {
+        uploadedTaskFilesLinks = `
+            <div style="font-size:0.97em;color:#7d8da1;margin-bottom:0.3em;">
+                <b>Task File(s):</b>
+                <a href="#" class="download-all-taskfiles" style="font-size:1.1em;color:#41f1b6;text-decoration:underline;cursor:pointer;" title="Download all task files">
+                    ${uploadedTaskFiles.length} file${uploadedTaskFiles.length > 1 ? 's' : ''} uploaded
+                    <span class="material-icons-sharp" style="font-size:1em;vertical-align:middle;">download</span>
+                </a>
+            </div>
+        `;
     }
 
     card.innerHTML = `
@@ -713,6 +726,7 @@ function createSubtaskCard(subtask) {
                     <b>Deadline:</b> ${subtask.deadline ? formatDateTime(subtask.deadline) : 'N/A'}
                 </div>
                 ${attachmentLinks ? `<div style="font-size:0.97em;color:#7d8da1;margin-bottom:0.3em;"><b>Attachment(s):</b> ${attachmentLinks}</div>` : ''}
+                ${uploadedTaskFilesLinks}
                 <div style="display:flex;flex-direction:column;align-items:flex-start;">
                     <div class="progress-bar" style="background:#eee;border-radius:8px;height:10px;width:100%;margin:0.3rem 0 0.3rem 0;">
                         <div style="width:${progress}%;background:#7380ec;height:100%;border-radius:8px;transition:width 0.3s;"></div>
@@ -768,6 +782,7 @@ function createSubtaskCard(subtask) {
     if (attachments.length > 0) {
         card.querySelector('.download-all-attachments').addEventListener('click', function (e) {
             e.preventDefault();
+            e.stopPropagation();
             attachments.forEach(file => {
                 let url, filename;
                 if (file instanceof File) {
@@ -776,6 +791,33 @@ function createSubtaskCard(subtask) {
                 } else {
                     url = file;
                     filename = typeof file === 'string' ? file.split('/').pop() : 'attachment';
+                }
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                if (file instanceof File) {
+                    setTimeout(() => URL.revokeObjectURL(url), 1000);
+                }
+            });
+        });
+    }
+
+    // Download all task files handler
+    if (uploadedTaskFiles.length > 0) {
+        card.querySelector('.download-all-taskfiles').addEventListener('click', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            uploadedTaskFiles.forEach(file => {
+                let url, filename;
+                if (file instanceof File) {
+                    url = URL.createObjectURL(file);
+                    filename = file.name;
+                } else {
+                    url = file;
+                    filename = typeof file === 'string' ? file.split('/').pop() : 'taskfile';
                 }
                 const a = document.createElement('a');
                 a.href = url;
@@ -1531,14 +1573,16 @@ function showProjectDetails(project) {
 
     content.innerHTML = `
                 <div style="margin-bottom: 2rem;">
-                    <h2 style="color:#7380ec;font-size:1.8rem;margin-bottom:0.5rem;">${project.name}</h2>
-                    <div style="display:flex;gap:1rem;margin:1rem 0;">
-                        <span class="priority-label" style="padding:4px 12px;border-radius:8px;font-size:1em;background:${priorityColor};color:white;">
-                            ${priority}
-                        </span>
-                        <span class="status-label" style="padding:4px 12px;border-radius:8px;font-size:1em;background:${status === 'Completed' ? '#28a745' : status === 'Delayed' ? '#dc3545' : '#f0ad4e'};color:white;">
-                            ${status}
-                        </span>
+                    <div style="display:flex;align-items:center;justify-content:space-between;gap:1rem;">
+                        <h2 style="color:#7380ec;font-size:1.8rem;margin-bottom:0;">${project.name}</h2>
+                        <div style="display:flex;align-items:center;gap:0.7rem;">
+                            <span class="priority-label" style="padding:4px 12px;border-radius:8px;font-size:1em;background:${priorityColor};color:white;">
+                                ${priority}
+                            </span>
+                            <span class="status-label" style="padding:4px 12px;border-radius:8px;font-size:1em;background:${status === 'Completed' ? '#28a745' : status === 'Delayed' ? '#dc3545' : '#f0ad4e'};color:white;">
+                                ${status}
+                            </span>
+                        </div>
                     </div>
                 </div>
                 
@@ -1593,7 +1637,7 @@ function showProjectDetails(project) {
         setTimeout(() => {
             inputName.value = project.name || '';
             inputDescription.value = project.description || '';
-            inputClient.value = project.client || '';
+                       inputClient.value = project.client || '';
             inputStartDate.value = project.startdate ? toFlatpickrString(project.startdate) : '';
             inputDeadline.value = project.deadline ? toFlatpickrString(project.deadline) : '';
             inputPriority.value = project.priority || 'Medium';
@@ -1629,14 +1673,16 @@ function showTaskDetails(task) {
 
     content.innerHTML = `
                 <div style="margin-bottom: 2rem;">
-                    <h2 style="color:#7380ec;font-size:1.8rem;margin-bottom:0.5rem;">${task.name}</h2>
-                    <div style="display:flex;gap:1rem;margin:1rem 0;">
-                        <span class="priority-label" style="padding:4px 12px;border-radius:8px;font-size:1em;background:${priorityColor};color:white;">
-                            ${priority}
-                        </span>
-                        <span class="status-label" style="padding:4px 12px;border-radius:8px;font-size:1em;background:${status === 'Completed' ? '#28a745' : status === 'Delayed' ? '#dc3545' : '#f0ad4e'};color:white;">
-                            ${status}
-                        </span>
+                    <div style="display:flex;align-items:center;justify-content:space-between;gap:1rem;">
+                        <h2 style="color:#7380ec;font-size:1.8rem;margin-bottom:0;">${task.name}</h2>
+                        <div style="display:flex;align-items:center;gap:0.7rem;">
+                            <span class="priority-label" style="padding:4px 12px;border-radius:8px;font-size:1em;background:${priorityColor};color:white;">
+                                ${priority}
+                            </span>
+                            <span class="status-label" style="padding:4px 12px;border-radius:8px;font-size:1em;background:${status === 'Completed' ? '#28a745' : status === 'Delayed' ? '#dc3545' : '#f0ad4e'};color:white;">
+                                ${status}
+                            </span>
+                        </div>
                     </div>
                 </div>
                 
@@ -1731,14 +1777,16 @@ function showSubtaskDetails(subtask) {
 
     content.innerHTML = `
                 <div style="margin-bottom: 2rem;">
-                    <h2 style="color:#7380ec;font-size:1.8rem;margin-bottom:0.5rem;">${subtask.name}</h2>
-                    <div style="display:flex;gap:1rem;margin:1rem 0;">
-                        <span class="priority-label" style="padding:4px 12px;border-radius:8px;font-size:1em;background:${priorityColor};color:white;">
-                            ${priority}
-                        </span>
-                        <span class="status-label" style="padding:4px 12px;border-radius:8px;font-size:1em;background:${status === 'Completed' ? '#28a745' : status === 'Delayed' ? '#dc3545' : '#f0ad4e'};color:white;">
-                            ${status}
-                        </span>
+                    <div style="display:flex;align-items:center;justify-content:space-between;gap:1rem;">
+                        <h2 style="color:#7380ec;font-size:1.8rem;margin-bottom:0;">${subtask.name}</h2>
+                        <div style="display:flex;align-items:center;gap:0.7rem;">
+                            <span class="priority-label" style="padding:4px 12px;border-radius:8px;font-size:1em;background:${priorityColor};color:white;">
+                                ${priority}
+                            </span>
+                            <span class="status-label" style="padding:4px 12px;border-radius:8px;font-size:1em;background:${status === 'Completed' ? '#28a745' : status === 'Delayed' ? '#dc3545' : '#f0ad4e'};color:white;">
+                                ${status}
+                            </span>
+                        </div>
                     </div>
                 </div>
                 
@@ -1774,6 +1822,20 @@ function showSubtaskDetails(subtask) {
                 </div>
                 ` : ''}
 
+                ${(subtask.uploadedTaskFiles && subtask.uploadedTaskFiles.length > 0) ? `
+                <div style="background:#f8f9fa;padding:1.5rem;border-radius:1rem;margin-bottom:1.2rem;">
+                    <h3 style="color:#363949;margin-bottom:0.8rem;">Task Uploaded File(s)</h3>
+                    <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
+                        ${subtask.uploadedTaskFiles.map((file, idx) => `
+                            <a href="#" class="download-task-file" data-file-idx="${idx}" style="display:inline-flex;align-items:center;gap:0.5rem;padding:0.5rem 1rem;background:#41f1b6;color:white;border-radius:0.5rem;text-decoration:none;">
+                                <span class="material-icons-sharp">file_present</span>
+                                ${file instanceof File ? file.name : (typeof file === 'string' ? file.split('/').pop() : 'file')}
+                            </a>
+                        `).join('')}
+                    </div>
+                </div>
+                ` : ''}
+
                 <div style="margin-top:2rem;">
                     <label style="font-weight:600;margin-left:1.5rem;">Upload Task File:</label>
                     <input type="file" id="upload-task-file" multiple />
@@ -1796,6 +1858,7 @@ function showSubtaskDetails(subtask) {
         content.querySelectorAll('.download-attachment').forEach((link, index) => {
             link.onclick = (e) => {
                 e.preventDefault();
+                e.stopPropagation();
                 const file = subtask.attachments[index];
                 let url, filename;
                 if (file instanceof File) {
@@ -1818,6 +1881,34 @@ function showSubtaskDetails(subtask) {
         });
     }
 
+    if (subtask.uploadedTaskFiles && subtask.uploadedTaskFiles.length > 0) {
+        content.querySelectorAll('.download-task-file').forEach(link => {
+            link.onclick = function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+                const idx = parseInt(link.getAttribute('data-file-idx'), 10);
+                const file = subtask.uploadedTaskFiles[idx];
+                let url, filename;
+                if (file instanceof File) {
+                    url = URL.createObjectURL(file);
+                    filename = file.name;
+                } else {
+                    url = file;
+                    filename = typeof file === 'string' ? file.split('/').pop() : 'taskfile';
+                }
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                if (file instanceof File) {
+                    setTimeout(() => URL.revokeObjectURL(url), 1000);
+                }
+            };
+        });
+    }
+
     // Submit button handler
     content.querySelector('#submit-task-btn').onclick = function () {
         const uploadInput = content.querySelector('#upload-task-file');
@@ -1826,6 +1917,11 @@ function showSubtaskDetails(subtask) {
             uploadInput.focus();
             return;
         }
+        // Save uploaded files to subtask.uploadedTaskFiles (create array if not present)
+        if (!subtask.uploadedTaskFiles) subtask.uploadedTaskFiles = [];
+        Array.from(uploadInput.files).forEach(file => {
+            subtask.uploadedTaskFiles.push(file);
+        });
         // Show a toast at bottom right
         let toast = document.createElement('div');
         toast.textContent = 'Submitted successfully!';
@@ -1845,6 +1941,7 @@ function showSubtaskDetails(subtask) {
         }, 2000);
         // Close the modal
         modal.style.display = 'none';
+        renderSubtasks();
     };
 
     // Update subtask button handler

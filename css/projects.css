@@ -60,13 +60,13 @@ body {
     color: var(--color-dark);
 }
 
-.container {
+/* .container {
     display: grid;
     width: 96%;
     margin: 0 auto;
     gap: 1.8rem;
     grid-template-columns: 14rem auto 23rem;
-}
+} */
 
 a {
     color: var(--color-dark);
@@ -102,12 +102,12 @@ small {
     font-size: 0.75rem;
 }
 
-.profile-photo {
+/* .profile-photo {
     width: 2.8rem;
     height: 2.8rem;
     border-radius: 50%;
     overflow: hidden;
-}
+} */
 
 .text-muted {
     color: var(--color-info-dark);
@@ -236,14 +236,17 @@ aside .sidebar .message-count {
 /* END ASIDE */
 
 main {
-    margin-top: 1.4rem;
+    margin-top: 1rem;
 }
 
 .container {
     display: grid !important;
-    grid-template-columns: 14rem auto !important;
-    width: 96% !important;
-    margin: 0 auto !important;
+    grid-template-columns: 14rem auto 1.5rem !important;
+    width: 100vw !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    gap: 1rem;
+    box-sizing: border-box;
 }
 
 main .top {
@@ -290,11 +293,11 @@ main .theme-toggler span.active {
     border-radius: var(--border-radius-1);
 }
 
-main .profile {
+/* main .profile {
     display: flex;
     gap: 2rem;
     text-align: right;
-}
+} */
 
 /* Create Buttons */
 .create-project-btn,
