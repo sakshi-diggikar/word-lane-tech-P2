@@ -545,8 +545,3 @@ main .top button {
     cursor: pointer;
     font-weight: bold;
 }
-
-aside .logo h2 {
-    font-size: 1.1rem;
-    white-space: nowrap;
-}
