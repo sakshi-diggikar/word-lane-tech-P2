@@ -5,6 +5,12 @@ let currentMonthData = {};
 
 // Initialize the page
 document.addEventListener('DOMContentLoaded', function() {
+    // Changes made by Cursor: Initialize common event listeners
+    if (typeof setupCommonEventListeners === 'function') {
+        setupCommonEventListeners();
+    }
+    // End of changes made by Cursor
+
     // Set current month in all month inputs
     const currentDate = new Date();
     const currentMonth = currentDate.toISOString().slice(0, 7);

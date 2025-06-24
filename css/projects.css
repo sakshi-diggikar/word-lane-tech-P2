@@ -1,4 +1,4 @@
-.container {
+/* .container {
     display: grid !important;
     grid-template-columns: 14rem auto 1rem !important;
     width: 100vw !important;
@@ -7,11 +7,8 @@
     padding-left: 0 !important;
     gap: 1rem;
     box-sizing: border-box;
-}
+} */
 
-main .top button {
-    display: none;
-}
 
 /* Create Buttons */
 .create-project-btn,

@@ -1,6 +1,6 @@
 // js/common.js
 
-document.addEventListener("DOMContentLoaded", () => {
+function setupCommonEventListeners() {
     // Sidebar & theme toggle
     const menuBtn = document.querySelector("#menu-btn");
     const closeBtn = document.querySelector("aside #close-btn");
@@ -31,4 +31,12 @@ document.addEventListener("DOMContentLoaded", () => {
             themeToggler.querySelector("span:nth-child(2)")?.classList.toggle("active");
         });
     }
-}); 
+}
+
+// Ensure the function is called when the DOM is ready on pages that don't have their own listener.
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', setupCommonEventListeners);
+} else {
+    // DOMContentLoaded has already fired
+    setupCommonEventListeners();
+} 

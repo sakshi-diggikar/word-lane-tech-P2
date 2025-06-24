@@ -1,16 +1,3 @@
-/* Main flex container */
-.analytics-container {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: flex-start;
-    gap: 2rem;
-    justify-content: space-between;
-}
-body,
-html {
-    overflow-x: hidden;
-}
-
 @media screen and (max-width: 768px) {
     .analytics-layout {
         flex-direction: column !important;
@@ -510,61 +497,6 @@ tr:hover {
     margin-top: 2rem;
 }
 
-/* Override main grid for analytics page to remove right blank space */
-.container {
-    display: grid !important;
-    grid-template-columns: 14rem auto !important;
-    width: 96% !important;
-    margin: 0 auto !important;
-}
-
-.analytics-main .top {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 2rem;
-    margin-bottom: 2rem;
-}
-
-.analytics-main .top button {
-  display: none;
-}
-
-.analytics-main .top-right {
-    display: flex;
-    align-items: center;
-    gap: 2rem;
-}
-
-.analytics-main .theme-toggler {
-  background: var(--color-light);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  height: 1.6rem;
-  width: 4.2rem;
-  cursor: pointer;
-  border-radius: var(--border-radius-1);
-}
-.analytics-main .theme-toggler span {
-  font-size: 1.2rem;
-  width: 50%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.analytics-main .theme-toggler span.active {
-  background: var(--color-primary);
-  color: white;
-  border-radius: var(--border-radius-1);
-}
-.analytics-main .profile {
-  display: flex;
-  gap: 2rem;
-  text-align: right;
-}
-
 /* Responsive */
 @media screen and (max-width: 1200px) {
     .slide-forms {
@@ -948,9 +880,4 @@ tr:hover {
     padding: 0.5rem;
     height: auto !important;
   }
-}
-
-/* Remove min-width from .employee-analytics-right for all screens */
-.employee-analytics-right {
-  min-width: 0;
 }
