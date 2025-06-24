@@ -483,3 +483,33 @@ form {
         gap: 0.8rem;
     }
 }
+
+/* --- Add after existing media queries --- */
+@media (max-width: 992px) {
+  .report-cards {
+    flex-direction: column;
+    gap: 1rem;
+  }
+}
+@media (max-width: 576px) {
+  .report-card, .report-cards {
+    min-width: unset;
+    max-width: 100%;
+    padding: 0.5rem;
+  }
+  .container {
+    padding: 0 0.2rem;
+  }
+  .modal-content, .form-modal {
+    width: 98vw;
+    padding: 0.5rem;
+  }
+}
+@media (max-width: 480px) {
+  .reports-header h2 {
+    font-size: 1.1rem;
+  }
+  .report-card h3 {
+    font-size: 1rem;
+  }
+}

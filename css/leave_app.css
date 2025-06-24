@@ -291,3 +291,35 @@ main {
 
     /* Adjust table columns for mobile */
 }
+
+@media (max-width: 992px) {
+    .insights {
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .insights {
+        grid-template-columns: 1fr;
+        gap: 0.5rem;
+    }
+    .insights > div {
+        padding: 1rem;
+        font-size: 0.95rem;
+    }
+    .container {
+        padding: 0 0.2rem;
+    }
+    #leave-applications-table {
+        min-width: unset;
+        overflow-x: auto;
+        display: block;
+    }
+}
+
+@media (max-width: 480px) {
+    .insights > div {
+        font-size: 0.9rem;
+    }
+}

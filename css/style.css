@@ -67,14 +67,16 @@ body {
 }
 
 .container {
-    display: grid;
-    grid-template-columns: 14rem 1fr 2rem; /* sidebar, main, right */
-    width: 100vw;
-    min-height: 100vh;
-    margin: 0;
-    padding: 0;
+    display: grid !important;
+    grid-template-columns: 14rem 1fr 2rem !important; /* sidebar, main, right */
+    width: 100% !important;
+    margin: 0 auto !important;
+    /* width: 100vw; */
+    /* min-height: 100vh; */
+    /* margin: 0; */
+    /* padding: 0; */
     gap: 1rem;
-    box-sizing: border-box;
+    /* box-sizing: border-box; */
 }
 
 main .top button {
@@ -92,6 +94,7 @@ main .top {
 
 /* Top right section (toggler, theme, notifications) */
 main .top-right {
+  /* margin-left: auto; */
   display: flex;
   align-items: center;
   gap: 2rem;
@@ -1261,5 +1264,46 @@ main .recent-orders a {
     /* Cap max width */
     max-height: 70vh;
     /* Max height relative to viewport */
+  }
+}
+
+/* --- Add after existing media queries --- */
+
+@media screen and (max-width: 992px) {
+  .container {
+    grid-template-columns: 1fr;
+    width: 100%;
+    padding: 0 0.5rem;
+  }
+  main .insights {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  .right {
+    width: 100%;
+    margin: 0;
+  }
+}
+
+@media screen and (max-width: 600px) {
+  html {
+    font-size: 12px;
+  }
+  .container {
+    padding: 0 0.2rem;
+  }
+  main {
+    margin-top: 6rem;
+    padding: 0 0.2rem;
+  }
+  .recent-orders, main .recent-orders table, #recent-orders--table {
+    width: 100vw !important;
+    min-width: unset;
+    overflow-x: auto;
+    display: block;
+  }
+  .profile-photo {
+    width: 2rem;
+    height: 2rem;
   }
 }

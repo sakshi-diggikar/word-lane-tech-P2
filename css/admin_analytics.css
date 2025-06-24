@@ -111,3 +111,25 @@
         /* Smaller height for mobile */
     }
 }
+
+@media screen and (max-width: 992px) {
+    .analytics-cards-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+    }
+}
+
+@media screen and (max-width: 480px) {
+    .analytics-cards-grid {
+        grid-template-columns: 1fr;
+        gap: 0.5rem;
+    }
+    .analytics-card {
+        padding: 1rem;
+        font-size: 0.95rem;
+    }
+    #gantt-chart-container {
+        height: 120px;
+        font-size: 0.9rem;
+    }
+}

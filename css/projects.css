@@ -542,3 +542,27 @@
     cursor: pointer;
     font-weight: bold;
 }
+
+@media screen and (max-width: 992px) {
+  .project-cards, .task-cards {
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+}
+@media screen and (max-width: 600px) {
+  .project-cards, .task-cards {
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
+  }
+  .project-card, .task-card {
+    padding: 1rem;
+    font-size: 0.95rem;
+  }
+  .container {
+    padding: 0 0.2rem;
+  }
+  #modal .modal-content {
+    width: 98vw;
+    padding: 1rem 0.5rem;
+  }
+}
