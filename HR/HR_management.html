@@ -8,8 +8,9 @@
     <title>Admin Dashboard | HR Management</title>
 
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Sharp" rel="stylesheet" />
-    <link rel="stylesheet" href="./css/style.css" />
-    <link rel="stylesheet" href="./css/hr_management.css" />
+    <link rel="stylesheet" href="../css/style.css" />
+    <link rel="stylesheet" href="../css/notification.css"/>
+    <link rel="stylesheet" href="css//hr_management.css" />
 </head>
 
 <body>
@@ -17,56 +18,46 @@
         <aside>
             <div class="top">
                 <div class="logo">
-                    <img src="./images/wlt-logo.png" alt="Logo" />
-                    <h2>Word<span class="danger">Lane Tech</span></h2>
+                    <img src="../assets/images/logo.png" alt="Logo" />
+                    <h2>Word<span class="danger"> Lane Tech</span></h2>
                 </div>
                 <div class="close" id="close-btn">
                     <span class="material-icons-sharp"> close </span>
                 </div>
             </div>
-
+        
             <div class="sidebar">
-                <a href="index.html">
+                <a href="hr_panel.html" >
                     <span class="material-icons-sharp"> dashboard </span>
                     <h3>Dashboard</h3>
                 </a>
-                <a href="projects.html">
-                    <span class="material-icons-sharp"> person_outline </span>
-                    <h3>Projects</h3>
+                <a href="#" class="active">
+                    <span class="material-icons-sharp"> people </span>
+                    <h3>Management</h3>
+                </a>
+                <a href="leave_applications.html">
+                    <span class="material-icons-sharp"> event_busy </span>
+                    <h3>Leave Applications</h3>
                 </a>
                 <a href="analytics.html">
                     <span class="material-icons-sharp"> insights </span>
                     <h3>Analytics</h3>
                 </a>
-                <a href="messages.html">
-                    <span class="material-icons-sharp"> mail_outline </span>
-                    <h3>Messages</h3>
-                    <span class="message-count">26</span>
-                </a>
-                <a href="attachment.html">
-                    <span class="material-icons-sharp"> attach_file </span>
-                    <h3>Attachment</h3>
-                </a>
                 <a href="attendance.html">
                     <span class="material-icons-sharp"> event_note </span>
                     <h3>Attendance</h3>
-                </a>
-                <a href="HR_management.html" class="active">
-                    <span class="material-icons-sharp"> report_gmailerrorred </span>
-                    <h3>HR Management</h3>
                 </a>
                 <a href="#">
                     <span class="material-icons-sharp"> logout </span>
                     <h3>Logout</h3>
                 </a>
-            </div>
-        </aside>
+            </div></aside>
 
 
 
         <main>
             <div class="top">
-                <h1 id="section-title" style="margin: 0; font-size: 2rem; flex:1 1 auto;"></h1>
+                <h1>HR Dashboard</h1>
                 <div class="top-right">
                     <button id="menu-btn">
                         <span class="material-icons-sharp"> menu </span>
@@ -75,17 +66,12 @@
                         <span class="material-icons-sharp active"> light_mode </span>
                         <span class="material-icons-sharp"> dark_mode </span>
                     </div>
-                    <div class="profile">
-                        <div class="info">
-                            <p>Hey, <b>Bruno</b></p>
-                            <small class="text-muted">Admin</small>
-                        </div>
-                        <div class="profile-photo">
-                            <img alt="Profile Picture" src="./images/profile-1.jpg" />
-                        </div>
+                    <!-- Notification Bell -->
+                    <div class="notification-bell">
+                        <span class="material-icons-sharp" id="notification-bell-icon"> notifications </span>
+                        <span class="notification-count" id="notification-count">0</span>
                     </div>
-                </div>
-            </div>
+                </div></div>
             <!-- HR Management Content Starts Here -->
             <div class="reports-container">
                 <div class="reports-header">
@@ -325,12 +311,40 @@
             </div>
     </div>
     </main>
-</div>
+    <div class="right">
+        <!-- Notification Drawer -->
+        <div class="notification-drawer" id="notification-drawer">
+            <h2>Notifications</h2>
+            <div class="notifications-list" id="notifications-list">
+                <p class="no-notifications">No new notifications</p>
+            </div>
+        </div>
+    </div>
+    </div>
+    </div>
 
 
 
     <!-- Scripts -->
+    <script src="../js/common.js"></script>
+    <script src="../js/notification.js"></script>
+    <script src="../js/chatbot.js"></script>
     <script src="/js/hr_management.js"></script>
+    <!-- Chatbot Toggle Button -->
+    <button id="chatbot-toggle-btn">💬</button>
+    
+    <!-- Chatbot Panel -->
+    <div id="chatbot-panel">
+        <header>
+            HR Assistant
+            <button id="close-btn">&times;</button>
+        </header>
+        <div id="messages"></div>
+        <form id="input-area">
+            <input type="text" id="user-input" placeholder="Type a message..." autocomplete="off" />
+            <button type="submit" id="send-button">Send</button>
+        </form>
+    </div>
 </body>
 
 </html>
