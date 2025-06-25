@@ -33,10 +33,7 @@ function setupCommonEventListeners() {
     }
 }
 
-// Ensure the function is called when the DOM is ready on pages that don't have their own listener.
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', setupCommonEventListeners);
-} else {
-    // DOMContentLoaded has already fired
+document.addEventListener('DOMContentLoaded', () => {
+    // This will run on all pages.
     setupCommonEventListeners();
-} 
+}); 
