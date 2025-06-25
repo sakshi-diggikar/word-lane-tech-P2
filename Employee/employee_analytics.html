@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employee Analytics | WLT</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Sharp" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
+    <link rel="stylesheet" href="../css/style.css" />
+    <link rel="stylesheet" href="../css/notification.css" />
+    <link rel="stylesheet" href="css/employee_analytics.css">
+</head>
+
+<body>
+    <div class="container">
+        <!-- SIDEBAR -->
+        <aside>
+            <div class="top">
+                <div class="logo">
+                    <img src="../assets/images/logo.png" alt="Logo" />
+                    <h2>Word<span class="danger"> Lane Tech</span></h2>
+                </div>
+                <div class="close" id="close-btn">
+                    <span class="material-icons-sharp"> close </span>
+                </div>
+            </div>
+
+            <div class="sidebar">
+                <a href="employee_panel.html" >
+                    <span class="material-icons-sharp"> dashboard </span>
+                    <h3>Dashboard</h3>
+                </a>
+                <a href="employee_analytics.html" class="active">
+                    <span class="material-icons-sharp"> insights </span>
+                    <h3>Analytics</h3>
+                </a>
+                <a href="em_projects.html">
+                    <span class="material-icons-sharp"> work </span>
+                    <h3>Projects</h3>
+                </a>
+                <a href="attendance.html">
+                    <span class="material-icons-sharp"> event_note </span>
+                    <h3>Attendance</h3>      </a>
+                <a href="../messages.html">
+                    <span class="material-icons-sharp"> mail_outline </span>
+                    <h3>Messages</h3>
+                    <span class="message-count">12</span>
+                </a>
+                <a href="#">
+                    <span class="material-icons-sharp"> logout </span>
+                    <h3>Logout</h3>
+                </a>
+            </div>
+        </aside>
+
+        <!-- MAIN CONTENT -->
+        <main>
+            <div class="top">
+                <h1>Employee Dashboard</h1>
+                <div class="top-right">
+                    <button id="menu-btn">
+                        <span class="material-icons-sharp"> menu </span>
+                    </button>
+                    <div class="theme-toggler">
+                        <span class="material-icons-sharp active"> light_mode </span>
+                        <span class="material-icons-sharp"> dark_mode </span>
+                    </div>
+                    <!-- Notification Bell -->
+                    <div class="notification-bell">
+                        <span class="material-icons-sharp" id="notification-bell-icon"> notifications </span>
+                        <span class="notification-count" id="notification-count">0</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="analytics-content">
+                <div class="cards-container" id="cardsView">
+                    <!-- Cards will be generated in this exact order:
+                            1. Team Analytics (top-left)
+                            2. Employee Analytics (top-right)
+                            3. Project Analytics (bottom-left)
+                            4. Task Analytics (bottom-right) -->
+                </div>
+
+                <div class="section-content" id="dynamicContent" style="display: none;">
+                    <div class="section-header">
+                        <button class="back-button" id="backButton">
+                            <i class="fas fa-arrow-left"></i> Back to Analytics
+                        </button>
+                        <h2 id="sectionTitle">Section Title</h2>
+                    </div>
+
+                    <div class="data-table">
+                        <div class="table-header">
+                            <div class="table-filters">
+                                <!-- Filters will be injected here -->
+                            </div>
+                            <div class="search-box">
+                                <input type="text" placeholder="Search..." id="searchInput">
+                                <i class="fas fa-search"></i>
+                            </div>
+                        </div>
+                        <div class="table-wrapper">
+                            <table id="dataTable">
+                                <!-- Table data will be injected here -->
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="analytics-charts">
+                        <div class="chart-container">
+                            <canvas id="mainChart"></canvas>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="secondaryChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+    </div>
+    </main>
+    <div class="right">
+        <!-- Notification Drawer -->
+        <div class="notification-drawer" id="notification-drawer">
+            <h2>Notifications</h2>
+            <div class="notifications-list" id="notifications-list">
+                <p class="no-notifications">No new notifications</p>
+            </div>
+        </div>
+    </div>
+    </div>
+    </div>
+    <script src="../js/common.js"></script>
+    <script src="../js/notification.js"></script>
+    <script src="../js/chatbot.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="js/employee_analytics.js"></script>
+
+</body>
+
+</html>
