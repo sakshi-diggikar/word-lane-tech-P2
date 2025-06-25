@@ -1,0 +1,89 @@
+/* Admin Panel Specific Styles */
+
+/* Custom admin insights styling */
+.insights .sales {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.insights .expenses {
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+}
+
+.insights .income {
+  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+}
+
+/* Admin specific table styling */
+#recent-orders--table th:nth-child(1),
+#recent-orders--table tbody td:nth-child(1) {
+  width: 10%;
+}
+
+#recent-orders--table th:nth-child(2),
+#recent-orders--table tbody td:nth-child(2) {
+  width: 15%;
+}
+
+#recent-orders--table th:nth-child(3),
+#recent-orders--table tbody td:nth-child(3) {
+  width: 25%;
+}
+
+#recent-orders--table th:nth-child(4),
+#recent-orders--table tbody td:nth-child(4) {
+  width: 12%;
+}
+
+#recent-orders--table th:nth-child(5),
+#recent-orders--table tbody td:nth-child(5) {
+  width: 12%;
+}
+
+#recent-orders--table th:nth-child(6),
+#recent-orders--table tbody td:nth-child(6) {
+  width: 15%;
+}
+
+#recent-orders--table th:nth-child(7),
+#recent-orders--table tbody td:nth-child(7) {
+  width: 11%;
+}
+
+/* Admin status badges */
+.status-badge.admin {
+  background: var(--color-primary);
+  color: var(--color-white);
+  padding: 0.3rem 0.8rem;
+  border-radius: var(--border-radius-1);
+  font-size: 0.7rem;
+  font-weight: 500;
+}
+
+.status-badge.system {
+  background: var(--color-warning);
+  color: var(--color-white);
+  padding: 0.3rem 0.8rem;
+  border-radius: var(--border-radius-1);
+  font-size: 0.7rem;
+  font-weight: 500;
+}
+
+/* Admin chatbot customization */
+#chatbot-panel header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+/* Responsive adjustments for admin panel */
+@media screen and (max-width: 768px) {
+  .insights {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  
+  #recent-orders--table th:nth-child(4),
+  #recent-orders--table tbody td:nth-child(4),
+  #recent-orders--table th:nth-child(6),
+  #recent-orders--table tbody td:nth-child(6) {
+    display: none;
+  }
+} 

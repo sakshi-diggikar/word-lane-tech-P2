@@ -1,0 +1,153 @@
+/* HR Panel Specific Styles */
+
+/* Custom HR insights styling */
+.insights .sales {
+  background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+}
+
+.insights .expenses {
+  background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+}
+
+.insights .income {
+  background: linear-gradient(135deg, #d299c2 0%, #fef9d7 100%);
+}
+
+/* HR specific table styling */
+#recent-orders--table th:nth-child(1),
+#recent-orders--table tbody td:nth-child(1) {
+  width: 12%;
+}
+
+#recent-orders--table th:nth-child(2),
+#recent-orders--table tbody td:nth-child(2) {
+  width: 18%;
+}
+
+#recent-orders--table th:nth-child(3),
+#recent-orders--table tbody td:nth-child(3) {
+  width: 15%;
+}
+
+#recent-orders--table th:nth-child(4),
+#recent-orders--table tbody td:nth-child(4) {
+  width: 15%;
+}
+
+#recent-orders--table th:nth-child(5),
+#recent-orders--table tbody td:nth-child(5) {
+  width: 15%;
+}
+
+#recent-orders--table th:nth-child(6),
+#recent-orders--table tbody td:nth-child(6) {
+  width: 15%;
+}
+
+#recent-orders--table th:nth-child(7),
+#recent-orders--table tbody td:nth-child(7) {
+  width: 10%;
+}
+
+/* HR leave type badges */
+.leave-type-badge {
+  padding: 0.3rem 0.8rem;
+  border-radius: var(--border-radius-1);
+  font-size: 0.7rem;
+  font-weight: 500;
+  text-align: center;
+}
+
+.leave-type-badge.sick {
+  background: var(--color-danger);
+  color: var(--color-white);
+}
+
+.leave-type-badge.casual {
+  background: var(--color-warning);
+  color: var(--color-white);
+}
+
+.leave-type-badge.annual {
+  background: var(--color-success);
+  color: var(--color-white);
+}
+
+.leave-type-badge.maternity {
+  background: var(--color-primary);
+  color: var(--color-white);
+}
+
+/* HR chatbot customization */
+#chatbot-panel header {
+  background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+}
+
+/* HR specific status badges */
+.status-badge.pending {
+  background: var(--color-warning);
+  color: var(--color-white);
+  padding: 0.3rem 0.8rem;
+  border-radius: var(--border-radius-1);
+  font-size: 0.7rem;
+  font-weight: 500;
+}
+
+.status-badge.approved {
+  background: var(--color-success);
+  color: var(--color-white);
+  padding: 0.3rem 0.8rem;
+  border-radius: var(--border-radius-1);
+  font-size: 0.7rem;
+  font-weight: 500;
+}
+
+.status-badge.rejected {
+  background: var(--color-danger);
+  color: var(--color-white);
+  padding: 0.3rem 0.8rem;
+  border-radius: var(--border-radius-1);
+  font-size: 0.7rem;
+  font-weight: 500;
+}
+
+/* HR specific action buttons */
+.action-btn {
+  padding: 0.4rem 0.8rem;
+  border-radius: var(--border-radius-1);
+  font-size: 0.7rem;
+  font-weight: 500;
+  cursor: pointer;
+  border: none;
+  margin: 0 0.2rem;
+}
+
+.action-btn.approve {
+  background: var(--color-success);
+  color: var(--color-white);
+}
+
+.action-btn.reject {
+  background: var(--color-danger);
+  color: var(--color-white);
+}
+
+.action-btn.view {
+  background: var(--color-primary);
+  color: var(--color-white);
+}
+
+/* Responsive adjustments for HR panel */
+@media screen and (max-width: 768px) {
+  .insights {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  
+  #recent-orders--table th:nth-child(3),
+  #recent-orders--table tbody td:nth-child(3),
+  #recent-orders--table th:nth-child(5),
+  #recent-orders--table tbody td:nth-child(5) {
+    display: none;
+  }
+} 
