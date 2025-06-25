@@ -1,7 +1,7 @@
 // Admin Panel JavaScript
 
 document.addEventListener("DOMContentLoaded", () => {
-    // Sample data for admin activities
+    // --- Admin Activities Table (old logic) ---
     const adminActivities = [
         {
             userId: "ADM001",
@@ -45,112 +45,139 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     ];
 
-    // Function to populate the table
-    function populateTable(data) {
-        const tbody = document.querySelector("#recent-orders--table tbody");
-        if (!tbody) return;
+    // --- Main Content: Assigned Tasks Table (from admin_main.js) ---
+    const assignedTasks = [
+        {
+            projectId: "PRJ001",
+            projectName: "Website Redesign",
+            taskName: "UI Overhaul",
+            dueOn: "2024-07-10",
+            status: "active",
+            employeeName: "Alice"
+        },
+        {
+            projectId: "PRJ002",
+            projectName: "Mobile App Launch",
+            taskName: "API Integration",
+            dueOn: "2024-07-15",
+            status: "delayed",
+            employeeName: "Bob"
+        },
+        {
+            projectId: "PRJ003",
+            projectName: "Cloud Migration",
+            taskName: "Server Setup",
+            dueOn: "2024-07-20",
+            status: "completed",
+            employeeName: "Charlie"
+        },
+        {
+            projectId: "PRJ004",
+            projectName: "Security Audit",
+            taskName: "Vulnerability Scan",
+            dueOn: "2024-07-25",
+            status: "active",
+            employeeName: "Diana"
+        },
+        {
+            projectId: "PRJ005",
+            projectName: "API Integration",
+            taskName: "Endpoint Testing",
+            dueOn: "2024-07-30",
+            status: "active",
+            employeeName: "Eve"
+        }
+    ];
 
+    // --- Main Content Table Logic ---
+    function populateAssignedTasksTable(data) {
+        const tbody = document.querySelector("#recent-orders--table tbody");
+        if (!tbody) {
+            const table = document.getElementById("recent-orders--table");
+            const newTbody = document.createElement("tbody");
+            table.appendChild(newTbody);
+            return populateAssignedTasksTable(data);
+        }
         tbody.innerHTML = "";
-        
-        data.forEach(activity => {
+        data.forEach(task => {
             const row = document.createElement("tr");
             row.innerHTML = `
-                <td>${activity.userId}</td>
-                <td>${activity.userName}</td>
-                <td>${activity.activity}</td>
-                <td>${activity.time}</td>
-                <td><span class="status-badge ${activity.status}">${activity.status}</span></td>
-                <td>${activity.department}</td>
-                <td>
-                    <button class="action-btn view">View</button>
-                </td>
+                <td>${task.projectId}</td>
+                <td>${task.projectName}</td>
+                <td>${task.taskName}</td>
+                <td>${task.dueOn}</td>
+                <td><span class="status-badge ${task.status}">${task.status}</span></td>
+                <td>${task.employeeName}</td>
+                <td><button class="action-btn view">View</button></td>
             `;
             tbody.appendChild(row);
         });
     }
 
-    // Search functionality
-    const searchInput = document.getElementById("activity-search");
+    // Main Content: Search
+    const searchInput = document.getElementById("task-search");
     if (searchInput) {
         searchInput.addEventListener("input", (e) => {
             const searchTerm = e.target.value.toLowerCase();
-            const filteredData = adminActivities.filter(activity => 
-                activity.userName.toLowerCase().includes(searchTerm) ||
-                activity.activity.toLowerCase().includes(searchTerm) ||
-                activity.department.toLowerCase().includes(searchTerm)
+            const filteredData = assignedTasks.filter(task =>
+                task.taskName.toLowerCase().includes(searchTerm) ||
+                task.projectName.toLowerCase().includes(searchTerm) ||
+                task.projectId.toLowerCase().includes(searchTerm) ||
+                task.employeeName.toLowerCase().includes(searchTerm)
             );
-            populateTable(filteredData);
+            populateAssignedTasksTable(filteredData);
         });
     }
 
-    // Sort functionality
+    // Main Content: Sort
     const sortIcon = document.getElementById("sort-icon");
     const sortOptions = document.getElementById("sort-options");
-    
     if (sortIcon && sortOptions) {
         sortIcon.addEventListener("click", () => {
             sortOptions.style.display = sortOptions.style.display === "block" ? "none" : "block";
         });
-
-        // Close dropdown when clicking outside
         document.addEventListener("click", (e) => {
             if (!sortIcon.contains(e.target) && !sortOptions.contains(e.target)) {
                 sortOptions.style.display = "none";
             }
         });
-
-        // Sort options click handlers
         const sortOptionElements = sortOptions.querySelectorAll("div");
         sortOptionElements.forEach(option => {
             option.addEventListener("click", () => {
                 const filter = option.getAttribute("data-filter");
-                let filteredData = adminActivities;
-
+                let filteredData = assignedTasks;
                 if (filter !== "all") {
-                    filteredData = adminActivities.filter(activity => 
-                        activity.status === filter
-                    );
+                    filteredData = assignedTasks.filter(task => task.status === filter);
                 }
-
-                populateTable(filteredData);
+                populateAssignedTasksTable(filteredData);
                 sortOptions.style.display = "none";
             });
         });
     }
 
-    // Initialize table
-    populateTable(adminActivities);
+    // Main Content: Initialize table
+    populateAssignedTasksTable(assignedTasks);
 
-    // Update insights data
+    // Main Content: Update insights
     function updateInsights() {
-        const totalUsers = document.querySelector(".insights .sales h1");
-        const activeProjects = document.querySelector(".insights .expenses h1");
-        const totalRevenue = document.querySelector(".insights .income h1");
-
-        if (totalUsers) totalUsers.textContent = "1,250";
-        if (activeProjects) activeProjects.textContent = "45";
-        if (totalRevenue) totalRevenue.textContent = "₹2.5M";
+        const totalTask = document.querySelector(".insights .sales h1");
+        const totalProjects = document.querySelector(".insights .expenses h1");
+        const completedTasks = document.querySelector(".insights .income h1");
+        if (totalTask) totalTask.textContent = "1000";
+        if (totalProjects) totalProjects.textContent = "450";
+        if (completedTasks) completedTasks.textContent = "700";
     }
-
     updateInsights();
 
-    // Simulate real-time updates
-    setInterval(() => {
-        // Add new activity every 30 seconds
-        const newActivity = {
-            userId: "ADM" + Math.floor(Math.random() * 1000).toString().padStart(3, '0'),
-            userName: "Admin User",
-            activity: "System activity logged",
-            time: "Just now",
-            status: Math.random() > 0.5 ? "admin" : "system",
-            department: "IT"
-        };
-        
-        adminActivities.unshift(newActivity);
-        if (adminActivities.length > 10) {
-            adminActivities.pop();
+    // Main Content: Action button click
+    document.addEventListener("click", (e) => {
+        if (e.target.classList.contains("action-btn")) {
+            const row = e.target.closest("tr");
+            const taskName = row.cells[2].textContent;
+            alert(`Viewing details for task: ${taskName}`);
         }
-        
-        populateTable(adminActivities);
-    }, 30000);
+    });
+
+    // --- (Optional) Keep old admin activities logic for other tables if needed ---
+    // (No changes to the old admin activities logic, but you can remove it if not needed)
 }); 
