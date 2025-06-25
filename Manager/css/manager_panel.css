@@ -1,15 +1,15 @@
 /* Manager Panel Specific Styles */
 
 .insights .sales {
-  background: linear-gradient(135deg, #43cea2 0%, #185a9d 100%);
+  background: linear-gradient(135deg, #abb7b3 0%, #6f8193 100%);
 }
 
 .insights .expenses {
-  background: linear-gradient(135deg, #f7971e 0%, #ffd200 100%);
+  background: linear-gradient(135deg, #a6a19a 0%, #8d8565 100%);
 }
 
 .insights .income {
-  background: linear-gradient(135deg, #e96443 0%, #904e95 100%);
+  background: linear-gradient(135deg, #897d7a 0%, #886a8a 100%);
 }
 
 #recent-orders--table th,

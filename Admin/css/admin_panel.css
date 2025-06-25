@@ -2,15 +2,15 @@
 
 /* Custom admin insights styling */
 .insights .sales {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #787c8f 0%, #8b7c9a 100%);
 }
 
 .insights .expenses {
-  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  background: linear-gradient(135deg, #968498 0%, #97757a 100%);
 }
 
 .insights .income {
-  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+  background: linear-gradient(135deg, #80868b 0%, #62797b 100%);
 }
 
 /* Main Content Styles (from admin_main.css) */

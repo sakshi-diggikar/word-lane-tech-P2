@@ -9,6 +9,8 @@
 
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Sharp" rel="stylesheet" />
     <link rel="stylesheet" href="css/hr_panel.css" />
+    <link rel="stylesheet" href="../css/style.css" />
+    <link rel="stylesheet" href="../css/notification.css"/>
 </head>
 
 <body>
@@ -16,9 +18,8 @@
         <aside>
             <div class="top">
                 <div class="logo">
-                    <img src="images/logo.jpg" alt="Logo of Word Lane Tech with blue and white colors, modern style" />
-                    <h2>Word<span class="danger">Lane Tech</span></h2>
-                </div>
+                    <img src="../assets/images/logo.png" alt="Logo" />
+                    <h2>Word<span class="danger"> Lane Tech</span></h2>    </div>
                 <div class="close" id="close-btn">
                     <span class="material-icons-sharp"> close </span>
                 </div>
@@ -28,7 +29,7 @@
                     <span class="material-icons-sharp"> dashboard </span>
                     <h3>Dashboard</h3>
                 </a>
-                <a href="#" class="active">
+                <a href="HR_management.html" >
                     <span class="material-icons-sharp"> people </span>
                     <h3>Management</h3>
                 </a>
@@ -51,18 +52,23 @@
             </div>
             </aside>
 
-        <main id="main-content">
-            <div class="dashboard-header">
-                <h1>HR Dashboard</h1>
+            <main>
                 <div class="top">
+                    <h1>Admin Dashboard</h1>
                     <div class="top-right">
+                        <button id="menu-btn">
+                            <span class="material-icons-sharp"> menu </span>
+                        </button>
                         <div class="theme-toggler">
                             <span class="material-icons-sharp active"> light_mode </span>
                             <span class="material-icons-sharp"> dark_mode </span>
                         </div>
-                    </div>
-                </div>
-            </div>
+                        <!-- Notification Bell -->
+                        <div class="notification-bell">
+                            <span class="material-icons-sharp" id="notification-bell-icon"> notifications </span>
+                            <span class="notification-count" id="notification-count">0</span>
+                        </div>
+                    </div>    </div>
 
             <div class="dashboard-cards">
                 <div class="card card-info">
@@ -134,7 +140,20 @@
                 </div>
             </div>
         </main>
-
+        <div class="right">
+            <!-- Notification Drawer -->
+            <div class="notification-drawer" id="notification-drawer">
+                <h2>Notifications</h2>
+                <div class="notifications-list" id="notifications-list">
+                    <p class="no-notifications">No new notifications</p>
+                </div>
+            </div>
+        </div>
+        </div>
+        
+        <script src="../js/common.js"></script>
+        <script src="../js/notification.js"></script>
+        <script src="../js/chatbot.js"></script>
 
         <!-- Task Details Modal -->
         <div id="taskDetailsModal" class="modal">
@@ -194,6 +213,21 @@
 
     </div>
 
+    <!-- Chatbot Toggle Button -->
+    <button id="chatbot-toggle-btn">💬</button>
+    
+    <!-- Chatbot Panel -->
+    <div id="chatbot-panel">
+        <header>
+            Admin Assistant
+            <button id="close-btn">&times;</button>
+        </header>
+        <div id="messages"></div>
+        <form id="input-area">
+            <input type="text" id="user-input" placeholder="Type a message..." autocomplete="off" />
+            <button type="submit" id="send-button">Send</button>
+        </form>
+    </div>
     <script src="js/hr_panel.js"></script>
 </body>
 

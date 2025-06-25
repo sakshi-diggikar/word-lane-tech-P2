@@ -1,7 +1,7 @@
 /* DECLARATIONS */
 @import url("https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap");
 
-/* ROOT VARIABLES */
+/* ROOT VARIABLES
 :root {
     --color-primary: #7380ec;
     --color-danger: #363dc5;
@@ -25,7 +25,7 @@
     --padding-1: 1.2rem;
 
     --box-shadow: 0 2rem 3rem var(--color-light);
-}
+} */
 
 /* DARK THEME VARIABLES */
 .dark-theme-variables {
