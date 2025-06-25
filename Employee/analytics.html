@@ -10,6 +10,9 @@
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Sharp" rel="stylesheet" />
     <link rel="stylesheet" href="../css/style.css" />
     <link rel="stylesheet" href="../css/notification.css" />
+    <link rel="stylesheet" href="css/analytics.css" />
+
+
 </head>
 
 <body>
@@ -26,27 +29,28 @@
             </div>
 
             <div class="sidebar">
-                <a href="emp.html" class="active">
+                <a href="employee_panel.html">
                     <span class="material-icons-sharp"> dashboard </span>
                     <h3>Dashboard</h3>
                 </a>
+                <a href="#" class="active">
+                    <span class="material-icons-sharp"> insights </span>
+                    <h3>Analytics</h3>
+                </a>
                 <a href="projects.html">
-                    <span class="material-icons-sharp"> person_outline </span>
+                    <span class="material-icons-sharp"> work </span>
                     <h3>Projects</h3>
-                </a>
-                <a href="messages.html">
-                    <span class="material-icons-sharp"> mail_outline </span>
-                    <h3>Messages</h3>
-                    <span class="message-count">26</span>
-                </a>
-                <a href="attachment.html">
-                    <span class="material-icons-sharp"> attach_file </span>
-                    <h3>Attachment</h3>
                 </a>
                 <a href="attendance.html">
                     <span class="material-icons-sharp"> event_note </span>
                     <h3>Attendance</h3>
                 </a>
+                <a href="messages.html">
+                    <span class="material-icons-sharp"> mail_outline </span>
+                    <h3>Messages</h3>
+                    <span class="message-count">12</span>
+                </a>
+
                 <a href="#">
                     <span class="material-icons-sharp"> logout </span>
                     <h3>Logout</h3>
@@ -57,20 +61,7 @@
         <main>
             <div class="top">
                 <h1>Dashboard</h1>
-                <div class="top-right">
-                    <button id="menu-btn">
-                        <span class="material-icons-sharp"> menu </span>
-                    </button>
-                    <div class="theme-toggler">
-                        <span class="material-icons-sharp active"> light_mode </span>
-                        <span class="material-icons-sharp"> dark_mode </span>
-                    </div>
-                    <!-- Notification Bell -->
-                    <div class="notification-bell">
-                        <span class="material-icons-sharp" id="notification-bell-icon"> notifications </span>
-                        <span class="notification-count" id="notification-count">0</span>
-                    </div>
-                </div>
+
             </div>
 
             <div class="date">
@@ -222,7 +213,7 @@
 
     <script src="js/constants/recent-order-data.js"></script>
     <script src="js/constants/update-data.js"></script>
-    <script src="js/emp.js"></script>
+    <script src="emp.js"></script>
     <script src="js/notification.js"></script>
 
     <!-- Chatbot Toggle Button -->
@@ -240,6 +231,65 @@
             <button type="submit" id="send-button">Send</button>
         </form>
     </div>
+
+
+    <!-- Task Details Modal -->
+    <div id="taskDetailsModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <span class="close-btn" id="closeTaskModal">&times;</span>
+            <h2 style="margin-bottom: 1.5rem; color: var(--color-primary);">Task Details</h2>
+
+            <div class="detail-list">
+                <div class="detail-row">
+                    <span class="material-icons-sharp icon">confirmation_number</span>
+                    <div><strong>Project ID:</strong><br /><span id="modal-project-id"></span></div>
+                </div>
+
+                <div class="detail-row">
+                    <span class="material-icons-sharp icon">folder</span>
+                    <div><strong>Project Name:</strong><br /><span id="modal-project-name"></span></div>
+                </div>
+
+                <div class="detail-row">
+                    <span class="material-icons-sharp icon">assignment</span>
+                    <div><strong>Task Name:</strong><br /><span id="modal-task-name"></span></div>
+                </div>
+
+                <div class="detail-row">
+                    <span class="material-icons-sharp icon">event</span>
+                    <div><strong>Due On:</strong><br /><span id="modal-due-on"></span></div>
+                </div>
+
+                <div class="detail-row">
+                    <span class="material-icons-sharp icon">info</span>
+                    <div><strong>Status:</strong><br /><span id="modal-status"></span></div>
+                </div>
+
+                <div class="detail-row">
+                    <span class="material-icons-sharp icon">person</span>
+                    <div><strong>Employee:</strong><br /><span id="modal-employee-name"></span></div>
+                </div>
+
+                <div class="detail-row input-row">
+                    <span class="material-icons-sharp icon">edit</span>
+                    <div class="textarea-wrapper">
+                        <label for="task-comment"><strong>Add Notes / Comments:</strong></label>
+                        <textarea id="task-comment" placeholder="Write something..."></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-buttons">
+                <button class="btn btn-cancel" id="closeTaskModalBtn">Cancel</button>
+                <button class="btn btn-send">Send</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast">Message Sent!</div>
+
+
 
 </body>
 

@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Messages - Word Lane Tech</title>
+
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Sharp" rel="stylesheet" />
+  <link rel="stylesheet" href="../css/style.css" />
+  <link rel="stylesheet" href="css/messages.css" />
+</head>
+
+<body>
+  <div class="container">
+    <!-- SIDEBAR -->
+    <aside>
+      <div class="top">
+        <div class="logo">
+          <img src="../assets/images/logo.png" alt="Logo" />
+          <h2>Word<span class="danger"> Lane Tech</span></h2>
+        </div>
+        <div class="close" id="close-btn">
+          <span class="material-icons-sharp"> close </span>
+        </div>
+      </div>
+
+      <div class="sidebar">
+        <a href="employee_panel.html">
+          <span class="material-icons-sharp"> dashboard </span>
+          <h3>Dashboard</h3>
+        </a>
+        <a href="analytics.html">
+          <span class="material-icons-sharp"> insights </span>
+          <h3>Analytics</h3>
+        </a>
+        <a href="projects.html">
+          <span class="material-icons-sharp"> work </span>
+          <h3>Projects</h3>
+        </a>
+        <a href="attendance.html">
+          <span class="material-icons-sharp"> event_note </span>
+          <h3>Attendance</h3>
+        </a>
+        <a href="#" class="active">
+          <span class="material-icons-sharp"> mail_outline </span>
+          <h3>Messages</h3>
+          <span class="message-count">12</span>
+        </a>
+
+        <a href="#">
+          <span class="material-icons-sharp"> logout </span>
+          <h3>Logout</h3>
+        </a>
+      </div>
+    </aside>
+
+    <!-- MESSAGES SECTION -->
+    <main class="messages-wrapper">
+      <section class="messages-area" style="position: relative;">
+        <div class="messages-header">
+          <div class="messages-title">Messages</div>
+          <div class="search-wrapper">
+            <input type="text" class="search-input" placeholder="Search for a chat">
+          </div>
+        </div>
+
+        <h4>📌 Pinned Messages</h4>
+        <div id="pinned-list" class="chat-list">
+          <!-- pinned items will appear here -->
+        </div>
+
+        <h4>💬 All Messages</h4>
+        <div id="all-list" class="chat-list">
+          <div class="chat-item" data-type="single" data-name="Momon" data-status="Typing..." data-unread="3"
+            data-img="../assets/images/profile-1.jpg">
+            <img src="../assets/images/profile-1.jpg" />
+            <div>
+              <strong>Momon</strong>
+              <div>Typing...</div>
+            </div>
+            <div class="chat-actions">
+              <button class="action-menu-btn">⋮</button>
+              <div class="action-dropdown">
+                <button class="pin-option">Pin</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="chat-item" data-type="group" data-name="Hatypo Studio" data-status="Mas Adit Typing..."
+            data-img="../assets/images/wlt-logo.png">
+            <img src="../assets/images/wlt-logo.png" />
+            <div>
+              <strong>Hatypo Studio</strong>
+              <div>Mas Adit Typing...</div>
+            </div>
+            <div class="chat-actions">
+              <button class="action-menu-btn">⋮</button>
+              <div class="action-dropdown">
+                <button class="pin-option">Pin</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="chat-item" data-name="Farhan" data-status="Cek Figma coba han" data-img="images/profile-1.jpg">
+            <img src="../assets/images/profile-1.jpg">
+            <div>
+              <strong>Farhan</strong>
+              <div>Cek Figma coba han</div>
+            </div>
+            <div class="chat-actions">
+              <button class="action-menu-btn">⋮</button>
+              <div class="action-dropdown">
+                <button class="pin-option">Pin</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="chat-item" data-name="Sana" data-status="Design complete" data-img="images/profile-2.jpg">
+            <img src="../assets/images/profile-2.jpg">
+            <div>
+              <strong>Sana</strong>
+              <div>Design complete</div>
+            </div>
+            <div class="chat-actions">
+              <button class="action-menu-btn">⋮</button>
+              <div class="action-dropdown">
+                <button class="pin-option">Pin</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="chat-item" data-name="Adit" data-status="Updated backend" data-img="images/profile-3.jpg">
+            <img src="../assets/images/profile-3.jpg">
+            <div>
+              <strong>Adit</strong>
+
+            </div>
+            <div class="chat-actions">
+              <button class="action-menu-btn">⋮</button>
+              <div class="action-dropdown">
+                <button class="pin-option">Pin</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Floating Add Button -->
+        <div class="message-actions">
+          <button id="add-btn" title="Add User or Group">＋</button>
+          <div id="add-menu" class="hidden">
+            <button id="openAddUser">➕ Add User</button>
+            <button id="openAddGroup">👥 Create Group</button>
+          </div>
+        </div>
+
+
+
+
+      </section>
+
+      <!-- Modal -->
+      <div id="chatModal" class="modal hidden">
+        <div class="modal-content">
+          <span class="close" id="closeChatModal">&times;</span>
+          <h3 id="modalTitle">Add Chat</h3>
+          <input type="text" id="chatName" placeholder="Enter name" />
+          <input type="file" id="chatImage" accept="image/*" />
+          <input type="text" id="chatMembers" placeholder="Enter members (comma separated)" class="hidden" />
+          <button id="createChatBtn">Create</button>
+        </div>
+      </div>
+
+      <section class="chat-placeholder " id="chat-placeholder">
+        <div class="placeholder-content">
+          <img src="../assets/images/wlt-logo.png" alt="Logo" class="placeholder-logo">
+          <h2> Welcome to WLT Messenger</h2>
+          <p>Select a conversation to start chatting!</p>
+        </div>
+      </section>
+
+      <section class="chat-box hidden" id="chat-box">
+
+        <div class="chat-header">
+          <button id="close-chat-btn" class="icon-btn">
+            <span class="material-icons-sharp">arrow_back</span>
+          </button>
+
+          <img src="../assets/images/wlt-logo.png" alt="Hatypo Studio">
+          <div class="chat-meta">
+            <h3 id="chat-title">Hatypo Studio</h3>
+            <div>Mas Adit Typing...</div>
+          </div>
+          <div class="chat-tools">
+            <a href="https://meet.google.com/landing"><span class="material-icons-sharp"> videocam </span></a>
+          </div>
+
+        </div>
+
+        <div class="chat-messages">
+
+          <!-- RECEIVED MESSAGE -->
+          <div class="received message" data-time="5:08 PM">
+            Gokill Bangettt!!
+            <div class="reactions">
+              <span>❤️</span>
+              <span>😂</span>
+              <span>😮</span>
+            </div>
+          </div>
+
+          <!-- SENT MESSAGE -->
+          <div class="sent message" data-time="5:09 PM">
+            Guysss cek Figmaku dong, minta feedbacknyaa
+            <div class="tick-status">✓</div>
+          </div>
+
+          <!-- IMAGE PREVIEW (Example) -->
+          <div class="sent message" data-time="5:10 PM">
+            <div class="file-preview">
+              <img src="../assets/images/sample-img.jpg" alt="Preview">
+              <div class="file-name">sample-img.jpg</div>
+              <div class="tick-status">✓</div>
+            </div>
+
+          </div>
+
+          <!-- TYPING INDICATOR -->
+          <div class="typing-indicator">
+            <span></span><span></span><span></span>
+          </div>
+
+        </div>
+
+        <div class="chat-input">
+          <button class="icon-btn" id="emoji-btn">
+            <span class="material-icons-sharp">emoji_emotions</span>
+          </button>
+
+          <button class="icon-btn" id="attach-btn">
+            <span class="material-icons-sharp">attach_file</span>
+          </button>
+
+          <input type="text" placeholder="Type a message..." />
+
+          <!-- SEND BUTTON -->
+          <button class="icon-btn" id="send-btn">
+            <span class="material-icons-sharp">send</span>
+          </button>
+
+          <button class="icon-btn" id="mic-btn">
+            <span class="material-icons-sharp">mic</span>
+          </button>
+
+          <!-- Hidden file input -->
+          <input type="file" id="file-input" style="display: none;">
+        </div>
+
+
+      </section>
+
+
+    </main>
+
+    <!-- RIGHT PANEL -->
+    <aside class="info-panel hidden">
+      <div class="admin-header">
+        <div class="close-btn">
+          <button id="close-chat-btn-info" class="icon-btn">
+            <span class="material-icons-sharp">close</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="logo-block">
+
+        <div class="logo-circle">
+          <img src="../assets/images/wlt-logo.png" alt="Company Logo" class="company-logo" />
+        </div>
+        <h3 class="studio-name">Hatypo Studio</h3>
+        <span class="tagline">Create Something New</span>
+      </div>
+
+      <div class="members-section">
+        <div class="section-header" id="membersHeader">
+          <span>Members</span>
+          <span class="toggle-icon" id="membersToggle">⌄</span>
+        </div>
+
+        <div class="members-body" id="membersBody">
+          <button class="add-member-btn" id="addMemberBtn">+ Add Member</button>
+          <ul class="member-list" id="membersList">
+            <li><img src="../assets/images/profile-1.jpeg"> Faza Dzikrulloh</li>
+            <li><img src="../assets/images/profile-2.jpeg"> Adhitya P.</li>
+            <li><img src="../assets/images/profile-3.jpeg"> Raul Khaq</li>
+            <li><img src="../assets/images/profile-4.jpeg"> Vito Arvy</li>
+            <li><img src="../assets/images/profile-1.jpeg"> Nola Sofyan</li>
+          </ul>
+        </div>
+      </div>
+
+
+      <div class="attachments-section">
+        <div class="tab-header">
+          <button class="tab-btn active" data-tab="media-tab">Media</button>
+          <button class="tab-btn" data-tab="files-tab">Files</button>
+          <button class="tab-btn" data-tab="links-tab">Links</button>
+        </div>
+
+        <!-- Media Tab -->
+        <div class="tab-content active" id="media-tab">
+          <div class="media-grid" id="mediaGallery"></div>
+        </div>
+
+        <!-- Files Tab -->
+        <div class="tab-content" id="files-tab">
+          <ul class="file-list" id="filesList"></ul>
+        </div>
+
+        <!-- Links Tab -->
+        <div class="tab-content" id="links-tab">
+          <ul class="link-list" id="linksList"></ul>
+        </div>
+
+      </div>
+
+    </aside>
+  </div>
+  <div id="addMemberModal" class="modal hidden">
+    <div class="modal-content">
+      <span class="close" id="closeAddModal">&times;</span>
+      <h2>Add New Member</h2>
+      <input type="text" id="newMemberName" placeholder="Enter name" />
+      <button id="confirmAddMember">Add</button>
+      <button style="margin-top: 10px; background: #ccc; color: #333;" id="cancelAddMember">Cancel</button>
+    </div>
+  </div>
+
+  <!-- JavaScript for interaction -->
+  <script src="../js/common.js"></script>
+  <script src="../js/notification.js"></script>
+  <script src="../js/chatbot.js"></script>
+  <script src="js/messages.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@joeattardi/emoji-button@4.6.4/dist/index.min.js"></script>
+  <!-- Chatbot Toggle Button -->
+  <button id="chatbot-toggle-btn">💬</button>
+
+  <!-- Chatbot Panel -->
+  <div id="chatbot-panel">
+    <header>
+      Admin Assistant
+      <button id="close-btn">&times;</button>
+    </header>
+    <div id="messages"></div>
+    <form id="input-area">
+      <input type="text" id="user-input" placeholder="Type a message..." autocomplete="off" />
+      <button type="submit" id="send-button">Send</button>
+    </form>
+  </div>
+</body>
+
+</html>
