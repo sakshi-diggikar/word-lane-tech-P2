@@ -51,7 +51,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!tbody) return;
 
         tbody.innerHTML = "";
-
+        
         data.forEach(task => {
             const row = document.createElement("tr");
             row.innerHTML = `
@@ -61,21 +61,12 @@ document.addEventListener("DOMContentLoaded", () => {
                 <td>${task.dueDate}</td>
                 <td><span class="status-badge ${task.status}">${task.status}</span></td>
                 <td><span class="priority-badge ${task.priority}">${task.priority}</span></td>
-    
-                    <td class="primary details-btn" style="cursor:pointer;">Details</td>
-                
+                <td>
+                    <button class="action-btn view">View</button>
+                </td>
             `;
             tbody.appendChild(row);
         });
-
-        // ✨ Add click event to each "Details" cell
-        const detailButtons = tbody.querySelectorAll('.details-btn');
-        detailButtons.forEach((btn, i) => {
-            btn.addEventListener('click', () => {
-                showTaskDetails(data[i]);
-            });
-        });
-
     }
 
     // Search functionality
@@ -83,7 +74,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (searchInput) {
         searchInput.addEventListener("input", (e) => {
             const searchTerm = e.target.value.toLowerCase();
-            const filteredData = employeeTasks.filter(task =>
+            const filteredData = employeeTasks.filter(task => 
                 task.taskName.toLowerCase().includes(searchTerm) ||
                 task.project.toLowerCase().includes(searchTerm) ||
                 task.taskId.toLowerCase().includes(searchTerm)
@@ -95,7 +86,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // Sort functionality
     const sortIcon = document.getElementById("sort-icon");
     const sortOptions = document.getElementById("sort-options");
-
+    
     if (sortIcon && sortOptions) {
         sortIcon.addEventListener("click", () => {
             sortOptions.style.display = sortOptions.style.display === "block" ? "none" : "block";
@@ -116,7 +107,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 let filteredData = employeeTasks;
 
                 if (filter !== "all") {
-                    filteredData = employeeTasks.filter(task =>
+                    filteredData = employeeTasks.filter(task => 
                         task.status === filter
                     );
                 }
@@ -149,51 +140,16 @@ document.addEventListener("DOMContentLoaded", () => {
         const randomTask = employeeTasks[Math.floor(Math.random() * employeeTasks.length)];
         const statuses = ["pending", "in-progress", "completed"];
         randomTask.status = statuses[Math.floor(Math.random() * statuses.length)];
-
+        
         populateTable(employeeTasks);
     }, 45000);
 
     // Add click handlers for action buttons
-
-
-    function showTaskDetails(task) {
-        // Populate modal fields
-        document.getElementById('modal-project-id').textContent = task.taskId;
-        document.getElementById('modal-project-name').textContent = task.project;
-        document.getElementById('modal-task-name').textContent = task.taskName;
-        document.getElementById('modal-due-on').textContent = task.dueDate;
-        document.getElementById('modal-status').textContent = task.status;
-        document.getElementById('modal-employee-name').textContent = "John Doe"; // Example static name
-
-        document.getElementById('taskDetailsModal').style.display = 'flex';
-
-
-        document.getElementById('closeTaskModal')?.addEventListener('click', () => {
-            document.getElementById('taskDetailsModal').style.display = 'none';
-        });
-        document.getElementById('closeTaskModalBtn')?.addEventListener('click', () => {
-            document.getElementById('taskDetailsModal').style.display = 'none';
-        });
-    }
-
-    document.querySelector('.btn-send')?.addEventListener('click', () => {
-        const comment = document.getElementById('task-comment').value.trim();
-        const modal = document.getElementById('taskDetailsModal');
-
-        if (comment) {
-            const toast = document.getElementById("toast");
-            toast.textContent = "Message Sent!";
-            toast.classList.add("show");
-
-            setTimeout(() => {
-                toast.classList.remove("show");
-            }, 2500);
-
-            document.getElementById('task-comment').value = "";
-            modal.style.display = "none";
-            document.body.style.overflow = "";
-        } else {
-            alert("Please enter a comment.");
+    document.addEventListener("click", (e) => {
+        if (e.target.classList.contains("action-btn")) {
+            const row = e.target.closest("tr");
+            const taskId = row.cells[0].textContent;
+            alert(`Viewing details for task: ${taskId}`);
         }
     });
 }); 

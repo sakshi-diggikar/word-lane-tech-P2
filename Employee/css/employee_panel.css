@@ -1,16 +1,43 @@
 /* Employee Panel Specific Styles */
+:root {
+  --card-bg-taskss: background: linear-gradient(135deg, #e0c3fc, #8ec5fc);
+
+  --card-bg-hours: linear-gradient(135deg, #c6ffdd, #fbd786);
+  --card-bg-performance: linear-gradient(135deg, #d4fc79, #96e6a1);
+  --icon-bg-1:#3c3c3c;
+  --icon-bg-tasks: #f8b500;
+  --icon-bg-hours: #fbd786;
+  --icon-bg-performance: #96e6a1;
+  --progress-tasks:#ffffff;
+  --progress-text:black;
+  --card-text-color: #333;
+}
+
+.dark-theme {
+  --card-bg-taskss: linear-gradient(135deg, #e0c3fc, #8ec5fc);
+;
+  --card-bg-hours: linear-gradient(135deg, #2c3e50, #4ca1af);
+  --card-bg-performance: linear-gradient(135deg, #0f2027, #2c5364);
+
+  --icon-bg-tasks: #641e16;
+  --icon-bg-hours: #4ca1af;
+  --icon-bg-performance: #2c5364;
+ --icon-bg-1:#f7f7f7;
+  --card-text-color: #f5f5f5;
+}
 
 /* Custom employee insights styling */
 .insights .sales {
-  background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+  background: linear-gradient(135deg, #e0c3fc, #8ec5fc);
 }
 
 .insights .expenses {
-  background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+  background: linear-gradient(135deg, #89f7fe, #66a6ff);
+
 }
 
 .insights .income {
-  background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
+  background: linear-gradient(135deg, #d4fc79, #96e6a1);
 }
 
 /* Employee specific table styling */
@@ -96,6 +123,176 @@
   font-size: 0.7rem;
   font-weight: 500;
 }
+.sales .progress circle {
+  stroke: var(--progress-tasks);
+}
+
+.expenses .progress circle {
+  stroke: var(--progress-tasks);
+}
+
+.income .progress circle {
+  stroke: var(--progress-tasks);
+}
+.number p{
+  color: rgb(58, 58, 58);
+}
+main .insights>div.sales span{
+  background-color: var(--card-bg-hours);
+  border: 1px solid var(--color-white);
+  color: var(--color-white);
+}
+main .insights>div.expenses span{
+  background-color: var(--card-bg-hours);
+  border: 1px solid var(--color-white);
+  color: var(--color-white);
+}
+main .insights>div.income span{
+  background-color: var(--card-bg-hours);
+  border: 1px solid var(--color-white);
+  color: var(--color-white);
+}
+.menu-btn{
+  color: var(--color-dark);
+  background: transparent;
+}
+.text-muted{
+  color: var(--color-dark);
+}
+/* Modal Styles */
+
+/* ===== Modal Overlay ===== */
+.modal {
+  display: none; /* Hidden by default */
+  position: fixed;
+  z-index: 9999;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(2px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  box-sizing: border-box;
+}
+
+/* ===== Modal Container ===== */
+.modal-content {
+  background-color: var(--color-white); /* change if you're using dark mode vars */
+  border-radius: var(--border-radius-2);
+  padding: 2rem;
+  width: 100%;
+  max-width: 500px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: var(--box-shadow);
+  position: relative;
+  color: var(--color-dark);
+}
+
+/* ===== Modal Close Button ===== */
+.close-btn {
+  position: absolute;
+  top: 12px;
+  right: 16px;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: var(--color-dark-variant);
+}
+
+/* ===== Detail Row Layout ===== */
+.detail-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+}
+
+.detail-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.8rem;
+  font-size: 0.95rem;
+  color: var(--color-dark-variant);
+}
+
+.detail-row .icon {
+  color: var(--color-primary);
+  font-size: 1.6rem;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.textarea-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  width: 100%;
+}
+
+.input-row textarea {
+  width: 100%;
+  min-height: 80px;
+  resize: vertical;
+  padding: 0.8rem;
+  font-size: 0.9rem;
+  border: 1px solid var(--color-info-light);
+  border-radius: var(--border-radius-2);
+  background: var(--color-background);
+  color: var(--color-dark);
+  box-shadow: inset 0 2px 5px rgba(0,0,0,0.05);
+}
+
+/* ===== Modal Footer Buttons ===== */
+.modal-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.modal-buttons .btn {
+  padding: 0.6rem 1.4rem;
+  border-radius: var(--border-radius-1);
+  font-weight: 500;
+  cursor: pointer;
+  font-size: 0.9rem;
+  border: none;
+  transition: background 0.3s ease;
+}
+
+.modal-buttons .btn-cancel {
+  background-color: #ccc;
+  color: #333;
+}
+
+.modal-buttons .btn-send {
+  background-color: var(--color-primary);
+  color: white;
+}
+.toast {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  background-color: var(--color-success);
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border-radius: var(--border-radius-2);
+  box-shadow: var(--box-shadow);
+  opacity: 0;
+  transform: translateY(20px);
+  transition: all 0.3s ease;
+  z-index: 99999;
+  font-weight: 500;
+}
+
+.toast.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
 
 /* Responsive adjustments for employee panel */
 @media screen and (max-width: 768px) {

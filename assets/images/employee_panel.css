@@ -1,0 +1,113 @@
+/* Employee Panel Specific Styles */
+
+/* Custom employee insights styling */
+.insights .sales {
+  background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+}
+
+.insights .expenses {
+  background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+}
+
+.insights .income {
+  background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
+}
+
+/* Employee specific table styling */
+#recent-orders--table th:nth-child(1),
+#recent-orders--table tbody td:nth-child(1) {
+  width: 12%;
+}
+
+#recent-orders--table th:nth-child(2),
+#recent-orders--table tbody td:nth-child(2) {
+  width: 20%;
+}
+
+#recent-orders--table th:nth-child(3),
+#recent-orders--table tbody td:nth-child(3) {
+  width: 20%;
+}
+
+#recent-orders--table th:nth-child(4),
+#recent-orders--table tbody td:nth-child(4) {
+  width: 15%;
+}
+
+#recent-orders--table th:nth-child(5),
+#recent-orders--table tbody td:nth-child(5) {
+  width: 15%;
+}
+
+#recent-orders--table th:nth-child(6),
+#recent-orders--table tbody td:nth-child(6) {
+  width: 10%;
+}
+
+#recent-orders--table th:nth-child(7),
+#recent-orders--table tbody td:nth-child(7) {
+  width: 8%;
+}
+
+/* Employee priority badges */
+.priority-badge {
+  padding: 0.3rem 0.8rem;
+  border-radius: var(--border-radius-1);
+  font-size: 0.7rem;
+  font-weight: 500;
+  text-align: center;
+}
+
+.priority-badge.high {
+  background: var(--color-danger);
+  color: var(--color-white);
+}
+
+.priority-badge.medium {
+  background: var(--color-warning);
+  color: var(--color-white);
+}
+
+.priority-badge.low {
+  background: var(--color-success);
+  color: var(--color-white);
+}
+
+/* Employee chatbot customization */
+#chatbot-panel header {
+  background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+}
+
+/* Employee specific status badges */
+.status-badge.pending {
+  background: var(--color-warning);
+  color: var(--color-white);
+  padding: 0.3rem 0.8rem;
+  border-radius: var(--border-radius-1);
+  font-size: 0.7rem;
+  font-weight: 500;
+}
+
+.status-badge.in-progress {
+  background: var(--color-primary);
+  color: var(--color-white);
+  padding: 0.3rem 0.8rem;
+  border-radius: var(--border-radius-1);
+  font-size: 0.7rem;
+  font-weight: 500;
+}
+
+/* Responsive adjustments for employee panel */
+@media screen and (max-width: 768px) {
+  .insights {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  
+  #recent-orders--table th:nth-child(3),
+  #recent-orders--table tbody td:nth-child(3),
+  #recent-orders--table th:nth-child(6),
+  #recent-orders--table tbody td:nth-child(6) {
+    display: none;
+  }
+} 
