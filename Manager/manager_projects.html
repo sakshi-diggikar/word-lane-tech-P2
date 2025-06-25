@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="IE=edge" http-equiv="X-UA-Compatible" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Admin Dashboard - Projects &amp; Tasks</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Sharp" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/flatpickr/dist/plugins/confirmDate/confirmDate.css" rel="stylesheet" />
+
+    <link rel="stylesheet" href="../css/style.css" />
+    <link rel="stylesheet" href="../css/notification.css"/>
+
+    <link href="css/projects.css" rel="stylesheet" />
+</head>
+
+<body>
+    <div class="container">
+        <aside>
+            <div class="top">
+                <div class="logo">
+                    <img src="../assets/images/logo.png" alt="Logo" />
+                    <h2>Word<span class="danger"> Lane Tech</span></h2>    </div>
+                <div aria-label="Close sidebar" class="close" id="close-btn" role="button" tabindex="0">
+                    <span class="material-icons-sharp"> close </span>
+                </div>
+            </div>
+            <div aria-label="Main sidebar navigation" class="sidebar" role="navigation">
+                <a href="index.html">
+                    <span aria-hidden="true" class="material-icons-sharp"> dashboard </span>
+                    <h3>Dashboard</h3>
+                </a>
+                <a href="manager_analytics.html">
+                    <span aria-hidden="true" class="material-icons-sharp"> insights </span>
+                    <h3>Analytics</h3>
+                </a>
+                <a aria-current="page" class="active" href="projects.html">
+                    <span aria-hidden="true" class="material-icons-sharp"> person_outline </span>
+                    <h3>Projects</h3>
+                </a>
+
+                <a href="messages.html">
+                    <span aria-hidden="true" class="material-icons-sharp"> mail_outline </span>
+                    <h3>Messages</h3>
+                    <span aria-label="26 unread messages" class="message-count">26</span>
+                </a>
+                <a href="attendance.html">
+                    <span aria-hidden="true" class="material-icons-sharp"> event_note </span>
+                    <h3>Attendance</h3>
+                </a>
+                <a href="#" tabindex="0">
+                    <span aria-hidden="true" class="material-icons-sharp"> logout </span>
+                    <h3>Logout</h3>
+                </a>
+            </div>
+        </aside>
+        <main>
+            <div class="top">
+                <h1>Manager Dashboard</h1>
+                <div class="top-right">
+                    <button id="menu-btn">
+                        <span class="material-icons-sharp"> menu </span>
+                    </button>
+                    <div class="theme-toggler">
+                        <span class="material-icons-sharp active"> light_mode </span>
+                        <span class="material-icons-sharp"> dark_mode </span>
+                    </div>
+                    <!-- Notification Bell -->
+                    <div class="notification-bell">
+                        <span class="material-icons-sharp" id="notification-bell-icon"> notifications </span>
+                        <span class="notification-count" id="notification-count">0</span>
+                    </div>
+                </div>
+            </div>
+        
+            <!-- Breadcrumb navigation -->
+            <nav aria-label="Breadcrumb navigation" hidden="" id="breadcrumb">
+                <span id="breadcrumb-project" role="link" tabindex="0"></span>
+                <span>&gt;</span>
+                <span hidden="" id="breadcrumb-subproject" role="link" tabindex="0"></span>
+                <span>&gt;</span>
+                <span aria-current="page" id="breadcrumb-current">Tasks</span>
+            </nav>
+            <!-- Teams view section -->
+            <section id="teams-view">
+                <button aria-label="Create new team" class="create-project-btn" id="create-team-btn">+ Create New
+                    Team</button>
+                <div aria-label="List of teams" class="project-cards" id="team-cards" role="list">
+                    <!-- Team cards inserted by JS -->
+                </div>
+            </section>
+            <!-- Project list view container -->
+            <section hidden="" id="projects-view">
+                <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                    <button aria-label="Back to teams" id="back-to-teams-btn"
+                        style="display:flex;align-items:center;gap:0.5rem;">
+                        <span class="material-icons-sharp">arrow_back</span> Back to Teams
+                    </button>
+                    <button aria-label="Create new project" class="create-project-btn" id="create-project-btn">+ Create
+                        New Project</button>
+                </div>
+                <div aria-label="List of projects" class="project-cards" id="project-cards" role="list">
+                    <!-- Project cards inserted by JS -->
+                </div>
+            </section>
+            <!-- Task list view container - initially hidden -->
+            <section hidden="" id="tasks-view">
+                <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                    <button aria-label="Back to sub-projects list" hidden="" id="back-subproject-btn"
+                        title="Back to Sub-Projects">
+                        <span class="material-icons-sharp"> arrow_back </span> Back to Sub Projects
+                    </button>
+                    <button aria-label="Back to projects list" id="back-projects-btn"
+                        style="display:flex;align-items:center;gap:0.5rem;" title="Back to Projects">
+                        <span class="material-icons-sharp">arrow_back</span> Back to Projects
+                    </button>
+                    <h2 id="task-project-title" style="margin: 0; user-select: text;">Tasks</h2>
+                    <button aria-label="Create new task" class="create-task-btn" id="create-task-btn">+ Create New
+                        Task</button>
+                </div>
+                <div aria-label="List of tasks" class="task-cards" id="task-cards" role="list">
+                    <!-- Task cards inserted by JS -->
+                </div>
+            </section>
+            <!-- Subtask list view container - initially hidden -->
+            <section hidden="" id="subtasks-view">
+                <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                    <button aria-label="Back to tasks list" id="back-tasks-btn" title="Back to Tasks">
+                        <span class="material-icons-sharp"> arrow_back </span> Back to Tasks
+                    </button>
+                    <h2 id="subtask-project-title" style="margin: 0; user-select: text;">Subtasks</h2>
+                    <button aria-label="Create new subtask" class="create-project-btn" id="create-subtask-btn">+ Create
+                        New Subtask</button>
+                </div>
+                <div aria-label="List of subtasks" class="task-cards" id="subtask-cards" role="list">
+                    <!-- Subtask cards inserted by JS -->
+                </div>
+            </section>
+        </main>
+        <div class="right">
+            <div class="notification-drawer" id="notification-drawer">
+                <h2>Notifications</h2>
+                <div class="notifications-list" id="notifications-list">
+                    <p class="no-notifications">No new notifications</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Modal for project or task creation -->
+    <div aria-hidden="true" aria-labelledby="modal-title" aria-modal="true" id="modal" role="dialog">
+        <div class="modal-content">
+            <span aria-label="Close form" class="material-icons-sharp close-icon" id="modal-close"
+                role="button">close</span>
+            <h2 id="modal-title">Create New</h2>
+            <form id="modal-form">
+                <!-- Team fields (shown only for team modal) -->
+                <label for="input-team-name" id="input-team-name-label" style="display:none;">Team Name:</label>
+                <input autocomplete="off" id="input-team-name" placeholder="Enter team name" style="display:none;"
+                    type="text" />
+                <label for="input-team-desc" id="input-team-desc-label" style="display:none;">Team Description:</label>
+                <textarea id="input-team-desc" placeholder="Enter team description" rows="3"
+                    style="width:100%;resize:vertical;display:none;"></textarea>
+                <label for="input-leader-id" id="input-leader-id-label" style="display:none;">Leader ID:</label>
+                <input autocomplete="off" id="input-leader-id" placeholder="Assign Leader ID" style="display:none;"
+                    type="text" />
+                <div class="autocomplete-suggestions" id="leader-id-suggestions"
+                    style="position:relative;z-index:10;display:none;"></div>
+                <!-- Project fields -->
+                <div style="display: flex; gap: 1.5rem;">
+                    <div style="flex:2;">
+                        <label for="input-name" id="input-label">Project Name:</label>
+                        <input aria-required="true" autocomplete="off" id="input-name" placeholder="Enter project name"
+                            type="text" />
+                    </div>
+                    <div id="priority-field-wrapper" style="flex:1;">
+                        <label for="input-priority" id="input-priority-label">Priority:</label>
+                        <select aria-required="true" id="input-priority"
+                            style="width:100%;padding:0.8rem 0.7rem;border-radius:0.4rem;border:1px solid var(--color-light);font-size:1.08rem;">
+                            <option value="Low">Low</option>
+                            <option selected="" value="Medium">Medium</option>
+                            <option value="High">High</option>
+                        </select>
+                    </div>
+                </div>
+                <label for="input-description" id="input-description-label">Description:</label>
+                <textarea id="input-description" placeholder="Enter project description" rows="3"
+                    style="width:100%;resize:vertical;"></textarea>
+                <label for="input-client" id="input-client-label">Client Name:</label>
+                <input aria-required="true" autocomplete="off" id="input-client" placeholder="Enter client name"
+                    type="text" />
+                <div style="display: flex; gap: 1.5rem;">
+                    <div style="flex:1;">
+                        <label for="input-startdate" id="input-startdate-label">Start Date &amp; Time:</label>
+                        <input aria-required="true" id="input-startdate" type="datetime-local" />
+                    </div>
+                    <div style="flex:1;">
+                        <label for="input-deadline" id="input-deadline-label">Deadline &amp; Time:</label>
+                        <input aria-required="true" id="input-deadline" type="datetime-local" />
+                    </div>
+                </div>
+                <!-- Task fields (these will be shown for task modal only) -->
+                <div style="display: flex; gap: 1.5rem;">
+                    <div style="flex:2;">
+                        <label for="input-task-name" id="input-task-name-label">Task Name:</label>
+                        <input autocomplete="off" id="input-task-name" placeholder="Enter task name" type="text" />
+                    </div>
+                    <div id="task-priority-field-wrapper" style="flex:1;">
+                        <label for="input-task-priority" id="input-task-priority-label">Priority:</label>
+                        <select aria-required="true" id="input-task-priority"
+                            style="width:100%;padding:0.8rem 0.7rem;border-radius:0.4rem;border:1px solid var(--color-light);font-size:1.08rem;">
+                            <option value="Low">Low</option>
+                            <option selected="" value="Medium">Medium</option>
+                            <option value="High">High</option>
+                        </select>
+                    </div>
+                </div>
+                <label for="input-task-desc" id="input-task-desc-label">Task Description:</label>
+                <textarea id="input-task-desc" placeholder="Enter task description" rows="3"
+                    style="width:100%;resize:vertical;"></textarea>
+                <label for="input-task-empid" id="input-task-empid-label">Employee ID:</label>
+                <input autocomplete="off" id="input-task-empid" placeholder="Assign to Employee ID" type="text" />
+                <div class="autocomplete-suggestions" id="task-empid-suggestions" style="position:relative;z-index:10;">
+                </div>
+                <label for="input-task-deadline" id="input-task-deadline-label">Task Deadline:</label>
+                <input id="input-task-deadline" type="datetime-local" />
+                <!-- Subtask fields (shown only for subtask modal) -->
+                <div style="display: flex; gap: 1.5rem;">
+                    <div style="flex:2;">
+                        <label for="input-subtask-name" id="input-subtask-name-label">Subtask Name:</label>
+                        <input autocomplete="off" id="input-subtask-name" placeholder="Enter subtask name"
+                            type="text" />
+                    </div>
+                    <div id="subtask-priority-field-wrapper" style="flex:1;">
+                        <label for="input-subtask-priority" id="input-subtask-priority-label">Priority:</label>
+                        <select aria-required="true" id="input-subtask-priority"
+                            style="width:100%;padding:0.8rem 0.7rem;border-radius:0.4rem;border:1px solid var(--color-light);font-size:1.08rem;">
+                            <option value="Low">Low</option>
+                            <option selected="" value="Medium">Medium</option>
+                            <option value="High">High</option>
+                        </select>
+                    </div>
+                </div>
+                <label for="input-subtask-desc" id="input-subtask-desc-label" style="display:none;">Subtask
+                    Description:</label>
+                <textarea id="input-subtask-desc" placeholder="Enter subtask description" rows="3"
+                    style="width:100%;resize:vertical;display:none;"></textarea>
+                <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem;">
+                    <label for="input-subtask-attachment" id="input-subtask-attachment-label"
+                        style="margin-bottom:0;">Attachment:</label>
+                    <input id="input-subtask-attachment" multiple="" style="margin-bottom:0;" type="file" />
+                </div>
+                <!-- <label for="input-subtask-empid" id="input-subtask-empid-label">Employee ID(s):</label>
+                <input type="text" id="input-subtask-empid" placeholder="Assign to Employee IDs (comma separated)"
+                    autocomplete="off" /> -->
+                <label for="input-subtask-empid" id="input-subtask-empid-label">Assign Employee(s):</label>
+                <input autocomplete="off" id="input-subtask-empid" placeholder="Type employee ID or name" type="text" />
+                <div class="autocomplete-suggestions" id="subtask-empid-suggestions"
+                    style="position:relative;z-index:10;"></div>
+                <div id="selected-employees" style="margin:0.5em 0 1em 0;display:flex;flex-wrap:wrap;gap:0.5em;"></div>
+                <label for="input-subtask-deadline" id="input-subtask-deadline-label">Subtask Deadline:</label>
+                <input id="input-subtask-deadline" type="text" />
+                <div class="modal-buttons">
+                    <button id="create-btn" type="submit">Create</button>
+                    <button id="close-modal" type="button">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <!-- Subtask details modal -->
+    <div class="modal" id="subtask-details-modal"
+        style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:2000;background:rgba(0,0,0,0.45);justify-content:center;align-items:center;">
+        <div class="modal-content"
+            style="max-width:800px;width:98vw;min-width:320px;padding:2rem 2.5rem;position:relative;border-radius:1.2rem;background:#fff;box-shadow:0 8px 32px rgba(0,0,0,0.18);max-height:90vh;overflow-y:auto;">
+            <span class="material-icons-sharp close-icon" id="close-subtask-details"
+                style="position:absolute;top:12px;right:12px;cursor:pointer;font-size:1.7rem;color:#7380ec;">close</span>
+            <div id="subtask-details-content"></div>
+        </div>
+    </div>
+    <!-- Project details modal -->
+    <div class="modal" id="project-details-modal"
+        style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:2000;background:rgba(0,0,0,0.45);justify-content:center;align-items:center;">
+        <div class="modal-content"
+            style="max-width:600px;width:96vw;padding:2rem 2.5rem;position:relative;border-radius:1.2rem;background:#fff;box-shadow:0 8px 32px rgba(0,0,0,0.18);">
+            <span class="material-icons-sharp close-icon" id="close-project-details"
+                style="position:absolute;top:12px;right:12px;cursor:pointer;font-size:1.7rem;color:#7380ec;">close</span>
+            <div id="project-details-content"></div>
+        </div>
+    </div>
+    <!-- Task details modal -->
+    <div class="modal" id="task-details-modal"
+        style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:2000;background:rgba(0,0,0,0.45);justify-content:center;align-items:center;">
+        <div class="modal-content"
+            style="max-width:550px;width:96vw;padding:2rem 2.5rem;position:relative;border-radius:1.2rem;background:#fff;box-shadow:0 8px 32px rgba(0,0,0,0.18);">
+            <span class="material-icons-sharp close-icon" id="close-task-details"
+                style="position:absolute;top:12px;right:12px;cursor:pointer;font-size:1.7rem;color:#7380ec;">close</span>
+            <div id="task-details-content"></div>
+        </div>
+    </div>
+    <!-- Add a modal for team details if not present -->
+    <div class="modal" id="team-details-modal"
+        style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:2000;background:rgba(0,0,0,0.45);justify-content:center;align-items:center;">
+        <div class="modal-content"
+            style="max-width:500px;width:96vw;padding:2rem 2.5rem;position:relative;border-radius:1.2rem;background:#fff;box-shadow:0 8px 32px rgba(0,0,0,0.18);">
+            <span class="material-icons-sharp close-icon" id="close-team-details"
+                style="position:absolute;top:12px;right:12px;cursor:pointer;font-size:1.7rem;color:#7380ec;">close</span>
+            <div id="team-details-content"></div>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/plugins/confirmDate/confirmDate.min.js"></script>
+
+    <script src="js/common.js"></script>
+    <script src="js/notification.js"></script>
+    <script src="js/projects.js"></script>
+    <button id="chatbot-toggle-btn">💬</button>
+
+    <div class="right">
+        <!-- Notification Drawer -->
+        <div class="notification-drawer" id="notification-drawer">
+            <h2>Notifications</h2>
+            <div class="notifications-list" id="notifications-list">
+                <p class="no-notifications">No new notifications</p>
+            </div>
+        </div>
+    </div>
+    </div>
+
+    <script src="../js/common.js"></script>
+    <script src="../js/notification.js"></script>
+    <script src="../js/chatbot.js"></script>
+    <!-- Chatbot Toggle Button -->
+    <button id="chatbot-toggle-btn">💬</button>
+    
+    <!-- Chatbot Panel -->
+    <div id="chatbot-panel">
+        <header>
+            Manager Assistant
+            <button id="close-btn">&times;</button>
+        </header>
+        <div id="messages"></div>
+        <form id="input-area">
+            <input type="text" id="user-input" placeholder="Type a message..." autocomplete="off" />
+            <button type="submit" id="send-button">Send</button>
+        </form>
+    </div>
+</body>
+
+</html>
