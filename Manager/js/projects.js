@@ -1530,29 +1530,6 @@ backTasksBtn.addEventListener("click", () => {
     goBackToTasks();
 });
 
-// Sidebar and theme toggler
-const sideMenu = document.querySelector("aside");
-const menuBtn = document.querySelector("#menu-btn");
-const closeBtn = document.querySelector("#close-btn");
-const themeToggler = document.querySelector(".theme-toggler");
-
-menuBtn.addEventListener("click", () => {
-    sideMenu.style.display = "block";
-});
-
-closeBtn.addEventListener("click", () => {
-    sideMenu.style.display = "none";
-});
-
-themeToggler.addEventListener("click", () => {
-    document.body.classList.toggle("dark-theme-variables");
-    themeToggler.querySelector("span:nth-child(1)").classList.toggle("active");
-    themeToggler.querySelector("span:nth-child(2)").classList.toggle("active");
-    // Update ARIA attribute on toggle switch
-    let isDark = document.body.classList.contains("dark-theme-variables");
-    themeToggler.setAttribute("aria-checked", isDark ? "true" : "false");
-});
-
 // Initial render of projects
 renderTeams();
 

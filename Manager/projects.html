@@ -1,20 +1,17 @@
 <!DOCTYPE html>
-
 <html lang="en">
 
 <head>
-    <meta charset="utf-8" />
-    <meta content="IE=edge" http-equiv="X-UA-Compatible" />
-    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
-    <title>Admin Dashboard - Projects &amp; Tasks</title>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Projects - Word Lane Tech</title>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Sharp" rel="stylesheet" />
     <link href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" rel="stylesheet" />
     <link href="https://cdn.jsdelivr.net/npm/flatpickr/dist/plugins/confirmDate/confirmDate.css" rel="stylesheet" />
-
     <link rel="stylesheet" href="../css/style.css" />
-    <link rel="stylesheet" href="../css/notification.css"/>
-
-    <link href="css/projects.css" rel="stylesheet" />
+    <link rel="stylesheet" href="../css/notification.css" />
+    <link rel="stylesheet" href="css/projects.css" />
 </head>
 
 <body>
@@ -23,39 +20,39 @@
             <div class="top">
                 <div class="logo">
                     <img src="../assets/images/logo.png" alt="Logo" />
-                    <h2>Word<span class="danger"> Lane Tech</span></h2>    </div>
-                <div aria-label="Close sidebar" class="close" id="close-btn" role="button" tabindex="0">
+                    <h2>Word<span class="danger"> Lane Tech</span></h2>
+                </div>
+                <div class="close" id="close-btn">
                     <span class="material-icons-sharp"> close </span>
                 </div>
             </div>
-            <div aria-label="Main sidebar navigation" class="sidebar" role="navigation">
-                <a href="index.html">
-                    <span aria-hidden="true" class="material-icons-sharp"> dashboard </span>
+            <div class="sidebar">
+                <a href="manager_panel.html">
+                    <span class="material-icons-sharp"> dashboard </span>
                     <h3>Dashboard</h3>
                 </a>
-                <a href="manager_analytics.html">
-                    <span aria-hidden="true" class="material-icons-sharp"> insights </span>
+                <a href="analytics.html">
+                    <span class="material-icons-sharp"> insights </span>
                     <h3>Analytics</h3>
                 </a>
-                <a aria-current="page" class="active" href="projects.html">
-                    <span aria-hidden="true" class="material-icons-sharp"> person_outline </span>
+                <a href="#" class="active">
+                    <span class="material-icons-sharp"> work </span>
                     <h3>Projects</h3>
                 </a>
-
-                <a href="messages.html">
-                    <span aria-hidden="true" class="material-icons-sharp"> mail_outline </span>
+                <a href="../messages.html">
+                    <span class="material-icons-sharp"> mail_outline </span>
                     <h3>Messages</h3>
-                    <span aria-label="26 unread messages" class="message-count">26</span>
+                    <span class="message-count">8</span>
                 </a>
-                <a href="#" tabindex="0">
-                    <span aria-hidden="true" class="material-icons-sharp"> logout </span>
+                <a href="#">
+                    <span class="material-icons-sharp"> logout </span>
                     <h3>Logout</h3>
                 </a>
             </div>
         </aside>
         <main>
             <div class="top">
-                <h1>Manager Dashboard</h1>
+                <h1 id="section-title" style="margin: 0; font-size: 2rem; flex:1 1 auto;"></h1>
                 <div class="top-right">
                     <button id="menu-btn">
                         <span class="material-icons-sharp"> menu </span>
@@ -71,7 +68,6 @@
                     </div>
                 </div>
             </div>
-        
             <!-- Breadcrumb navigation -->
             <nav aria-label="Breadcrumb navigation" hidden="" id="breadcrumb">
                 <span id="breadcrumb-project" role="link" tabindex="0"></span>
@@ -249,8 +245,8 @@
                     <input id="input-subtask-attachment" multiple="" style="margin-bottom:0;" type="file" />
                 </div>
                 <!-- <label for="input-subtask-empid" id="input-subtask-empid-label">Employee ID(s):</label>
-                <input type="text" id="input-subtask-empid" placeholder="Assign to Employee IDs (comma separated)"
-                    autocomplete="off" /> -->
+              <input type="text" id="input-subtask-empid" placeholder="Assign to Employee IDs (comma separated)"
+                  autocomplete="off" /> -->
                 <label for="input-subtask-empid" id="input-subtask-empid-label">Assign Employee(s):</label>
                 <input autocomplete="off" id="input-subtask-empid" placeholder="Type employee ID or name" type="text" />
                 <div class="autocomplete-suggestions" id="subtask-empid-suggestions"
@@ -307,30 +303,11 @@
     </div>
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/plugins/confirmDate/confirmDate.min.js"></script>
-
-    <script src="js/common.js"></script>
-    <script src="js/notification.js"></script>
-    <script src="js/projects.js"></script>
-    <button id="chatbot-toggle-btn">💬</button>
-
-    <div class="right">
-        <!-- Notification Drawer -->
-        <div class="notification-drawer" id="notification-drawer">
-            <h2>Notifications</h2>
-            <div class="notifications-list" id="notifications-list">
-                <p class="no-notifications">No new notifications</p>
-            </div>
-        </div>
-    </div>
-    </div>
-
     <script src="../js/common.js"></script>
     <script src="../js/notification.js"></script>
+    <script src="js/projects.js"></script>
     <script src="../js/chatbot.js"></script>
-    <!-- Chatbot Toggle Button -->
     <button id="chatbot-toggle-btn">💬</button>
-    
-    <!-- Chatbot Panel -->
     <div id="chatbot-panel">
         <header>
             Manager Assistant
