@@ -1,29 +1,29 @@
 // Extended dummy data for leave applications
 const LEAVE_APPLICATIONS_DATA = [
     { id: 1, applicantName: "Alice Johnson", subject: "Annual Leave Request", startDate: "2023-11-15", endDate: "2023-11-20", description: "Requesting annual leave for a family trip to the mountains. Will be unreachable by phone.", status: "pending" },
-    { id: 2, applicantName: "Bob Williams", subject: "Sick Leave", startDate: "2023-11-08", endDate: "2023-11-08", description: "Feeling unwell, unable to come to work. Experiencing flu-like symptoms.", status: "approved" },
+    { id: 2, applicantName: "Bob Williams", subject: "Sick Leave", startDate: "2023-11-08", endDate: "2023-11-08", description: "Feeling unwell, unable to come to work. Experiencing flu-like symptoms.", status: "pending" },
     { id: 3, applicantName: "Charlie Brown", subject: "Personal Leave", startDate: "2023-11-25", endDate: "2023-11-25", description: "Attending a personal appointment with a specialist. Will return next day.", status: "pending" },
-    { id: 4, applicantName: "Diana Prince", subject: "Vacation Request", startDate: "2023-12-01", endDate: "2023-12-10", description: "Planning a vacation to the mountains. Need to recharge before year-end projects.", status: "rejected" },
+    { id: 4, applicantName: "Diana Prince", subject: "Vacation Request", startDate: "2023-12-01", endDate: "2023-12-10", description: "Planning a vacation to the mountains. Need to recharge before year-end projects.", status: "pending" },
     { id: 5, applicantName: "Eve Adams", subject: "Maternity Leave", startDate: "2024-01-01", endDate: "2024-03-31", description: "Applying for maternity leave as per company policy. Expected due date is Jan 15th.", status: "pending" },
     { id: 6, applicantName: "Frank White", subject: "Paternity Leave", startDate: "2023-11-20", endDate: "2023-11-24", description: "Requesting paternity leave for newborn. My wife needs support during this time.", status: "pending" },
-    { id: 7, applicantName: "Grace Lee", subject: "Bereavement Leave", startDate: "2023-11-10", endDate: "2023-11-12", description: "Requesting leave due to a family bereavement. Will provide necessary documents.", status: "approved" },
+    { id: 7, applicantName: "Grace Lee", subject: "Bereavement Leave", startDate: "2023-11-10", endDate: "2023-11-12", description: "Requesting leave due to a family bereavement. Will provide necessary documents.", status: "pending" },
     { id: 8, applicantName: "Henry Green", subject: "Study Leave", startDate: "2023-12-05", endDate: "2023-12-07", description: "Applying for study leave to prepare for professional certification exam.", status: "pending" },
-    { id: 9, applicantName: "Ivy King", subject: "Medical Appointment", startDate: "2023-11-28", endDate: "2023-11-28", description: "Need to attend a routine medical check-up. Will be back in the afternoon.", status: "approved" },
+    { id: 9, applicantName: "Ivy King", subject: "Medical Appointment", startDate: "2023-11-28", endDate: "2023-11-28", description: "Need to attend a routine medical check-up. Will be back in the afternoon.", status: "pending" },
     { id: 10, applicantName: "Jack Black", subject: "Unpaid Leave", startDate: "2023-12-15", endDate: "2023-12-20", description: "Requesting unpaid leave for personal reasons. Have exhausted all paid leave.", status: "pending" },
     { id: 11, applicantName: "Karen Stone", subject: "Annual Leave", startDate: "2024-01-10", endDate: "2024-01-17", description: "Planning a trip to visit family abroad. Need to finalize travel arrangements.", status: "pending" },
-    { id: 12, applicantName: "Liam Hall", subject: "Sick Leave", startDate: "2023-11-09", endDate: "2023-11-09", description: "Sudden onset of fever. Unable to perform duties today.", status: "rejected" },
-    { id: 13, applicantName: "Mia Clark", subject: "Personal Day", startDate: "2023-12-03", endDate: "2023-12-03", description: "Taking a personal day for a home renovation project.", status: "approved" },
+    { id: 12, applicantName: "Liam Hall", subject: "Sick Leave", startDate: "2023-11-09", endDate: "2023-11-09", description: "Sudden onset of fever. Unable to perform duties today.", status: "pending" },
+    { id: 13, applicantName: "Mia Clark", subject: "Personal Day", startDate: "2023-12-03", endDate: "2023-12-03", description: "Taking a personal day for a home renovation project.", status: "pending" },
     { id: 14, applicantName: "Noah Lewis", subject: "Conference Leave", startDate: "2024-02-01", endDate: "2024-02-03", description: "Attending the annual industry conference. Registration confirmed.", status: "pending" },
-    { id: 15, applicantName: "Olivia Scott", subject: "Emergency Leave", startDate: "2023-11-18", endDate: "2023-11-18", description: "Urgent family matter requires immediate attention.", status: "approved" },
+    { id: 15, applicantName: "Olivia Scott", subject: "Emergency Leave", startDate: "2023-11-18", endDate: "2023-11-18", description: "Urgent family matter requires immediate attention.", status: "pending" },
     { id: 16, applicantName: "Peter Young", subject: "Annual Leave", startDate: "2024-03-01", endDate: "2024-03-07", description: "Planning a short getaway. Will ensure all tasks are handed over.", status: "pending" },
-    { id: 17, applicantName: "Quinn Wright", subject: "Sick Leave", startDate: "2023-11-11", endDate: "2023-11-11", description: "Food poisoning, cannot come to office.", status: "approved" },
+    { id: 17, applicantName: "Quinn Wright", subject: "Sick Leave", startDate: "2023-11-11", endDate: "2023-11-11", description: "Food poisoning, cannot come to office.", status: "pending" },
     { id: 18, applicantName: "Rachel Hill", subject: "Personal Leave", startDate: "2023-12-26", endDate: "2023-12-27", description: "Extended holiday break for family gathering.", status: "pending" },
-    { id: 19, applicantName: "Sam Baker", subject: "Training Leave", startDate: "2024-01-20", endDate: "2024-01-22", description: "Attending mandatory compliance training.", status: "approved" },
+    { id: 19, applicantName: "Sam Baker", subject: "Training Leave", startDate: "2024-01-20", endDate: "2024-01-22", description: "Attending mandatory compliance training.", status: "pending" },
     { id: 20, applicantName: "Tina Adams", subject: "Annual Leave", startDate: "2024-04-01", endDate: "2024-04-05", description: "Spring break vacation with kids.", status: "pending" },
-    { id: 21, applicantName: "Uma Devi", subject: "Sick Leave", startDate: "2023-11-13", endDate: "2023-11-14", description: "Recovering from minor surgery.", status: "rejected" },
-    { id: 22, applicantName: "Victor Roy", subject: "Personal Leave", startDate: "2023-12-10", endDate: "2023-12-10", description: "Attending a friend's wedding.", status: "approved" },
+    { id: 21, applicantName: "Uma Devi", subject: "Sick Leave", startDate: "2023-11-13", endDate: "2023-11-14", description: "Recovering from minor surgery.", status: "pending" },
+    { id: 22, applicantName: "Victor Roy", subject: "Personal Leave", startDate: "2023-12-10", endDate: "2023-12-10", description: "Attending a friend's wedding.", status: "pending" },
     { id: 23, applicantName: "Wendy Chen", subject: "Annual Leave", startDate: "2024-02-15", endDate: "2024-02-20", description: "Visiting relatives overseas.", status: "pending" },
-    { id: 24, applicantName: "Xavier Bell", subject: "Study Leave", startDate: "2024-03-10", endDate: "2024-03-12", description: "Preparing for a professional development course.", status: "approved" },
+    { id: 24, applicantName: "Xavier Bell", subject: "Study Leave", startDate: "2024-03-10", endDate: "2024-03-12", description: "Preparing for a professional development course.", status: "pending" },
     { id: 25, applicantName: "Yara Khan", subject: "Emergency Leave", startDate: "2023-11-22", endDate: "2023-11-22", description: "Unexpected plumbing issue at home.", status: "pending" },
 ];
 
@@ -189,18 +189,21 @@ const showLeaveDetailModal = (appId) => {
 
     modal.style.display = 'flex'; // Use flex to center the modal
 };
-
 const updateApplicationStatus = (appId, newStatus) => {
     const applicationIndex = allApplications.findIndex(app => app.id === appId);
     if (applicationIndex > -1) {
         allApplications[applicationIndex].status = newStatus;
-        // Re-apply current filter and rebuild table
-        const currentFilter = document.querySelector('.dropdown-content div.active')?.dataset.filter || 'all';
-        applyApplicationFilter(currentFilter);
+
+        // Remove from filtered (shown) table if we are in pending view
+        filteredApplications = filteredApplications.filter(app => app.id !== appId);
+
         updateSummaryCards();
-        document.getElementById('leave-detail-modal').style.display = 'none'; // Close modal
+        buildApplicationsTable();
+
+        document.getElementById('leave-detail-modal').style.display = 'none';
     }
 };
+
 
 const applyApplicationFilter = (filter) => {
     let tempFiltered = [...allApplications]; // Start with all data
@@ -302,4 +305,52 @@ document.addEventListener("DOMContentLoaded", () => {
             .querySelector("span:nth-child(2)")
             ?.classList.toggle("active");
     });
+
+
+    const showStatusList = (status) => {
+        const list = allApplications.filter(app => app.status === status.toLowerCase());
+        if (list.length === 0) {
+            alert(`No ${status} applications.`);
+            return;
+        }
+
+        const names = list.map(app => `• ${app.applicantName} (${app.subject})`).join('\n');
+        alert(`${status.toUpperCase()} Applications:\n\n${names}`);
+    };
+
+    const statusCardMap = {
+        pending: 'sales',
+        approved: 'expenses',
+        rejected: 'income',
+    };
+
+    Object.entries(statusCardMap).forEach(([status, className]) => {
+        const card = document.querySelector(`.${className}`);
+        if (card) {
+            card.addEventListener('click', () => {
+                applyApplicationFilter(status);
+                showBackToAllButton();
+            });
+        }
+    });
+
+
+    const backToAllBtn = document.getElementById('back-to-all-btn');
+    if (backToAllBtn) {
+        backToAllBtn.addEventListener('click', () => {
+            // Remove filter, restore full view
+            document.querySelectorAll('.dropdown-content div').forEach(d => d.classList.remove('active'));
+            applyApplicationFilter('pending');
+            backToAllBtn.style.display = 'none';
+        });
+    }
+
+    function showBackToAllButton() {
+        const btn = document.getElementById('back-to-all-btn');
+        if (btn) btn.style.display = 'inline-block';
+    }
+
+    
+
+
 });

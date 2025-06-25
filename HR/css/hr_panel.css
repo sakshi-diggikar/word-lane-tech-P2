@@ -1,153 +1,957 @@
-/* HR Panel Specific Styles */
+/* DECLARATIONS */
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap");
 
-/* Custom HR insights styling */
-.insights .sales {
-  background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+/* ROOT VARIABLES */
+:root {
+    --color-primary: #7380ec;
+    --color-danger: #363dc5;
+    --color-success: #41f1b6;
+    --color-warning: #ffbb55;
+    --color-white: #fff;
+    --color-info-dark: #7d8da1;
+    --color-info-light: #dce1eb;
+    --color-dark: #363949;
+    --color-light: rgba(132, 139, 200, 0.18);
+    --color-primary-variant: #111e88;
+    --color-dark-variant: #677483;
+    --color-background: #f6f6f9;
+
+    --card-border-radius: 2rem;
+    --border-radius-1: 0.4rem;
+    --border-radius-2: 0.8rem;
+    --border-radius-3: 1.2rem;
+
+    --card-padding: 1.8rem;
+    --padding-1: 1.2rem;
+
+    --box-shadow: 0 2rem 3rem var(--color-light);
 }
 
-.insights .expenses {
-  background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+/* DARK THEME VARIABLES */
+.dark-theme-variables {
+    --color-background: #181a1e;
+    --color-white: #202528;
+    --color-dark: #edeffd;
+    --color-dark-variant: #a3bdcc;
+    --color-light: rgba(0, 0, 0, 0.4);
+    --box-shadow: 0 2rem 3rem var(--color-light);
 }
 
-.insights .income {
-  background: linear-gradient(135deg, #d299c2 0%, #fef9d7 100%);
+/* STYLES */
+* {
+    margin: 0;
+    padding: 0;
+    outline: 0;
+    appearance: none;
+    border: 0;
+    text-decoration: none;
+    list-style: none;
+    box-sizing: border-box;
 }
 
-/* HR specific table styling */
-#recent-orders--table th:nth-child(1),
-#recent-orders--table tbody td:nth-child(1) {
-  width: 12%;
+html {
+    font-size: 14px;
+    /* Base font size for rem units */
 }
 
-#recent-orders--table th:nth-child(2),
-#recent-orders--table tbody td:nth-child(2) {
-  width: 18%;
+body {
+    width: 100vw;
+    height: 100vh;
+    font-family: poppins, sans-serif;
+    font-size: 0.88rem;
+    background: var(--color-background);
+    user-select: none;
+    overflow-x: hidden;
+    /* Prevent horizontal scroll */
+    color: var(--color-dark);
 }
 
-#recent-orders--table th:nth-child(3),
-#recent-orders--table tbody td:nth-child(3) {
-  width: 15%;
+.container {
+    display: grid;
+    /* Removed width and max-width to allow full stretch */
+    margin: 0 auto;
+    /* Center the container */
+    width: 96%;
+    /* Set a width for the container */
+    gap: 1.8rem;
+    grid-template-columns: 14rem auto;
+    /* Sidebar and main content */
 }
 
-#recent-orders--table th:nth-child(4),
-#recent-orders--table tbody td:nth-child(4) {
-  width: 15%;
+a {
+    color: var(--color-dark);
 }
 
-#recent-orders--table th:nth-child(5),
-#recent-orders--table tbody td:nth-child(5) {
-  width: 15%;
+img {
+    display: block;
+    width: 100%;
 }
 
-#recent-orders--table th:nth-child(6),
-#recent-orders--table tbody td:nth-child(6) {
-  width: 15%;
+h1 {
+    font-weight: 800;
+    font-size: 1.8rem;
 }
 
-#recent-orders--table th:nth-child(7),
-#recent-orders--table tbody td:nth-child(7) {
-  width: 10%;
+h2 {
+    font-size: 1.4rem;
 }
 
-/* HR leave type badges */
-.leave-type-badge {
-  padding: 0.3rem 0.8rem;
-  border-radius: var(--border-radius-1);
-  font-size: 0.7rem;
-  font-weight: 500;
-  text-align: center;
+h3 {
+    font-size: 0.87rem;
 }
 
-.leave-type-badge.sick {
-  background: var(--color-danger);
-  color: var(--color-white);
+h4 {
+    font-size: 0.8rem;
 }
 
-.leave-type-badge.casual {
-  background: var(--color-warning);
-  color: var(--color-white);
+h5 {
+    font-family: 0.77rem;
 }
 
-.leave-type-badge.annual {
-  background: var(--color-success);
-  color: var(--color-white);
+small {
+    font-size: 0.75rem;
 }
 
-.leave-type-badge.maternity {
-  background: var(--color-primary);
-  color: var(--color-white);
+.profile-photo {
+    width: 2.8rem;
+    height: 2.8rem;
+    border-radius: 50%;
+    overflow: hidden;
 }
 
-/* HR chatbot customization */
-#chatbot-panel header {
-  background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+.text-muted {
+    color: var(--color-info-dark);
 }
 
-/* HR specific status badges */
-.status-badge.pending {
-  background: var(--color-warning);
-  color: var(--color-white);
-  padding: 0.3rem 0.8rem;
-  border-radius: var(--border-radius-1);
-  font-size: 0.7rem;
-  font-weight: 500;
+p {
+    color: var(--color-dark-variant);
 }
 
-.status-badge.approved {
-  background: var(--color-success);
-  color: var(--color-white);
-  padding: 0.3rem 0.8rem;
-  border-radius: var(--border-radius-1);
-  font-size: 0.7rem;
-  font-weight: 500;
+b {
+    color: var(--color-dark);
 }
 
-.status-badge.rejected {
-  background: var(--color-danger);
-  color: var(--color-white);
-  padding: 0.3rem 0.8rem;
-  border-radius: var(--border-radius-1);
-  font-size: 0.7rem;
-  font-weight: 500;
+.primary {
+    color: var(--color-primary);
 }
 
-/* HR specific action buttons */
-.action-btn {
-  padding: 0.4rem 0.8rem;
-  border-radius: var(--border-radius-1);
-  font-size: 0.7rem;
-  font-weight: 500;
-  cursor: pointer;
-  border: none;
-  margin: 0 0.2rem;
+.danger {
+    color: var(--color-danger);
 }
 
-.action-btn.approve {
-  background: var(--color-success);
-  color: var(--color-white);
+.success {
+    color: var(--color-success);
 }
 
-.action-btn.reject {
-  background: var(--color-danger);
-  color: var(--color-white);
+.warning {
+    color: var(--color-warning);
 }
 
-.action-btn.view {
-  background: var(--color-primary);
-  color: var(--color-white);
+/* START ASIDE */
+aside {
+    height: 100vh;
 }
 
-/* Responsive adjustments for HR panel */
-@media screen and (max-width: 768px) {
-  .insights {
-    grid-template-columns: 1fr;
-    gap: 1rem;
-  }
-  
-  #recent-orders--table th:nth-child(3),
-  #recent-orders--table tbody td:nth-child(3),
-  #recent-orders--table th:nth-child(5),
-  #recent-orders--table tbody td:nth-child(5) {
+aside .top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 1.4rem;
+}
+
+aside .logo {
+    display: flex;
+    gap: 0.8rem;
+}
+
+aside .logo img {
+    width: 2rem;
+    height: 2rem;
+}
+
+aside .close {
     display: none;
-  }
-} 
+    /* Hidden on desktop */
+}
+
+/* START SIDEBAR */
+aside .sidebar {
+    display: flex;
+    flex-direction: column;
+    height: 86vh;
+    position: relative;
+    top: 3rem;
+}
+
+aside h3 {
+    font-weight: 500;
+}
+
+aside .sidebar a {
+    display: flex;
+    color: var(--color-info-dark);
+    margin-left: 2rem;
+    gap: 1rem;
+    align-items: center;
+    position: relative;
+    height: 3.7rem;
+    transition: all 300ms ease;
+}
+
+aside .sidebar a span {
+    font-size: 1.6rem;
+    transition: all 300ms ease;
+}
+
+aside .sidebar a:last-child {
+    position: absolute;
+    bottom: 2rem;
+    width: 100%;
+}
+
+aside .sidebar a.active {
+    background: var(--color-light);
+    color: var(--color-primary);
+    margin-left: 0;
+}
+
+aside .sidebar a.active:before {
+    content: "";
+    width: 6px;
+    height: 100%;
+    background: var(--color-primary);
+}
+
+aside .sidebar a.active span {
+    color: var(--color-primary);
+    margin-left: calc(1rem - 6px);
+}
+
+aside .sidebar a:hover {
+    color: var(--color-primary);
+}
+
+aside .sidebar a:hover span {
+    margin-left: 1rem;
+}
+
+aside .sidebar .message-count {
+    background: var(--color-danger);
+    color: var(--color-white);
+    padding: 2px 10px;
+    font-size: 11px;
+    border-radius: var(--border-radius-1);
+}
+
+/* END SIDEBAR */
+/* END ASIDE */
+
+/* START MAIN */
+main {
+    margin-top: 1.4rem;
+}
+
+/* Dashboard Header */
+.dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.6rem;
+}
+
+.dashboard-header h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--color-primary);
+}
+main .top-right {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+}
+
+main .theme-toggler {
+  background: var(--color-light);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 1.6rem;
+  width: 4.2rem;
+  cursor: pointer;
+  border-radius: var(--border-radius-1);
+}
+
+main .theme-toggler span {
+  font-size: 1.2rem;
+  width: 50%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+main .theme-toggler span.active {
+  background: var(--color-primary);
+  color: white;
+  border-radius: var(--border-radius-1);
+}
+/* Dashboard Cards */
+.dashboard-cards {
+    display: grid;
+    /* Changed to grid for better control */
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    /* Responsive cards */
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.card {
+    background: var(--color-white);
+    border-radius: var(--card-border-radius);
+    box-shadow: var(--box-shadow);
+    padding: var(--card-padding);
+    display: flex;
+    gap: 1.5rem;
+    justify-content: flex-start;
+    align-items: center;
+    text-align: left;
+}
+
+/* Icon styling */
+.card-icon {
+    font-size: 2rem;
+    padding: 1rem;
+    border-radius: 50%;
+    color: var(--color-white);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 3.5rem;
+    min-height: 3.5rem;
+}
+
+/* Individual card backgrounds */
+.card-info .card-icon {
+    background-color: var(--color-primary);
+}
+
+.card-success .card-icon {
+    background-color: var(--color-success);
+}
+
+.card-warning .card-icon {
+    background-color: var(--color-warning);
+}
+
+/* Ensure text wraps nicely */
+.card-text h2, .card-text p {
+    margin: 0;
+}
+
+
+
+
+/* START RECENT ORDERS / TABLES (Assigned Task Table) */
+.recent-orders {
+    margin-top: 2rem;
+    /* Allow scrolling inside only this box */
+    scroll-behavior: smooth;
+}
+
+.recent-orders .orders-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    /* Added margin for spacing */
+}
+
+.recent-orders .controls {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.search-bar {
+    position: relative;
+    width: 240px;
+    max-width: 100%;
+}
+
+.search-bar input {
+    width: 100%;
+    padding: 8px 36px 8px 12px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 14px;
+    outline: none;
+}
+
+.search-bar span.material-icons-sharp {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #777;
+    pointer-events: none;
+    /* Allow clicks to pass through to input */
+}
+
+.dropdown {
+    position: relative;
+}
+
+.dropdown-content {
+    display: none;
+    position: absolute;
+    background: var(--color-white);
+    border: 1px solid #ccc;
+    box-shadow: 0px 2px 6px rgba(0, 0, 0, 0.2);
+    border-radius: 6px;
+    z-index: 10;
+    min-width: 120px;
+    top: 24px;
+    right: 0;
+}
+
+.dropdown-content div {
+    padding: 8px 12px;
+    cursor: pointer;
+}
+
+.dropdown-content div:hover {
+    background-color: var(--color-light);
+}
+
+.dropdown-content div.active {
+    background-color: var(--color-primary);
+    color: var(--color-white);
+}
+
+.status-badge {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: capitalize;
+    color: white;
+}
+
+.status-badge.completed,
+.status-badge.approved {
+    background-color: #28a745;
+    /* Green */
+}
+
+.status-badge.active,
+.status-badge.pending {
+    background-color: #f0ad4e;
+    /* Orange/Yellow */
+}
+
+.status-badge.delayed,
+.status-badge.rejected {
+    background-color: #dc3545;
+    /* Red */
+}
+
+main .recent-orders table {
+    background: var(--color-white);
+    width: 100%;
+    border-radius: var(--card-border-radius);
+    padding: var(--card-padding);
+    text-align: center;
+    box-shadow: var(--box-shadow);
+    transition: all 300ms ease;
+}
+
+main .recent-orders table:hover {
+    cursor: pointer;
+    box-shadow: none;
+}
+
+main table tbody td {
+    height: 2.8rem;
+    border-bottom: 1px solid var(--color-light);
+    color: var(--color-dark-variant);
+}
+
+main table tbody tr:last-child td {
+    border: none;
+}
+
+main .recent-orders a {
+    text-align: center;
+    display: block;
+    margin: 1rem auto;
+    color: var(--color-primary);
+}
+
+/* Table specific styles for scrollable body */
+#recent-orders--table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--color-white);
+    border-radius: var(--card-border-radius);
+    padding: var(--card-padding);
+    text-align: center;
+    box-shadow: var(--box-shadow);
+    transition: all 300ms ease;
+}
+
+#recent-orders--table thead {
+    display: table;
+    width: 100%;
+    table-layout: fixed;
+}
+
+#recent-orders--table tbody {
+    display: block;
+    overflow-y: auto;
+    max-height: 400px;
+    /* Adjust as needed */
+    width: 100%;
+}
+
+#recent-orders--table tbody tr {
+    display: table;
+    width: 100%;
+    table-layout: fixed;
+}
+
+#recent-orders--table th,
+#recent-orders--table td {
+    padding: 8px;
+    text-align: left;
+    border-bottom: 1px solid var(--color-light);
+    height: 2.8rem;
+    color: var(--color-dark-variant);
+}
+
+#recent-orders--table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+/* Column widths for recent orders table (dashboard) */
+#recent-orders--table th:nth-child(1),
+#recent-orders--table td:nth-child(1) {
+    width: 15%;
+}
+
+/* Project ID */
+#recent-orders--table th:nth-child(2),
+#recent-orders--table td:nth-child(2) {
+    width: 20%;
+}
+
+/* Project Name */
+#recent-orders--table th:nth-child(3),
+#recent-orders--table td:nth-child(3) {
+    width: 20%;
+}
+
+/* Task Name */
+#recent-orders--table th:nth-child(4),
+#recent-orders--table td:nth-child(4) {
+    width: 15%;
+}
+
+/* Due On */
+#recent-orders--table th:nth-child(5),
+#recent-orders--table td:nth-child(5) {
+    width: 15%;
+}
+
+/* Status */
+#recent-orders--table th:nth-child(6),
+#recent-orders--table td:nth-child(6) {
+    width: 10%;
+}
+
+/* Employee Name */
+#recent-orders--table th:nth-child(7),
+#recent-orders--table td:nth-child(7) {
+    width: 5%;
+}
+
+
+/* //MODAL */
+
+/* Modal Styles */
+.modal {
+    display: none; /* Hidden by default */
+    position: fixed;
+    z-index: 9999;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.5);
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 2rem; /* Prevent modal from touching edges */
+    box-sizing: border-box;
+}
+
+.modal-content {
+    background-color: var(--color-white);
+    border-radius: var(--border-radius-2);
+    width: 100%;
+    max-width: 500px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: var(--box-shadow);
+    padding: 2rem;
+    position: relative;
+    color: var(--color-dark);
+}
+
+
+.close-btn {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    color: var(--color-dark-variant);
+    font-size: 1.5rem;
+    cursor: pointer;
+}
+
+.detail-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+}
+
+.detail-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.8rem;
+    font-size: 0.95rem;
+    color: var(--color-dark-variant);
+}
+
+.detail-row .icon {
+    color: var(--color-primary);
+    font-size: 1.7rem;
+    flex-shrink: 0;
+    padding-top: 0.2rem;
+}
+
+.detail-row div span {
+    font-weight: 500;
+}
+.input-row textarea {
+    width: 100%;
+    min-height: 80px;
+    resize: vertical;
+    padding: 0.8rem;
+    font-size: 0.9rem;
+    border: 1px solid var(--color-info-light);
+    border-radius: var(--border-radius-2);
+    background: var(--color-background);
+    color: var(--color-dark);
+    box-shadow: inset 0 2px 5px rgba(0,0,0,0.05);
+}
+
+.textarea-wrapper {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.modal-buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    margin-top: 2rem;
+}
+
+.modal-buttons .btn {
+    padding: 0.6rem 1.4rem;
+    border-radius: var(--border-radius-1);
+    font-weight: 500;
+    cursor: pointer;
+    font-size: 0.9rem;
+    border: none;
+    transition: background 0.3s ease;
+}
+
+.modal-buttons .btn-cancel {
+    background-color: #ccc;
+    color: #333;
+}
+
+.modal-buttons .btn-send {
+    background-color: var(--color-primary);
+    color: white;
+}
+
+.toast {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    background-color: rgb(86, 207, 0);
+    color: white;
+    padding: 0.75rem 1.5rem;
+    border-radius: var(--border-radius-2);
+    box-shadow: var(--box-shadow);
+    opacity: 0;
+    transform: translateY(20px);
+    transition: all 0.3s ease;
+    z-index: 99999;
+    font-weight: 500;
+}
+
+.toast.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+
+/* Details */
+
+/* END RECENT ORDERS / TABLES */
+
+/* START MEDIA QUERIES */
+
+/* DESKTOP AND LARGER SCREENS (min-width: 1601px) */
+@media screen and (min-width: 1601px) {
+    html {
+        font-size: 15px;
+        /* Slightly increase base font size for very large screens */
+    }
+
+    .container {
+        /* No max-width or width here, let grid columns define full width */
+        gap: 2.5rem;
+        /* Increase gap between columns */
+        grid-template-columns: 16rem auto;
+        /* Adjust column widths for more space */
+    }
+
+    main .insights {
+        gap: 2rem;
+        /* Increase gap between insight cards */
+    }
+
+    .right .top {
+        gap: 3rem;
+        /* Increase gap in right section top bar */
+    }
+}
+
+/* Default desktop layout (for screens between 769px and 1600px) */
+/* No changes needed here, as the .container's default grid-template-columns will apply */
+
+
+/* TABLETS AND SMALL LAPTOPS (max-width: 1200px) */
+@media screen and (max-width: 1200px) {
+    .container {
+        width: 94%;
+        /* Keep some margin on smaller desktops/tablets */
+        margin: 0 auto;
+        /* Center it */
+        grid-template-columns: 7rem auto;
+        /* Sidebar narrower, main content wider */
+    }
+
+    aside .logo h2 {
+        display: none;
+        /* Hide logo text */
+    }
+
+    aside .sidebar h3 {
+        display: none;
+        /* Hide sidebar link text */
+    }
+
+    aside .sidebar a {
+        width: 5.6rem;
+        /* Fixed width for icons */
+    }
+
+    aside .sidebar a:last-child {
+        position: relative;
+        /* Adjust position for last item */
+        margin-top: 1.8rem;
+    }
+
+    main .insights {
+        grid-template-columns: 1fr;
+        /* Stack insight cards vertically */
+        gap: 0;
+        /* Remove gap when stacked */
+    }
+
+    main .recent-orders {
+        width: 94%;
+        position: relative;
+        /* Changed from absolute to relative */
+        left: auto;
+        /* Reset left */
+        transform: none;
+        /* Reset transform */
+        margin: 2rem auto;
+        /* Center it */
+    }
+
+    main .recent-orders table {
+        width: 100%;
+        /* Adjust table width */
+    }
+
+    /* Hide some columns on smaller screens for tables */
+    #recent-orders--table thead tr th:nth-child(1),
+    #recent-orders--table tbody tr td:nth-child(1),
+    /* Project ID */
+    #recent-orders--table thead tr th:nth-child(7),
+    #recent-orders--table tbody tr td:nth-child(7) {
+        /* Details column */
+        display: none;
+    }
+
+    /* Adjust column widths for remaining columns on smaller screens */
+    #recent-orders--table th:nth-child(2),
+    #recent-orders--table td:nth-child(2) {
+        width: 25%;
+    }
+
+    #recent-orders--table th:nth-child(3),
+    #recent-orders--table td:nth-child(3) {
+        width: 25%;
+    }
+
+    #recent-orders--table th:nth-child(4),
+    #recent-orders--table td:nth-child(4) {
+        width: 20%;
+    }
+
+    #recent-orders--table th:nth-child(5),
+    #recent-orders--table td:nth-child(5) {
+        width: 15%;
+    }
+
+    #recent-orders--table th:nth-child(6),
+    #recent-orders--table td:nth-child(6) {
+        width: 15%;
+    }
+}
+
+/* SMALL TABLETS AND MOBILE (max-width: 768px) */
+@media screen and (max-width: 768px) {
+    .container {
+        width: 100%;
+        grid-template-columns: 1fr;
+        /* Single column layout */
+    }
+
+    aside {
+        position: fixed;
+        /* Fixed sidebar for mobile menu */
+        left: -100%;
+        /* Hide off-screen by default */
+        background: var(--color-white);
+        width: 18rem;
+        z-index: 3;
+        box-shadow: 1rem 3rem 4rem var(--color-light);
+        height: 100vh;
+        padding-right: var(--card-padding);
+        display: none;
+        /* Hidden until menu button is clicked */
+        animation: showMenu 400ms ease forwards;
+        /* Animation for showing menu */
+    }
+
+    @keyframes showMenu {
+        to {
+            left: 0;
+            /* Slide in from left */
+        }
+    }
+
+    aside .logo {
+        margin-left: 1rem;
+    }
+
+    aside .logo h2 {
+        display: inline;
+        /* Show logo text on mobile sidebar */
+    }
+
+    aside .sidebar h3 {
+        display: inline;
+        /* Show sidebar link text on mobile sidebar */
+    }
+
+    aside .sidebar a {
+        width: 100%;
+        /* Full width for sidebar links */
+        height: 3.4rem;
+    }
+
+    aside .sidebar a:last-child {
+        position: absolute;
+        bottom: 5rem;
+    }
+
+    aside .close {
+        display: inline-block;
+        /* Show close button on mobile sidebar */
+        cursor: pointer;
+    }
+
+    main {
+        margin-top: 8rem;
+        /* Push main content down to clear fixed header */
+        padding: 0 1rem;
+        /* Add horizontal padding */
+    }
+
+    main .recent-orders {
+        position: relative;
+        /* Reset position */
+        margin: 3rem 0 0 0;
+        /* Reset margin */
+        width: 100%;
+        /* Full width */
+    }
+
+    main .recent-orders table {
+        width: 100%;
+        /* Full width */
+        margin: 0;
+    }
+
+    /* Hide more columns on very small screens */
+    #recent-orders--table thead tr th:nth-child(4),
+    #recent-orders--table tbody tr td:nth-child(4),
+    /* Due On */
+    #recent-orders--table thead tr th:nth-child(6),
+    #recent-orders--table tbody tr td:nth-child(6) {
+        /* Employee Name */
+        display: none;
+    }
+
+    /* Adjust column widths for remaining columns on mobile */
+    #recent-orders--table th:nth-child(2),
+    #recent-orders--table td:nth-child(2) {
+        width: 35%;
+    }
+
+    #recent-orders--table th:nth-child(3),
+    #recent-orders--table td:nth-child(3) {
+        width: 35%;
+    }
+
+    #recent-orders--table th:nth-child(5),
+    #recent-orders--table td:nth-child(5) {
+        width: 30%;
+    }
+}

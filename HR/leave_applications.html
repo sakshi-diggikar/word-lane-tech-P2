@@ -8,9 +8,9 @@
     <title>Leave Applications</title>
 
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Sharp" rel="stylesheet" />
-    <link rel="stylesheet" href="css/style.css" /> 
+    <link rel="stylesheet" href="style.css" />
     <link rel="stylesheet" href="css/leave_app.css" />
-    
+
 </head>
 
 <body>
@@ -18,7 +18,7 @@
         <aside>
             <div class="top">
                 <div class="logo">
-                    <img src="./images/wlt-logo.png" alt="Logo" />
+                    <img src="/images/wlt-logo.png" alt="Logo" />
                     <h2>Word<span class="danger">Lane Tech</span></h2>
                 </div>
                 <div class="close" id="close-btn">
@@ -27,7 +27,7 @@
             </div>
 
             <div class="sidebar">
-                <a href="hr_panel.html" >
+                <a href="hr_panel.html">
                     <span class="material-icons-sharp"> dashboard </span>
                     <h3>Dashboard</h3>
                 </a>
@@ -35,30 +35,32 @@
                     <span class="material-icons-sharp"> people </span>
                     <h3>Management</h3>
                 </a>
-                <a href="#" class="active">
-                    <span class="material-icons-sharp"> event_busy </span>
-                    <h3>Leave Applications</h3>
+                <a href="leave_applications.html" class="active">
+                    <span class="material-icons-sharp"> event </span>
+                    <h3>Leave Application</h3>
                 </a>
-                <a href="analytics.html">
-                    <span class="material-icons-sharp"> insights </span>
-                    <h3>Analytics</h3>
+                <a href="messages.html">
+                    <span class="material-icons-sharp"> messages </span>
+                    <h3>messages</h3>
                 </a>
-                <a href="attendance.html">
-                    <span class="material-icons-sharp"> event_note </span>
-                    <h3>Attendance</h3>
-                </a>
-                <a href="#">
+                <a href="">
                     <span class="material-icons-sharp"> logout </span>
                     <h3>Logout</h3>
                 </a>
-            </div></aside>
+            </div>
+        </aside>
 
         <main>
-            <h1>Leave Applications</h1>
-
-            <div class="date">
-                <input type="date" />
+            <div class="top">
+                <h1>Leave Applications</h1>
+                <div class="top-right">
+                    <div class="theme-toggler">
+                        <span class="material-icons-sharp active"> light_mode </span>
+                        <span class="material-icons-sharp"> dark_mode </span>
+                    </div>
+                </div>
             </div>
+
 
             <div class="insights">
                 <!-- PENDING APPLICATIONS -->
@@ -124,6 +126,11 @@
 
             <div class="recent-orders">
                 <div class="orders-header">
+                    <button id="back-to-all-btn" class="back-button" style="display: none;">
+                        <span class="material-icons-sharp">arrow_back</span>
+                        Back
+                    </button>
+
                     <h2>New Applications</h2>
 
                     <div class="controls">
@@ -162,76 +169,63 @@
                     <a href="#">Show All</a>
                 </div>
             </div>
+
+            
         </main>
-        <div class="right">
-            <!-- Notification Drawer -->
-            <div class="notification-drawer" id="notification-drawer">
-                <h2>Notifications</h2>
-                <div class="notifications-list" id="notifications-list">
-                    <p class="no-notifications">No new notifications</p>
-                </div>
-            </div>
-        </div>
-        </div>
-        
-        <script src="../js/common.js"></script>
-        <script src="../js/notification.js"></script>
-        <script src="../js/chatbot.js"></script>
 
-        <div class="right">
-            <div class="top">
-                <button id="menu-btn">
-                    <span class="material-icons-sharp"> menu </span>
-                </button>
-                <div class="theme-toggler">
-                    <span class="material-icons-sharp active"> light_mode </span>
-                    <span class="material-icons-sharp"> dark_mode </span>
-                </div>
-                <div class="profile">
-                    <div class="info">
-                        <p>Hey, <b>Bruno</b></p>
-                        <small class="text-muted">Admin</small>
-                    </div>
-                    <div class="profile-photo">
-                        <!-- <img src="./images/profile-1.jpg" alt="Profile Picture" /> -->
-                    </div>
-                </div>
-            </div>
 
-            <!-- No Recent Updates section here -->
-        </div>
     </div>
 
+    <!-- Leave Application Detail Modal -->
     <!-- Leave Application Detail Modal -->
     <div id="leave-detail-modal" class="modal">
         <div class="modal-content">
             <span class="close-button">&times;</span>
-            <h2>Leave Application Details</h2>
-            <div class="detail-item">
-                <strong>Applicant:</strong> <span id="modal-applicant"></span>
+            <h2 class="modal-title">Leave Application</h2>
+
+            <div class="modal-section">
+                <div class="modal-row">
+                    <span class="material-icons-sharp">person</span>
+                    <strong>Applicant:</strong>
+                    <span id="modal-applicant"></span>
+                </div>
+                <div class="modal-row">
+                    <span class="material-icons-sharp">subject</span>
+                    <strong>Subject:</strong>
+                    <span id="modal-subject"></span>
+                </div>
+                <div class="modal-row">
+                    <span class="material-icons-sharp">event</span>
+                    <strong>Start Date:</strong>
+                    <span id="modal-start-date"></span>
+                </div>
+                <div class="modal-row">
+                    <span class="material-icons-sharp">event_available</span>
+                    <strong>End Date:</strong>
+                    <span id="modal-end-date"></span>
+                </div>
+                <div class="modal-row">
+                    <span class="material-icons-sharp">info</span>
+                    <strong>Status:</strong>
+                    <span id="modal-status"></span>
+                </div>
             </div>
-            <div class="detail-item">
-                <strong>Subject:</strong> <span id="modal-subject"></span>
+
+            <div class="modal-section">
+                <div class="modal-row description-row">
+                    <span class="material-icons-sharp">description</span>
+                    <strong>Description:</strong>
+                    <p id="modal-description" class="modal-description"></p>
+                </div>
             </div>
-            <div class="detail-item">
-                <strong>Start Date:</strong> <span id="modal-start-date"></span>
-            </div>
-            <div class="detail-item">
-                <strong>End Date:</strong> <span id="modal-end-date"></span>
-            </div>
-            <div class="detail-item">
-                <strong>Description:</strong>
-                <p id="modal-description"></p>
-            </div>
-            <div class="detail-item">
-                <strong>Current Status:</strong> <span id="modal-status"></span>
-            </div>
+
             <div class="modal-actions">
                 <button id="approve-btn" class="success">Approve</button>
                 <button id="reject-btn" class="danger">Reject</button>
             </div>
         </div>
     </div>
+
 
     <script src="js/leave_applications.js"></script>
 

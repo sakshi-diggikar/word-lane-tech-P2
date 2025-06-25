@@ -2,215 +2,199 @@
 <html lang="en">
 
 <head>
-  <meta charset="UTF-8" />
-  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>HR Panel - Word Lane Tech</title>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>HR Dashboard</title>
 
-  <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Sharp" rel="stylesheet" />
-  <link rel="stylesheet" href="../css/style.css" />
-  <link rel="stylesheet" href="../css/notification.css" />
-  <link rel="stylesheet" href="css/hr_panel.css" />
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Sharp" rel="stylesheet" />
+    <link rel="stylesheet" href="css/hr_panel.css" />
 </head>
 
 <body>
-  <div class="container">
-    <aside>
-      <div class="top">
-        <div class="logo">
-          <img src="../assets/images/logo.png" alt="Logo" />
-          <h2>Word<span class="danger"> Lane Tech</span></h2>
-        </div>
-        <div class="close" id="close-btn">
-          <span class="material-icons-sharp"> close </span>
-        </div>
-      </div>
-
-      <div class="sidebar">
-        <a href="#" class="active">
-          <span class="material-icons-sharp"> dashboard </span>
-          <h3>Dashboard</h3>
-        </a>
-        <a href="HR_management.html">
-          <span class="material-icons-sharp"> people </span>
-          <h3>Management</h3>
-        </a>
-        <a href="leave_applications.html">
-          <span class="material-icons-sharp"> event_busy </span>
-          <h3>Leave Applications</h3>
-        </a>
-        <a href="admin">
-          <span class="material-icons-sharp"> insights </span>
-          <h3>Analytics</h3>
-        </a>
-        <a href="../attendance.html">
-          <span class="material-icons-sharp"> event_note </span>
-          <h3>Attendance</h3>
-        </a>
-        <a href="#">
-          <span class="material-icons-sharp"> logout </span>
-          <h3>Logout</h3>
-        </a>
-      </div>
-    </aside>
-
-    <main>
-      <div class="top">
-        <h1>HR Dashboard</h1>
-        <div class="top-right">
-          <button id="menu-btn">
-            <span class="material-icons-sharp"> menu </span>
-          </button>
-          <div class="theme-toggler">
-            <span class="material-icons-sharp active"> light_mode </span>
-            <span class="material-icons-sharp"> dark_mode </span>
-          </div>
-          <!-- Notification Bell -->
-          <div class="notification-bell">
-            <span class="material-icons-sharp" id="notification-bell-icon"> notifications </span>
-            <span class="notification-count" id="notification-count">0</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="date">
-        <input type="date" />
-      </div>
-
-      <div class="insights">
-        <!-- TOTAL EMPLOYEES -->
-        <div class="sales">
-          <span class="material-icons-sharp"> group </span>
-          <div class="middle">
-            <div class="left">
-              <h3>Total Employees</h3>
-              <h1>850</h1>
+    <div class="container">
+        <aside>
+            <div class="top">
+                <div class="logo">
+                    <img src="images/logo.jpg" alt="Logo of Word Lane Tech with blue and white colors, modern style" />
+                    <h2>Word<span class="danger">Lane Tech</span></h2>
+                </div>
+                <div class="close" id="close-btn">
+                    <span class="material-icons-sharp"> close </span>
+                </div>
             </div>
-            <div class="progress">
-              <svg>
-                <circle cx="38" cy="38" r="36"></circle>
-              </svg>
-              <div class="number">
-                <p>78%</p>
-              </div>
+            <div class="sidebar">
+                <a href="hr_panel.html">
+                    <span class="material-icons-sharp"> dashboard </span>
+                    <h3>Dashboard</h3>
+                </a>
+                <a href="#" class="active">
+                    <span class="material-icons-sharp"> people </span>
+                    <h3>Management</h3>
+                </a>
+                <a href="leave_applications.html">
+                    <span class="material-icons-sharp"> event_busy </span>
+                    <h3>Leave Applications</h3>
+                </a>
+                <a href="analytics.html">
+                    <span class="material-icons-sharp"> insights </span>
+                    <h3>Analytics</h3>
+                </a>
+                <a href="attendance.html">
+                    <span class="material-icons-sharp"> event_note </span>
+                    <h3>Attendance</h3>
+                </a>
+                <a href="#">
+                    <span class="material-icons-sharp"> logout </span>
+                    <h3>Logout</h3>
+                </a>
             </div>
-          </div>
-          <small class="text-muted"> Last 24 hours </small>
-        </div>
+            </aside>
 
-        <!-- LEAVE REQUESTS -->
-        <div class="expenses">
-          <span class="material-icons-sharp"> event_busy </span>
-          <div class="middle">
-            <div class="left">
-              <h3>Leave Requests</h3>
-              <h1>23</h1>
-            </div>
-            <div class="progress">
-              <svg>
-                <circle cx="38" cy="38" r="36"></circle>
-              </svg>
-              <div class="number">
-                <p>65%</p>
-              </div>
-            </div>
-          </div>
-          <small class="text-muted"> Pending approval </small>
-        </div>
-
-        <!-- ATTENDANCE RATE -->
-        <div class="income">
-          <span class="material-icons-sharp"> how_to_reg </span>
-          <div class="middle">
-            <div class="left">
-              <h3>Attendance Rate</h3>
-              <h1>94%</h1>
-            </div>
-            <div class="progress">
-              <svg>
-                <circle cx="38" cy="38" r="36"></circle>
-              </svg>
-              <div class="number">
-                <p>94%</p>
-              </div>
-            </div>
-          </div>
-          <small class="text-muted"> This month </small>
-        </div>
-      </div>
-
-      <div class="recent-orders">
-        <div class="orders-header">
-          <h2>Recent Leave Applications</h2>
-
-          <div class="controls">
-            <div class="search-bar">
-              <input type="text" placeholder="Search applications..." id="application-search" />
-              <span class="material-icons-sharp">search</span>
+        <main id="main-content">
+            <div class="dashboard-header">
+                <h1>HR Dashboard</h1>
+                <div class="top">
+                    <div class="top-right">
+                        <div class="theme-toggler">
+                            <span class="material-icons-sharp active"> light_mode </span>
+                            <span class="material-icons-sharp"> dark_mode </span>
+                        </div>
+                    </div>
+                </div>
             </div>
 
-            <div class="dropdown">
-              <span class="material-icons-sharp" id="sort-icon" style="cursor:pointer;">sort</span>
-              <div id="sort-options" class="dropdown-content">
-                <div data-filter="all">All</div>
-                <div data-filter="pending">Pending</div>
-                <div data-filter="approved">Approved</div>
-                <div data-filter="rejected">Rejected</div>
-              </div>
+            <div class="dashboard-cards">
+                <div class="card card-info">
+                    <span class="material-icons-sharp card-icon">event_note</span>
+                    <div class="card-text">
+                        <h2>Total Leave Applications</h2>
+                        <p id="total-leave-applications">0</p>
+                    </div>
+                </div>
+
+                <div class="card card-success">
+                    <span class="material-icons-sharp card-icon">work</span>
+                    <div class="card-text">
+                        <h2>Total Projects</h2>
+                        <p id="total-projects">0</p>
+                    </div>
+                </div>
+
+                <div class="card card-warning">
+                    <span class="material-icons-sharp card-icon">assignment</span>
+                    <div class="card-text">
+                        <h2>Task Overview</h2>
+                        <p id="total-tasks-completed">Total Completed Tasks: 0</p>
+                        <p id="total-tasks-pending">Total Pending Tasks: 0</p>
+                    </div>
+                </div>
             </div>
-          </div>
 
-          <table id="recent-orders--table">
-            <thead>
-              <tr>
-                <th>Employee ID</th>
-                <th>Employee Name</th>
-                <th>Leave Type</th>
-                <th>From</th>
-                <th>To</th>
-                <th>Status</th>
-                <th></th>
-              </tr>
-            </thead>
-            <!-- tbody will be injected via JS -->
-          </table>
 
-          <a href="#">Show All</a>
+            <div class="recent-orders">
+                <div class="orders-header">
+                    <h2>Assigned Task</h2>
+
+                    <div class="controls">
+                        <div class="search-bar">
+                            <input type="text" placeholder="Search tasks..." id="task-search" />
+                            <span class="material-icons-sharp">search</span>
+                        </div>
+
+                        <div class="dropdown">
+                            <span class="material-icons-sharp" id="sort-icon" style="cursor:pointer;">sort</span>
+                            <div id="sort-options" class="dropdown-content">
+                                <div data-filter="all">All</div>
+                                <div data-filter="active">Active</div>
+                                <div data-filter="delayed">Delayed</div>
+                                <div data-filter="completed">Completed</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <table id="recent-orders--table">
+                        <thead>
+                            <tr>
+                                <th>Project ID</th>
+                                <th>Project Name</th>
+                                <th>Task Name</th>
+                                <th>Due On</th>
+                                <th>Status</th>
+                                <th>Employee Name</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- tbody will be injected via JS -->
+                        </tbody>
+                    </table>
+
+                    <a href="#">Show All</a>
+                </div>
+            </div>
+        </main>
+
+
+        <!-- Task Details Modal -->
+        <div id="taskDetailsModal" class="modal">
+            <div class="modal-content">
+                <span class="close-btn" id="closeTaskModal">&times;</span>
+                <h2 style="margin-bottom: 1.5rem; color: var(--color-primary);">Task Details</h2>
+
+                <div class="detail-list">
+                    <div class="detail-row">
+                        <span class="material-icons-sharp icon">confirmation_number</span>
+                        <div><strong>Project ID:</strong><br /><span id="modal-project-id"></span></div>
+                    </div>
+
+                    <div class="detail-row">
+                        <span class="material-icons-sharp icon">folder</span>
+                        <div><strong>Project Name:</strong><br /><span id="modal-project-name"></span></div>
+                    </div>
+
+                    <div class="detail-row">
+                        <span class="material-icons-sharp icon">assignment</span>
+                        <div><strong>Task Name:</strong><br /><span id="modal-task-name"></span></div>
+                    </div>
+
+                    <div class="detail-row">
+                        <span class="material-icons-sharp icon">event</span>
+                        <div><strong>Due On:</strong><br /><span id="modal-due-on"></span></div>
+                    </div>
+
+                    <div class="detail-row">
+                        <span class="material-icons-sharp icon">info</span>
+                        <div><strong>Status:</strong><br /><span id="modal-status"></span></div>
+                    </div>
+
+                    <div class="detail-row">
+                        <span class="material-icons-sharp icon">person</span>
+                        <div><strong>Employee:</strong><br /><span id="modal-employee-name"></span></div>
+                    </div>
+
+                    <div class="detail-row input-row">
+                        <span class="material-icons-sharp icon">edit</span>
+                        <div class="textarea-wrapper">
+                            <label for="task-comment"><strong>Add Notes / Comments:</strong></label>
+                            <textarea id="task-comment" placeholder="Write something..."></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-buttons">
+                    <button class="btn btn-cancel" id="closeTaskModalBtn">Cancel</button>
+                    <button class="btn btn-send">Send</button>
+                </div>
+            </div>
         </div>
-      </div>
-    </main>
 
-    <div class="right">
-      <!-- Notification Drawer -->
-      <div class="notification-drawer" id="notification-drawer">
-        <h2>Notifications</h2>
-        <div class="notifications-list" id="notifications-list">
-          <p class="no-notifications">No new notifications</p>
-        </div>
-      </div>
+        <div id="toast" class="toast">Message Sent!</div>
+
+
     </div>
-  </div>
 
-  <script src="../js/common.js"></script>
-  <script src="../js/notification.js"></script>
-  <script src="../js/chatbot.js"></script>
-  <script src="js/hr_panel.js"></script>
-
-  <!-- Chatbot Toggle Button -->
-  <button id="chatbot-toggle-btn">💬</button>
-
-  <!-- Chatbot Panel -->
-  <div id="chatbot-panel">
-    <header>
-      HR Assistant
-      <button id="close-btn">&times;</button>
-    </header>
-    <div id="messages"></div>
-    <form id="input-area">
-      <input type="text" id="user-input" placeholder="Type a message..." autocomplete="off" />
-      <button type="submit" id="send-button">Send</button>
-    </form>
-  </div>
+    <script src="js/hr_panel.js"></script>
 </body>
 
 </html>
