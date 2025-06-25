@@ -5,9 +5,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const placeholder = document.getElementById("chat-placeholder");
   const chatTitle = document.getElementById("chat-title");
   const openSound = new Audio("https://assets.mixkit.co/sfx/preview/mixkit-quick-win-video-game-notification-269.mp3");
-  const themeToggler = document.querySelector(".theme-toggler");
-
-
 
   chatItems.forEach(item => {
     item.addEventListener("click", () => {
@@ -48,22 +45,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
-
-
-
-
-
-  // 🌙 Toggle Dark Mode
-  themeToggler.addEventListener("click", () => {
-    document.body.classList.toggle("dark-theme-variables");
-
-    themeToggler.querySelector("span:nth-child(1)").classList.toggle("active");
-    themeToggler.querySelector("span:nth-child(2)").classList.toggle("active");
-  });
-
-  // Optionally bind this to a button:
-  // document.getElementById("dark-mode-toggle").addEventListener("click", toggleDarkMode);
-
   // 📩 SEND Message
   const sendBtn = document.getElementById("send-btn");
   const messageInput = document.querySelector(".chat-input input");
@@ -100,7 +81,6 @@ document.addEventListener("DOMContentLoaded", () => {
     messageInput.value = "";
   });
 
-
   // Send on Enter key
   messageInput?.addEventListener("keydown", (e) => {
     if (e.key === "Enter") {
@@ -108,7 +88,6 @@ document.addEventListener("DOMContentLoaded", () => {
       sendBtn.click();
     }
   });
-
 
   // 😀 EMOJI Button
   const emojiBtn = document.getElementById("emoji-btn");
@@ -185,8 +164,6 @@ document.addEventListener("DOMContentLoaded", () => {
     messagesContainer.scrollTop = messagesContainer.scrollHeight;
   });
 
-
-
   // 🎤 MIC Button
   let mediaRecorder;
   let audioChunks = [];
@@ -232,8 +209,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-
-
   //CLOSE CHAT
   document.getElementById("close-chat-btn")?.addEventListener("click", () => {
     document.getElementById("chat-box").classList.add("hidden");
@@ -245,8 +220,6 @@ document.addEventListener("DOMContentLoaded", () => {
     // remove active class from all chat items
     document.querySelectorAll(".chat-item").forEach(i => i.classList.remove("active"));
   });
-
-
 
   //INFO PANEL HIDE AND UNHIDE
   const profile = document.querySelector(".chat-meta");       // gets the first one
@@ -265,8 +238,6 @@ document.addEventListener("DOMContentLoaded", () => {
     container?.classList.replace("container", "container-new");
   });
 
-
-
   // INFO PANEL CLOSE BUTTON
   const closeInfoBtn = document.getElementById("close-chat-btn-info");
   closeInfoBtn?.addEventListener("click", () => {
@@ -277,7 +248,6 @@ document.addEventListener("DOMContentLoaded", () => {
       container.classList.replace("container-new", "container");
     }
   });
-
 
   // Tab switching logic for attachments section
   document.querySelectorAll(".tab-btn").forEach((btn) => {
@@ -292,8 +262,6 @@ document.addEventListener("DOMContentLoaded", () => {
       document.getElementById(tabId)?.classList.add("active");
     });
   });
-
-
 
   // Toggle Members Dropdown
   const membersHeader = document.getElementById("membersHeader");
@@ -349,10 +317,8 @@ document.addEventListener("DOMContentLoaded", () => {
     if (e.target === addMemberModal) closeModal();
   });
 
-
   //SEARCHHHH
   const searchInput = document.querySelector(".search-input");
-
 
   searchInput?.addEventListener("input", () => {
     const query = searchInput.value.trim().toLowerCase();
@@ -381,7 +347,6 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
   });
-
 
   function setupDropdownMenus() {
     document.querySelectorAll(".action-menu-btn").forEach(btn => {
@@ -426,8 +391,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   setupDropdownMenus();
 
-
-
   //CHAT HIGHLIGHT WHEN CLICKED
   chatItems.forEach(item => {
     item.addEventListener("click", () => {
@@ -452,7 +415,6 @@ document.addEventListener("DOMContentLoaded", () => {
     // remove active class from all chat items
     document.querySelectorAll(".chat-item").forEach(i => i.classList.remove("active"));
   });
-
 
   function updateUnreadCount() {
     let totalUnread = 0;
@@ -501,8 +463,6 @@ document.addEventListener("DOMContentLoaded", () => {
     chatModal.classList.remove("hidden"); // <--- THIS LINE
     addMenu.classList.add("hidden");
   });
-
-
 
   // Open modal for group
   openAddGroup.addEventListener("click", () => {
@@ -558,7 +518,6 @@ document.addEventListener("DOMContentLoaded", () => {
     openChatOnClick(chatItem);  // ✅ attach open logic
     chatItem.click();           // ✅ auto-open the chat
 
-
     function openChatOnClick(item) {
       item.addEventListener("click", () => {
         // Remove existing "active" states
@@ -606,7 +565,5 @@ document.addEventListener("DOMContentLoaded", () => {
     chatImageInput.value = "";
     chatMembersInput.value = "";
   });
-
-
 });
 
