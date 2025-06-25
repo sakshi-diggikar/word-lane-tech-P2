@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin Dashboard - Attendance</title>
+
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Sharp" rel="stylesheet" />
+    <link rel="stylesheet" href="css/attendance.css">
+</head>
+
+<body>
+    <div class="container">
+        <aside>
+            <div class="top">
+                <div class="logo">
+                    <img src="../assets/images/logo.png" alt="Logo" />
+                    <h2>Word<span class="danger"> Lane Tech</span></h2>
+                  </div>
+                <div class="close" id="close-btn">
+                    <span class="material-icons-sharp"> close </span>
+                </div>
+            </div>
+            <div class="sidebar">
+                <a href="employee_panel.html">
+                    <span class="material-icons-sharp"> dashboard </span>
+                    <h3>Dashboard</h3>
+                </a>
+                <a href="messages.html">
+                    <span class="material-icons-sharp"> mail_outline </span>
+                    <h3>Messages</h3>
+                    <span class="message-count">26</span>
+                </a>
+                <a href="attachment.html">
+                    <span class="material-icons-sharp"> attach_file </span>
+                    <h3>Attachment</h3>
+                </a>
+                <a href="#" class="active">
+                    <span class="material-icons-sharp"> event_note </span>
+                    <h3>Attendance</h3>
+                </a>
+                <a href="../messages.html">
+                    <span class="material-icons-sharp"> mail_outline </span>
+                    <h3>Messages</h3>
+                    <span class="message-count">12</span>
+                </a>
+                <a href="#">
+                    <span class="material-icons-sharp"> logout </span>
+                    <h3>Logout</h3>
+                </a>
+            </div>
+        </aside>
+
+        <main id="main-content">
+            <div class="attendance-header">
+                <h1>Employee Attendance</h1>
+                <div class="attendance-filter">
+                    <label for="filter-date">Filter by Date:</label>
+                    <input type="date" id="filter-date" name="filter-date" />
+                    <label for="filter-status">Status:</label>
+                    <select id="filter-status" name="filter-status" aria-label="Filter attendance status">
+                        <option value="all" selected>All</option>
+                        <option value="present">Present</option>
+                        <option value="absent">Absent</option>
+                        <option value="late">Late</option>
+                        <option value="onleave">On Leave</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Mark Your Attendance Button (New Placement) -->
+            <div style="text-align: right; margin: 15px 0;">
+                <button id="mark-attendance-btn" style="padding: 8px 16px; font-size: 1rem; cursor: pointer;">Mark Your
+                    Attendance</button>
+            </div>
+
+            <!-- Calendar Button -->
+            <div style="text-align: right; margin: 15px 0;">
+                <button onclick="toggleCalendar()"
+                    style="padding: 8px 16px; font-size: 1rem; cursor: pointer;">Calendar</button>
+            </div>
+
+            <!-- Calendar Container (Hidden by default) -->
+            <div id="calendar" class="calendar-container" style="display: none;">
+                <!-- Calendar header and grid will be rendered here by JS -->
+                <!-- Leave Application Buttons will also be inserted here by JS -->
+            </div>
+
+            <!-- Employee Specific Attendance Table -->
+            <h2 style="margin-top: 2rem; margin-bottom: 1rem; color: var(--color-primary);">My Attendance Records</h2>
+            <div class="table-responsive"> <!-- Added wrapper for responsiveness -->
+                <table class="attendance-table" aria-describedby="my-attendance-description" role="table">
+                    <caption id="my-attendance-description"
+                        style="text-align:left; font-size:0.9rem; padding-bottom:1rem; color: var(--color-dark-variant);">
+                        Your personal attendance records.
+                    </caption>
+                    <thead>
+                        <tr>
+                            <th scope="col">Date</th>
+                            <th scope="col">Status</th>
+                            <th scope="col">Time In</th>
+                            <th scope="col">Time Out</th>
+                        </tr>
+                    </thead>
+                    <tbody id="my-attendance-tbody">
+                        <!-- JS inserts employee's attendance rows -->
+                    </tbody>
+                </table>
+            </div>
+            <!-- Pagination Controls -->
+            <div id="pagination-controls" class="pagination-controls" style="text-align: center; margin-top: 1rem;">
+                <button id="prev-week-btn" class="pagination-btn">Previous Week</button>
+                <span id="current-week-range" class="week-range-display"></span>
+                <button id="next-week-btn" class="pagination-btn">Next Week</button>
+            </div>
+        </main>
+
+        <div class="right" id="right-section">
+            <div class="top">
+                <button id="menu-btn">
+                    <span class="material-icons-sharp"> menu </span>
+                </button>
+                <div class="theme-toggler">
+                    <span class="material-icons-sharp active"> light_mode </span>
+                    <span class="material-icons-sharp"> dark_mode </span>
+                </div>
+                <div class="profile">
+                    <div class="info">
+                        <p>Hey, <b>Bruno</b></p>
+                        <small class="text-muted">Admin</small>
+                    </div>
+                    <div class="profile-photo">
+                        <img src="https://storage.googleapis.com/workspace-0f70711f-8b4e-4d94-86f1-2a93ccde5887/image/dd13d8fa-3d7d-48b6-a051-9b85f6c1cf79.png"
+                            alt="Profile picture of user Bruno, round shape" />
+                    </div>
+                </div>
+            </div>
+
+            <!-- Leave Application Form (Hidden by default) -->
+            <div id="leave-application-form" class="leave-form-container" style="display: none;">
+                <h2>Leave Application</h2>
+                <form>
+                    <div class="form-group">
+                        <label for="emp-id">Employee ID:</label>
+                        <input type="text" id="emp-id" name="emp-id" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label for="employee-name">Employee Name:</label>
+                        <input type="text" id="employee-name" name="employee-name" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label for="sender-name">Sender Name:</label>
+                        <input type="text" id="sender-name" name="sender-name" value="Bruno" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label for="leave-subject">Subject:</label>
+                        <input type="text" id="leave-subject" name="leave-subject"
+                            placeholder="e.g., Annual Leave Request" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="leave-description">Description:</label>
+                        <textarea id="leave-description" name="leave-description" rows="5"
+                            placeholder="Reason for leave and any other details" required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="start-date">Start Date:</label>
+                        <input type="text" id="start-date" name="start-date" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label for="end-date">End Date:</label>
+                        <input type="text" id="end-date" name="end-date" readonly>
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="send-btn">Send</button>
+                        <button type="button" class="cancel-btn" onclick="hideLeaveForm()">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/attendance.js"></script>
+</body>
+
+</html>
