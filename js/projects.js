@@ -10,6 +10,8 @@ const modalTitle = document.getElementById("modal-title");
 const modalForm = document.getElementById("modal-form");
 const inputTeamName = document.getElementById("input-team-name");
 const inputTeamDesc = document.getElementById("input-team-desc");
+const inputLeaderId = document.getElementById("input-leader-id");
+const leaderIdSuggestions = document.getElementById("leader-id-suggestions");
 const inputPriority = document.getElementById("input-priority");
 const inputName = document.getElementById("input-name");
 const inputDescription = document.getElementById("input-description");
@@ -172,27 +174,40 @@ function showTeamDetails(team) {
     const modal = document.getElementById('team-details-modal');
     const content = document.getElementById('team-details-content');
     content.innerHTML = `
-                <div style="margin-bottom: 2rem;">
-                    <h2 style="color:#7380ec;font-size:1.8rem;margin-bottom:0.5rem;">${team.name}</h2>
-                </div>
-                <div style="background:#f8f9fa;padding:1.5rem;border-radius:1rem;margin-bottom:1.5rem;">
-                    <h3 style="color:#363949;margin-bottom:0.8rem;">Team Details</h3>
-                    <p style="color:#677483;white-space:pre-line;margin-bottom:1rem;">${team.description || 'No description provided.'}</p>
-                    <div style="display:grid;grid-template-columns:auto 1fr;gap:1rem;margin-top:1rem;">
-                        <strong style="color:#363949;">Created:</strong>
-                        <span style="color:#677483;">${team.createdAt ? formatDateTime(team.createdAt) : 'N/A'}</span>
-                        <strong style="color:#363949;">Projects:</strong>
-                        <span style="color:#677483;">${team.projects ? team.projects.length : 0}</span>
-                    </div>
-                </div>
-                <div style="background:#f8f9fa;padding:1.5rem;border-radius:1rem;">
-                    <h3 style="color:#363949;margin-bottom:0.8rem;">Members</h3>
-                    <div style="color:#677483;">(Members info can be added here)</div>
-                </div>
-                <div style="margin-top:2rem;display:flex;justify-content:center;align-items:center;">
-                    <button id="update-team-btn" style="background:#7380ec;color:#fff;padding:0.5em 1.2em;border-radius:0.5em;border:none;font-size:1em;cursor:pointer;min-width:120px;">Update Team</button>
-                </div>
-            `;
+    <div style="margin-bottom: 2rem;">
+        <h2 style="color:#7380ec;font-size:1.8rem;margin-bottom:0.5rem;">${team.name}</h2>
+    </div>
+    <div style="background:#f8f9fa;padding:1.5rem;border-radius:1rem;margin-bottom:1.5rem;">
+        <h3 style="color:#363949;margin-bottom:0.8rem;">Team Details</h3>
+        <p style="color:#677483;white-space:pre-line;margin-bottom:1rem;">${team.description || 'No description provided.'}</p>
+        <div style="display:grid;grid-template-columns:auto 1fr;gap:1rem;margin-top:1rem;">
+            <strong style="color:#363949;">Created:</strong>
+            <span style="color:#677483;">${team.createdAt ? formatDateTime(team.createdAt) : 'N/A'}</span>
+            <strong style="color:#363949;">Projects:</strong>
+            <span style="color:#677483;">${team.projects ? team.projects.length : 0}</span>
+            <strong style="color:#363949;">Leader:</strong>
+            <span style="color:#677483;">
+                ${
+                    team.leaderId
+                        ? (() => {
+                            const emp = employees.find(e => e.id === team.leaderId);
+                            return emp
+                                ? `${emp.name} (${emp.id})`
+                                : team.leaderId;
+                        })()
+                        : 'N/A'
+                }
+            </span>
+        </div>
+    </div>
+    <div style="background:#f8f9fa;padding:1.5rem;border-radius:1rem;">
+        <h3 style="color:#363949;margin-bottom:0.8rem;">Members</h3>
+        <div style="color:#677483;">(Members info can be added here)</div>
+    </div>
+    <div style="margin-top:2rem;display:flex;justify-content:center;align-items:center;">
+        <button id="update-team-btn" style="background:#7380ec;color:#fff;padding:0.5em 1.2em;border-radius:0.5em;border:none;font-size:1em;cursor:pointer;min-width:120px;">Update Team</button>
+    </div>
+`;
     modal.style.display = 'flex';
 
     // Add update button handler
@@ -225,40 +240,53 @@ function createTeamCard(team, onOpen) {
         descShort += '...';
     }
     card.innerHTML = `
-                <div class="project-header">
-                    <h3 style="font-size:1.25rem;">${team.name}</h3>
-                    <span class="material-icons-sharp three-dots" tabindex="0" aria-haspopup="true" aria-label="Team options menu" style="margin-left:auto;">more_vert</span>
-                    <div class="dropdown-menu" role="menu">
-                        <button class="route-btn" role="menuitem">Route</button>
-                        <button class="archive-btn" role="menuitem">Archive</button>
-                        <button class="delete-btn" role="menuitem">Delete</button>
-                    </div>
-                </div>
-                <div class="project-details" title="${desc.replace(/"/g, '&quot;')}">${descShort.replace(/\n/g, '<br>')}</div>
-                <div style="display:flex;justify-content:space-between;align-items:flex-end;">
-                    <div></div>
-                    <div class="avatar-stack" style="display:flex;align-items:center;">
-                        ${(team.projects || []).slice(0, 3).map((p, i) => `
-                            <span class="avatar-dot" style="
-                                display:inline-block;
-                                width:26px;height:26px;
-                                border-radius:50%;
-                                background:${['#7380ec', '#41f1b6', '#ffbb55'][i % 3]};
-                                border:2px solid #fff;
-                                margin-left:-10px;
-                                z-index:${10 - i};
-                                box-shadow:0 1px 4px rgba(0,0,0,0.07);
-                            " title="${p.name}"></span>
-                        `).join('')}
-                        <span style="margin-left:8px;font-weight:600;color:#7380ec;font-size:1.1em;">
-                            ${team.projects ? team.projects.length : 0}
-                        </span>
-                    </div>
-                </div>
-                <div style="display:flex;flex-direction:column;align-items:flex-end;margin-top:0.4em;position:relative;">
-                    <span style="font-size:0.97em;color:#7d8da1;margin-bottom:0.1em;">${team.createdAt ? formatDateTime(team.createdAt) : 'N/A'}</span>
-                </div>
-            `;
+    <div class="project-header">
+        <h3 style="font-size:1.25rem;">${team.name}</h3>
+        <span class="material-icons-sharp three-dots" tabindex="0" aria-haspopup="true" aria-label="Team options menu" style="margin-left:auto;">more_vert</span>
+        <div class="dropdown-menu" role="menu">
+            <button class="route-btn" role="menuitem">Route</button>
+            <button class="archive-btn" role="menuitem">Archive</button>
+            <button class="delete-btn" role="menuitem">Delete</button>
+        </div>
+    </div>
+    <div class="project-details" title="${desc.replace(/"/g, '&quot;')}">${descShort.replace(/\n/g, '<br>')}</div>
+    <div style="font-size:0.97em;color:#7d8da1;margin-bottom:0.3em;">
+        <b>Leader:</b>
+        ${
+            team.leaderId
+                ? (() => {
+                    const emp = employees.find(e => e.id === team.leaderId);
+                    return emp
+                        ? `${emp.name} (${emp.id})`
+                        : team.leaderId;
+                })()
+                : 'N/A'
+        }
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:flex-end;">
+        <div></div>
+        <div class="avatar-stack" style="display:flex;align-items:center;">
+            ${(team.projects || []).slice(0, 3).map((p, i) => `
+                <span class="avatar-dot" style="
+                    display:inline-block;
+                    width:26px;height:26px;
+                    border-radius:50%;
+                    background:${['#7380ec', '#41f1b6', '#ffbb55'][i % 3]};
+                    border:2px solid #fff;
+                    margin-left:-10px;
+                    z-index:${10 - i};
+                    box-shadow:0 1px 4px rgba(0,0,0,0.07);
+                " title="${p.name}"></span>
+            `).join('')}
+            <span style="margin-left:8px;font-weight:600;color:#7380ec;font-size:1.1em;">
+                ${team.projects ? team.projects.length : 0}
+            </span>
+        </div>
+    </div>
+    <div style="display:flex;flex-direction:column;align-items:flex-end;margin-top:0.4em;position:relative;">
+        <span style="font-size:0.97em;color:#7d8da1;margin-bottom:0.1em;">${team.createdAt ? formatDateTime(team.createdAt) : 'N/A'}</span>
+    </div>
+`;
 
     // Dropdown menu toggle and actions (Route, Archive, Delete)
     const dots = card.querySelector(".three-dots");
@@ -989,6 +1017,9 @@ function showModal(type, subtaskToEdit = null) {
     inputTeamDesc.style.display = 'none';
     document.getElementById('input-team-desc-label').style.display = 'none';
     inputName.style.display = 'none';
+    inputLeaderId.style.display = 'none';
+    document.getElementById('input-leader-id-label').style.display = 'none';
+    leaderIdSuggestions.style.display = 'none';
     document.getElementById('input-label').style.display = 'none';
     inputDescription.style.display = 'none';
     document.getElementById('input-description-label').style.display = 'none';
@@ -1066,16 +1097,22 @@ function showModal(type, subtaskToEdit = null) {
         document.getElementById('input-team-name-label').style.display = 'block';
         inputTeamDesc.style.display = 'block';
         document.getElementById('input-team-desc-label').style.display = 'block';
+        inputLeaderId.style.display = 'block';
+        document.getElementById('input-leader-id-label').style.display = 'block';
+        leaderIdSuggestions.style.display = 'block';
         inputTeamName.focus();
         if (subtaskToEdit) {
             inputTeamName.value = subtaskToEdit.name || '';
             inputTeamDesc.value = subtaskToEdit.description || '';
+            inputLeaderId.value = subtaskToEdit.leaderId || '';
             modalForm.setAttribute('data-editing-team', 'true');
             modalForm.setAttribute('data-editing-team-name', subtaskToEdit.name);
         } else {
+            inputLeaderId.value = '';
             modalForm.removeAttribute('data-editing-team');
             modalForm.removeAttribute('data-editing-team-name');
         }
+        setTimeout(setupLeaderAutocomplete, 100);
     } else if (type === 'task') {
         modalTitle.textContent = subtaskToEdit ? 'Update Task' : 'Create New Task';
         document.getElementById('create-btn').textContent = subtaskToEdit ? 'Update' : 'Create';
@@ -1172,8 +1209,14 @@ modalForm.addEventListener('submit', (e) => {
     if (type === 'team') {
         const teamName = inputTeamName.value.trim();
         const teamDesc = inputTeamDesc.value.trim();
+        const leaderIdRaw = inputLeaderId.value.trim();
         const isEditingTeam = modalForm.getAttribute('data-editing-team') === 'true';
         const editingTeamName = modalForm.getAttribute('data-editing-team-name');
+        let leaderId = leaderIdRaw;
+        const match = leaderIdRaw.match(/\(([^)]+)\)$/);
+        if (match) {
+            leaderId = match[1];
+        }
         if (!teamName) {
             alert('Please enter a team name.');
             inputTeamName.focus();
@@ -1199,6 +1242,7 @@ modalForm.addEventListener('submit', (e) => {
             if (team) {
                 team.name = teamName;
                 team.description = teamDesc;
+                team.leaderId = leaderId;
             }
             renderTeams();
             closeModal();
@@ -1208,7 +1252,8 @@ modalForm.addEventListener('submit', (e) => {
             name: teamName,
             description: teamDesc,
             createdAt: new Date(),
-            projects: []
+            projects: [],
+            leaderId: leaderId
         };
         teams.unshift(newTeam);
         renderTeams();
@@ -1605,6 +1650,8 @@ function showProjectDetails(project) {
                     </div>
                 </div>
 
+
+
                 <div style="background:#f8f9fa;padding:1.5rem;border-radius:1rem;">
                     <h3 style="color:#363949;margin-bottom:0.8rem;">Progress</h3>
                     <div class="progress-bar" style="background:#eee;border-radius:8px;height:12px;width:100%;margin:0.5rem 0;">
@@ -1637,7 +1684,7 @@ function showProjectDetails(project) {
         setTimeout(() => {
             inputName.value = project.name || '';
             inputDescription.value = project.description || '';
-                       inputClient.value = project.client || '';
+            inputClient.value = project.client || '';
             inputStartDate.value = project.startdate ? toFlatpickrString(project.startdate) : '';
             inputDeadline.value = project.deadline ? toFlatpickrString(project.deadline) : '';
             inputPriority.value = project.priority || 'Medium';
@@ -2079,4 +2126,38 @@ function setupEmployeeAutocomplete() {
         renderSelected();
     }
 }
-setTimeout(setupEmployeeAutocomplete, 100);
+
+function setupLeaderAutocomplete() {
+    if (!inputLeaderId || !leaderIdSuggestions) return;
+
+    inputLeaderId.oninput = function () {
+        const val = inputLeaderId.value.trim().toLowerCase();
+        leaderIdSuggestions.innerHTML = '';
+        if (!val) return;
+        const filtered = employees.filter(emp =>
+            emp.id.includes(val) ||
+            emp.name.toLowerCase().includes(val)
+        );
+        filtered.forEach(emp => {
+            const div = document.createElement('div');
+            div.className = 'autocomplete-suggestion';
+            div.textContent = `${emp.name} (${emp.id})`;
+            div.onclick = () => {
+                inputLeaderId.value = `${emp.name} (${emp.id})`;
+                leaderIdSuggestions.innerHTML = '';
+            };
+            leaderIdSuggestions.appendChild(div);
+        });
+    };
+
+    inputLeaderId.onblur = function () {
+        setTimeout(() => { leaderIdSuggestions.innerHTML = ''; }, 150);
+    };
+
+    inputLeaderId.onkeydown = function (e) {
+        if (e.key === 'Enter' && leaderIdSuggestions.firstChild) {
+            leaderIdSuggestions.firstChild.click();
+            e.preventDefault();
+        }
+    };
+}

@@ -22,7 +22,8 @@
         <aside>
             <div class="top">
                 <div class="logo">
-                    <img alt="Logo of Word Lane Tech with blue and white colors, modern style" src="assets/images/logo.png" />
+                    <img alt="Logo of Word Lane Tech with blue and white colors, modern style"
+                        src="assets/images/logo.png" />
                     <h2>Word<span class="danger"> Lane Tech</span></h2>
                 </div>
                 <div aria-label="Close sidebar" class="close" id="close-btn" role="button" tabindex="0">
@@ -47,22 +48,10 @@
                     <h3>Messages</h3>
                     <span aria-label="26 unread messages" class="message-count">26</span>
                 </a>
-                <!-- <a href="attachment.html">
-                    <span aria-hidden="true" class="material-icons-sharp"> attach_file </span>
-                    <h3>Attachment</h3>
-                </a> -->
                 <a href="attendance.html">
                     <span aria-hidden="true" class="material-icons-sharp"> event_note </span>
                     <h3>Attendance</h3>
                 </a>
-                <!-- <a href="#" tabindex="0">
-                    <span aria-hidden="true" class="material-icons-sharp"> settings </span>
-                    <h3>Settings</h3>
-                </a>
-                <a href="#" tabindex="0">
-                    <span aria-hidden="true" class="material-icons-sharp"> add </span>
-                    <h3>Add Product</h3>
-                </a> -->
                 <a href="#" tabindex="0">
                     <span aria-hidden="true" class="material-icons-sharp"> logout </span>
                     <h3>Logout</h3>
@@ -81,8 +70,8 @@
                         <span class="material-icons-sharp"> dark_mode </span>
                     </div>
                     <div class="notification-bell">
-                      <span class="material-icons-sharp" id="notification-bell-icon"> notifications </span>
-                      <span class="notification-count" id="notification-count">0</span>
+                        <span class="material-icons-sharp" id="notification-bell-icon"> notifications </span>
+                        <span class="notification-count" id="notification-count">0</span>
                     </div>
                 </div>
             </div>
@@ -151,12 +140,12 @@
             </section>
         </main>
         <div class="right">
-          <div class="notification-drawer" id="notification-drawer">
-            <h2>Notifications</h2>
-            <div class="notifications-list" id="notifications-list">
-              <p class="no-notifications">No new notifications</p>
+            <div class="notification-drawer" id="notification-drawer">
+                <h2>Notifications</h2>
+                <div class="notifications-list" id="notifications-list">
+                    <p class="no-notifications">No new notifications</p>
+                </div>
             </div>
-          </div>
         </div>
     </div>
     <!-- Modal for project or task creation -->
@@ -173,6 +162,11 @@
                 <label for="input-team-desc" id="input-team-desc-label" style="display:none;">Team Description:</label>
                 <textarea id="input-team-desc" placeholder="Enter team description" rows="3"
                     style="width:100%;resize:vertical;display:none;"></textarea>
+                <label for="input-leader-id" id="input-leader-id-label" style="display:none;">Leader ID:</label>
+                <input autocomplete="off" id="input-leader-id" placeholder="Assign Leader ID" style="display:none;"
+                    type="text" />
+                <div class="autocomplete-suggestions" id="leader-id-suggestions"
+                    style="position:relative;z-index:10;display:none;"></div>
                 <!-- Project fields -->
                 <div style="display: flex; gap: 1.5rem;">
                     <div style="flex:2;">
@@ -324,13 +318,13 @@
 
     <div id="chatbot-panel">
         <header>
-        Chatbot
-        <button id="close-btn">&times;</button>
+            Chatbot
+            <button id="close-btn">&times;</button>
         </header>
         <div id="messages"></div>
         <form id="input-area">
-        <input type="text" id="user-input" placeholder="Type a message..." autocomplete="off" />
-        <button type="submit" id="send-button">Send</button>
+            <input type="text" id="user-input" placeholder="Type a message..." autocomplete="off" />
+            <button type="submit" id="send-button">Send</button>
         </form>
     </div>
 
