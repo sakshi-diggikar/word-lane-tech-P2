@@ -1,28 +1,3 @@
-/* :root {
-    --color-primary: #7380ec;
-    --color-primary-light: rgba(115, 128, 236, 0.2);
-    --color-danger: #ff7782;
-    --color-success: #41f1b6;
-    --color-warning: #ffbb55;
-    --color-white: #fff;
-    --color-info-dark: #7d8da1;
-    --color-info-light: #dce1eb;
-    --color-dark: #363949;
-    --color-light: rgba(132, 139, 200, 0.18);
-    --color-dark-variant: #677483;
-    --color-background: #f6f6f9;
-
-    --card-border-radius: 1rem;
-    --border-radius-1: 0.4rem;
-    --border-radius-2: 0.8rem;
-    --border-radius-3: 1.2rem;
-
-    --card-padding: 1.5rem;
-    --padding-1: 1.2rem;
-
-    --box-shadow: 0 2rem 3rem var(--color-light);
-} */
-
 /* ANALYTICS CONTENT STYLES */
 .analytics-content {
     margin: 1rem auto;
@@ -39,7 +14,7 @@
 .cards-container {
     display: grid;
     grid-template-columns: repeat(2, minmax(250px, 1fr)); /* slightly narrower cards */
-    gap: 1rem; /* slightly smaller gap */
+    gap: 1.2rem; /* slightly smaller gap */
 }
 
 
@@ -56,8 +31,8 @@
     display: flex;
     flex-direction: column; /* smaller width */
     flex: 1 2 260px;
-    min-height: 140px;
-    width: 450px; /* increased height */ /* was 180px — increase for more height */
+    min-height: 240px;
+    width: 550px; /* increased height */ /* was 180px — increase for more height */
  
 }
 
