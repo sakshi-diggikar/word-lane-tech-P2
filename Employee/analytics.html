@@ -2,21 +2,22 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Employee Dashboard</title>
-
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Sharp" rel="stylesheet" />
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employee Analytics | WLT</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Sharp" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
     <link rel="stylesheet" href="../css/style.css" />
     <link rel="stylesheet" href="../css/notification.css" />
     <link rel="stylesheet" href="css/analytics.css" />
-
-
 </head>
 
 <body>
     <div class="container">
+        <!-- SIDEBAR -->
         <aside>
             <div class="top">
                 <div class="logo">
@@ -58,238 +59,104 @@
             </div>
         </aside>
 
+        <!-- MAIN CONTENT -->
         <main>
             <div class="top">
-                <h1>Dashboard</h1>
-
+                <h1>Analytics</h1>
+                <div class="top-right">
+                    <button id="menu-btn">
+                        <span class="material-icons-sharp"> menu </span>
+                    </button>
+                    <div class="theme-toggler">
+                        <span class="material-icons-sharp active"> light_mode </span>
+                        <span class="material-icons-sharp"> dark_mode </span>
+                    </div>
+                    <!-- Notification Bell -->
+                    <div class="notification-bell">
+                        <span class="material-icons-sharp" id="notification-bell-icon"> notifications </span>
+                        <span class="notification-count" id="notification-count">0</span>
+                    </div>
+                </div>
             </div>
 
-            <div class="date">
-                <input type="date" />
-            </div>
+            <div class="analytics-content">
+                <div class="cards-container" id="cardsView">
+                    <!-- Cards will be generated in this exact order:
+                            1. Team Analytics (top-left)
+                            2. Employee Analytics (top-right)
+                            3. Project Analytics (bottom-left)
+                            4. Task Analytics (bottom-right) -->
+                </div>
 
-            <div class="insights">
-                <!-- NEW TASKS -->
-                <div class="sales">
-                    <span class="material-icons-sharp"> analytics </span>
-                    <div class="middle">
-                        <div class="left">
-                            <h3>New Tasks</h3>
-                            <h1>0</h1>
-                        </div>
-                        <div class="progress">
-                            <svg>
-                                <circle cx="38" cy="38" r="36"></circle>
-                            </svg>
-                            <div class="number">
-                                <p>0%</p>
+                <div class="section-content" id="dynamicContent" style="display: none;">
+                    <div class="section-header">
+                        <button class="back-button" id="backButton">
+                            <i class="fas fa-arrow-left"></i> Back to Analytics
+                        </button>
+                        <h2 id="sectionTitle">Section Title</h2>
+                    </div>
+
+                    <div class="data-table">
+                        <div class="table-header">
+                            <div class="table-filters">
+                                <!-- Filters will be injected here -->
+                            </div>
+                            <div class="search-box">
+                                <input type="text" placeholder="Search..." id="searchInput">
+                                <i class="fas fa-search"></i>
                             </div>
                         </div>
+                        <div class="table-wrapper">
+                            <table id="dataTable">
+                                <!-- Table data will be injected here -->
+                            </table>
+                        </div>
                     </div>
-                    <small class="text-muted"> Last 24 hours </small>
-                </div>
 
-                <!-- PENDING TASKS -->
-                <div class="expenses">
-                    <span class="material-icons-sharp"> bar_chart </span>
-                    <div class="middle">
-                        <div class="left">
-                            <h3>Pending Tasks</h3>
-                            <h1>0</h1>
+                    <div class="analytics-charts">
+                        <div class="chart-container">
+                            <canvas id="mainChart"></canvas>
                         </div>
-                        <div class="progress">
-                            <svg>
-                                <circle cx="38" cy="38" r="36"></circle>
-                            </svg>
-                            <div class="number">
-                                <p>0%</p>
-                            </div>
+                        <div class="chart-container">
+                            <canvas id="secondaryChart"></canvas>
                         </div>
                     </div>
-                    <small class="text-muted"> Last 24 hours </small>
-                </div>
-
-                <!-- COMPLETED TASKS -->
-                <div class="income">
-                    <span class="material-icons-sharp"> stacked_line_chart </span>
-                    <div class="middle">
-                        <div class="left">
-                            <h3>Completed Tasks</h3>
-                            <h1>0</h1>
-                        </div>
-                        <div class="progress">
-                            <svg>
-                                <circle cx="38" cy="38" r="36"></circle>
-                            </svg>
-                            <div class="number">
-                                <p>0%</p>
-                            </div>
-                        </div>
-                    </div>
-                    <small class="text-muted"> Last 24 hours </small>
                 </div>
             </div>
-
-            <div class="recent-orders">
-                <div class="orders-header">
-                    <h2>My Tasks</h2>
-
-                    <div class="controls">
-                        <div class="search-bar">
-                            <input type="text" placeholder="Search tasks..." id="task-search" />
-                            <span class="material-icons-sharp">search</span>
-                        </div>
-
-                        <div class="dropdown">
-                            <span class="material-icons-sharp" id="sort-icon" style="cursor:pointer;">sort</span>
-                            <div id="sort-options" class="dropdown-content">
-                                <div data-filter="all">All</div>
-                                <div data-filter="active">Active</div>
-                                <div data-filter="delayed">Delayed</div>
-                                <div data-filter="completed">Completed</div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <table id="recent-orders--table">
-                        <thead>
-                            <tr>
-                                <th>Project ID</th>
-                                <th>Project Name</th>
-                                <th>Task Name</th>
-                                <th>Due On</th>
-                                <th>Status</th>
-                                <th>Employee Name</th>
-                                <th></th>
-                            </tr>
-                        </thead>
-                        <!-- tbody will be injected via JS -->
-                    </table>
-
-                    <a href="#">Show All</a>
-                </div>
+    </div>
+    </main>
+    <div class="right">
+        <!-- Notification Drawer -->
+        <div class="notification-drawer" id="notification-drawer">
+            <h2>Notifications</h2>
+            <div class="notifications-list" id="notifications-list">
+                <p class="no-notifications">No new notifications</p>
             </div>
-        </main>
-
-        <div class="right">
-            <div class="top">
-                <button id="menu-btn">
-                    <span class="material-icons-sharp"> menu </span>
-                </button>
-                <div class="theme-toggler">
-                    <span class="material-icons-sharp active"> light_mode </span>
-                    <span class="material-icons-sharp"> dark_mode </span>
-                </div>
-                <!-- Notification Bell (from notification.html) -->
-                <div class="notification-bell">
-                    <span class="material-icons-sharp" id="notification-bell-icon"> notifications </span>
-                    <span class="notification-count" id="notification-count">0</span>
-                </div>
-                <div class="profile">
-                    <div class="info">
-                        <p>Hey, <b>Bruno</b></p> <!-- This will be updated -->
-                        <small class="text-muted">Employee</small> <!-- This too -->
-                    </div>
-                    <div class="profile-photo">
-                        <!-- <img src="./images/profile-1.jpg" alt="Profile Picture" /> -->
-                    </div>
-                </div>
-
-            </div>
-
-            <!-- Notification Drawer (from notification.html) -->
-            <div class="notification-drawer" id="notification-drawer">
-                <h2>Notifications</h2>
-                <div class="notifications-list" id="notifications-list">
-                    <p class="no-notifications">No new notifications</p>
-                </div>
-            </div>
-
-            <!-- Removed Recent Updates and Sales Analytics sections to "plank" them -->
-            <!-- If you want to add them back, copy from original index.html -->
-
         </div>
     </div>
+    </div>
 
-    <script src="js/constants/recent-order-data.js"></script>
-    <script src="js/constants/update-data.js"></script>
-    <script src="emp.js"></script>
-    <script src="js/notification.js"></script>
+    <script src="../js/common.js"></script>
+    <script src="../js/notification.js"></script>
+    <script src="../js/chatbot.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="js/analytics.js"></script>
 
     <!-- Chatbot Toggle Button -->
-    <button id="chatbot-toggle-btn">💬</button>
+  <button id="chatbot-toggle-btn">💬</button>
 
-    <!-- Chatbot Panel -->
-    <div id="chatbot-panel">
-        <header>
-            Chatbot
-            <button id="close-btn">&times;</button>
-        </header>
-        <div id="messages"></div>
-        <form id="input-area">
-            <input type="text" id="user-input" placeholder="Type a message..." autocomplete="off" />
-            <button type="submit" id="send-button">Send</button>
-        </form>
-    </div>
-
-
-    <!-- Task Details Modal -->
-    <div id="taskDetailsModal" class="modal" style="display: none;">
-        <div class="modal-content">
-            <span class="close-btn" id="closeTaskModal">&times;</span>
-            <h2 style="margin-bottom: 1.5rem; color: var(--color-primary);">Task Details</h2>
-
-            <div class="detail-list">
-                <div class="detail-row">
-                    <span class="material-icons-sharp icon">confirmation_number</span>
-                    <div><strong>Project ID:</strong><br /><span id="modal-project-id"></span></div>
-                </div>
-
-                <div class="detail-row">
-                    <span class="material-icons-sharp icon">folder</span>
-                    <div><strong>Project Name:</strong><br /><span id="modal-project-name"></span></div>
-                </div>
-
-                <div class="detail-row">
-                    <span class="material-icons-sharp icon">assignment</span>
-                    <div><strong>Task Name:</strong><br /><span id="modal-task-name"></span></div>
-                </div>
-
-                <div class="detail-row">
-                    <span class="material-icons-sharp icon">event</span>
-                    <div><strong>Due On:</strong><br /><span id="modal-due-on"></span></div>
-                </div>
-
-                <div class="detail-row">
-                    <span class="material-icons-sharp icon">info</span>
-                    <div><strong>Status:</strong><br /><span id="modal-status"></span></div>
-                </div>
-
-                <div class="detail-row">
-                    <span class="material-icons-sharp icon">person</span>
-                    <div><strong>Employee:</strong><br /><span id="modal-employee-name"></span></div>
-                </div>
-
-                <div class="detail-row input-row">
-                    <span class="material-icons-sharp icon">edit</span>
-                    <div class="textarea-wrapper">
-                        <label for="task-comment"><strong>Add Notes / Comments:</strong></label>
-                        <textarea id="task-comment" placeholder="Write something..."></textarea>
-                    </div>
-                </div>
-            </div>
-
-            <div class="modal-buttons">
-                <button class="btn btn-cancel" id="closeTaskModalBtn">Cancel</button>
-                <button class="btn btn-send">Send</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Toast Notification -->
-    <div id="toast" class="toast">Message Sent!</div>
-
-
+  <!-- Chatbot Panel -->
+  <div id="chatbot-panel">
+    <header>
+      Employee Assistant
+      <button id="close-btn">&times;</button>
+    </header>
+    <div id="messages"></div>
+    <form id="input-area">
+      <input type="text" id="user-input" placeholder="Type a message..." autocomplete="off" />
+      <button type="submit" id="send-button">Send</button>
+    </form>
+  </div>
 
 </body>
 
