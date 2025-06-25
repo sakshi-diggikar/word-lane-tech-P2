@@ -1,42 +1,9 @@
-/* Basic Reset */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  font-family: 'Poppins', sans-serif;
-}
-
-.dark-theme-variables {
-  --color-background: #181a1e;
-  --color-white: #202528;
-  --color-dark: #edeffd;
-  --color-dark-variant: #a3bdcc;
-  --color-light: rgba(0, 0, 0, 0.4);
-  --box-shadow: 0 2rem 3rem var(--color-light);
-}
-
 .highlight {
   background-color: #ffe34f;
   color: #111;
   font-weight: 700;
   padding: 0 2px;
   border-radius: 3px;
-}
-
-body {
-  background: var(--color-white);
-  height: 100vh;
-  width: 100vw;
-  overflow: hidden;
-  color: var(--color-dark);
-}
-
-.container {
-  display: grid;
-  width: 96%;
-  margin: 0 auto;
-  gap: 1.8rem;
-  grid-template-columns: 14rem auto;
 }
 
 .container-new {
@@ -248,7 +215,8 @@ body {
 .messages-header {
   display: flex;
   flex-direction: column;
-  gap: 0.6rem;
+  align-items: flex-start;
+  gap: 1rem;
   border-bottom: 1px solid #e2e8f0;
   padding-bottom: 1.5rem;
   margin-bottom: 2rem;
@@ -262,6 +230,7 @@ body {
 .search-wrapper {
   display: flex;
   align-items: center;
+  width: 100%;
 }
 
 .search-input {
@@ -427,39 +396,15 @@ body {
 .admin-header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-end;
   margin-bottom: 1rem;
 }
 
-.theme-toggler {
-  background: var(--color-light);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  height: 1.6rem;
-  width: 4.2rem;
-  cursor: pointer;
-  border-radius: var(--border-radius-1);
-}
-
-.theme-toggler span {
-  font-size: 1.2rem;
-  width: 50%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.theme-toggler span.active {
-  background: var(--color-primary);
-  color: white;
-  border-radius: var(--border-radius-1);
-}
 
 .logo-block {
   text-align: center;
   margin-bottom: 25px;
+  z-index: 1000;
 }
 
 .logo-circle {
