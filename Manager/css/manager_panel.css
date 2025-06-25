@@ -1,0 +1,77 @@
+/* Manager Panel Specific Styles */
+
+.insights .sales {
+  background: linear-gradient(135deg, #43cea2 0%, #185a9d 100%);
+}
+
+.insights .expenses {
+  background: linear-gradient(135deg, #f7971e 0%, #ffd200 100%);
+}
+
+.insights .income {
+  background: linear-gradient(135deg, #e96443 0%, #904e95 100%);
+}
+
+#recent-orders--table th,
+#recent-orders--table td {
+  text-align: left;
+}
+
+#recent-orders--table th:nth-child(1),
+#recent-orders--table td:nth-child(1) {
+  width: 12%;
+}
+#recent-orders--table th:nth-child(2),
+#recent-orders--table td:nth-child(2) {
+  width: 22%;
+}
+#recent-orders--table th:nth-child(3),
+#recent-orders--table td:nth-child(3) {
+  width: 15%;
+}
+#recent-orders--table th:nth-child(4),
+#recent-orders--table td:nth-child(4) {
+  width: 18%;
+}
+#recent-orders--table th:nth-child(5),
+#recent-orders--table td:nth-child(5) {
+  width: 18%;
+}
+#recent-orders--table th:nth-child(6),
+#recent-orders--table td:nth-child(6) {
+  width: 15%;
+}
+
+.status-badge.active {
+  background: var(--color-primary);
+  color: var(--color-white);
+  padding: 0.3rem 0.8rem;
+  border-radius: var(--border-radius-1);
+  font-size: 0.7rem;
+  font-weight: 500;
+}
+.status-badge.completed {
+  background: var(--color-success);
+  color: var(--color-white);
+  padding: 0.3rem 0.8rem;
+  border-radius: var(--border-radius-1);
+  font-size: 0.7rem;
+  font-weight: 500;
+}
+
+#chatbot-panel header {
+  background: linear-gradient(135deg, #43cea2 0%, #185a9d 100%);
+}
+
+@media screen and (max-width: 768px) {
+  .insights {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  #recent-orders--table th:nth-child(4),
+  #recent-orders--table td:nth-child(4),
+  #recent-orders--table th:nth-child(5),
+  #recent-orders--table td:nth-child(5) {
+    display: none;
+  }
+} 
