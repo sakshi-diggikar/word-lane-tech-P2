@@ -132,9 +132,9 @@ table.attendance-table tbody td {
     color: var(--color-dark);
 }
 
-.onleave {
-    background-color: var(--color-primary);
-    box-shadow: 0 0 8px var(--color-primary);
+.leave {
+    background-color: #ffcc80;
+    box-shadow: 0 0 8px #ffcc80;
 }
 
 .half-day {
@@ -653,3 +653,120 @@ table.attendance-table tbody td {
     }
 }
 */
+
+/* Right Drawer for Leave Application */
+.leave-drawer {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 0;
+    height: 100vh;
+    background: rgba(0,0,0,0.08);
+    z-index: 1002;
+    overflow: hidden;
+    transition: width 0.3s cubic-bezier(.4,0,.2,1);
+    pointer-events: none;
+}
+
+.leave-drawer.open {
+    width: 420px; /* Adjust as needed for your form */
+    pointer-events: auto;
+}
+
+.leave-drawer-content {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 420px;
+    max-width: 100vw;
+    height: 100%;
+    background: var(--color-white);
+    box-shadow: -2px 0 16px rgba(0,0,0,0.08);
+    padding: 2rem 1.5rem 1.5rem 1.5rem;
+    overflow-y: auto;
+    transition: right 0.3s;
+}
+
+.leave-drawer-close {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: none;
+    border: none;
+    font-size: 2rem;
+    color: var(--color-dark-variant);
+    cursor: pointer;
+    z-index: 10;
+}
+
+@media (max-width: 600px) {
+    .leave-drawer,
+    .leave-drawer-content {
+        width: 100vw !important;
+        max-width: 100vw !important;
+    }
+}
+
+.container.leave-drawer-open main {
+    margin-right: 420px; /* Same as drawer width */
+    transition: margin-right 0.3s cubic-bezier(.4,0,.2,1);
+}
+
+@media (max-width: 600px) {
+    .container.leave-drawer-open main {
+        margin-right: 0;
+    }
+}
+
+/* Custom Mark Attendance Button Style */
+#mark-attendance-btn {
+    background: linear-gradient(45deg, var(--color-success), #38a169);
+    color: var(--color-white);
+    padding: 12px 24px;
+    border: none;
+    border-radius: var(--border-radius-3);
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    letter-spacing: 0.5px;
+}
+
+#mark-attendance-btn:hover {
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+    transform: translateY(-2px);
+}
+
+#mark-attendance-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+/* Custom Status Notification Style */
+.status-notification {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background-color: var(--color-success);
+    color: var(--color-white);
+    padding: 1rem 1.5rem;
+    border-radius: var(--border-radius-2);
+    box-shadow: var(--box-shadow);
+    z-index: 1050;
+    transform: translateY(150%);
+    opacity: 0;
+    transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1), opacity 0.4s ease;
+    pointer-events: none;
+}
+
+.status-notification p {
+    margin: 0;
+    font-weight: 500;
+}
+
+.status-notification.show {
+    transform: translateY(0);
+    opacity: 1;
+    pointer-events: auto;
+}

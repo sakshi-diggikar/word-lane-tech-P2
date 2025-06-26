@@ -368,6 +368,16 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
+    // Fix: Add event listener for Cancel button in leave application selection
+    const cancelSelectionBtn = document.getElementById('cancel-selection-btn');
+    if (cancelSelectionBtn) {
+        cancelSelectionBtn.addEventListener('click', function () {
+            clearCalendarSelection();
+            selectedDates = [];
+            hideLeaveApplicationButtons();
+        });
+    }
+
     // Show notification on leave application submit
     const leaveForm = document.getElementById('leave-application-form');
     if (leaveForm) {
