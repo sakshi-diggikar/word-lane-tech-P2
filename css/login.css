@@ -1,227 +1,403 @@
-        /* Your existing CSS styles */
-        .login-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.7);
-            backdrop-filter: blur(5px);
-            z-index: 10000;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
+/* General Body Styling (Ensures full page coverage for overlay) */
+body {
+    font-family: 'Poppins', sans-serif;
+    /* Modern, clean font */
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+    /* Prevent horizontal scroll */
+}
 
-        .login-box {
-            background: white;
-            width: 420px;
-            max-width: 90%;
-            padding: 2.5rem;
-            border-radius: 16px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
-            animation: fadeIn 0.3s ease-out;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
+/* Login Overlay - This is the key to overlaying content */
+.login-overlay {
+    position: fixed;
+    /* Stays in place regardless of scroll */
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    /* Darker, more opaque overlay */
+    backdrop-filter: blur(10px);
+    /* Stronger blur for background content */
+    z-index: 10000;
+    /* Ensures it's on top of everything */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    opacity: 1;
+    /* Start visible */
+    visibility: visible;
+    transition: opacity 0.4s ease-in-out, visibility 0.4s ease-in-out;
+}
 
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(-20px);
-            }
+/* Login Box - The actual form container */
+.login-box {
+    background: #ffffff;
+    /* Clean white background */
+    width: 90%;
+    /* Responsive width */
+    max-width: 450px;
+    /* Max width for larger screens */
+    padding: 2.5rem 2.5rem;
+    /* Generous padding */
+    border-radius: 18px;
+    /* Soft rounded corners */
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.35);
+    /* Deeper, more prominent shadow */
+    position: relative;
+    overflow: hidden;
+    transform: translateY(0);
+    /* Initial state for animation */
+    animation: fadeInScaleUp 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+    /* Smooth, bouncy animation */
+    border: 1px solid rgba(230, 230, 230, 0.7);
+    /* Subtle light border */
+}
 
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
+/* Animation for login box appearance */
+@keyframes fadeInScaleUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px) scale(0.9);
+    }
 
-        .login-header {
-            text-align: center;
-            margin-bottom: 2rem;
-        }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
 
-        .login-header h2 {
-            color: #333;
-            margin-bottom: 0.5rem;
-            font-size: 1.8rem;
-        }
+/* Gradient border at the top */
+.login-box::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 6px;
+    /* Thicker gradient line */
+    background: linear-gradient(90deg, #7380ec, #41f1b6);
+    /* Existing gradient */
+    border-top-left-radius: 18px;
+    /* Match border-radius */
+    border-top-right-radius: 18px;
+    /* Match border-radius */
+}
 
-        .login-header p {
-            color: #666;
-            font-size: 0.95rem;
-        }
+/* Header Section */
+.login-header {
+    text-align: center;
+    margin-bottom: 2.5rem;
+    /* More space below header */
+}
 
-        .login-form .input-group {
-            position: relative;
-            margin-bottom: 1.5rem;
-        }
+.login-header h2 {
+    color: #2c3e50;
+    /* Darker, professional color */
+    font-size: 2.1rem;
+    /* Impactful heading size */
+    font-weight: 700;
+    /* Bolder font weight */
+    margin-bottom: 0.6rem;
+    /* Space between title and description */
+    letter-spacing: -0.5px;
+    /* Slightly tighter letter spacing */
+}
 
-        .login-form input {
-            width: 100%;
-            padding: 14px 16px 14px 48px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            font-size: 1rem;
-            transition: all 0.3s ease;
-            background: #f9f9f9;
-        }
-
-        .login-form input:focus {
-            border-color: #7380ec;
-            box-shadow: 0 0 0 3px rgba(115, 128, 236, 0.2);
-            background: white;
-            outline: none;
-        }
-
-        .login-form i {
-            position: absolute;
-            left: 16px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #666;
-            font-size: 1.1rem;
-        }
-
-        .login-btn {
-            width: 100%;
-            padding: 14px;
-            background: #7380ec;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-weight: 600;
-            font-size: 1rem;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            margin-top: 0.5rem;
-        }
-
-        .login-btn:hover {
-            background: #5d6bd6;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }
-
-        .remember-forgot {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1.5rem;
-            font-size: 0.9rem;
-        }
-
-        .remember-forgot label {
-            display: flex;
-            align-items: center;
-            color: #555;
-            cursor: pointer;
-            white-space: nowrap;
-        }
-
-        .remember-forgot input[type="checkbox"] {
-            margin-right: 8px;
-            width: 16px;
-            height: 16px;
-            cursor: pointer;
-        }
-
-        .remember-forgot a {
-            color: #7380ec;
-            text-decoration: none;
-            font-weight: 500;
-            white-space: nowrap;
-        }
-
-        .remember-forgot a:hover {
-            text-decoration: underline;
-        }
-
-        .login-footer {
-            margin-top: 2rem;
-            text-align: center;
-            font-size: 0.95rem;
-            color: #555;
-        }
-
-        .login-footer a {
-            color: #7380ec;
-            text-decoration: none;
-            font-weight: 600;
-        }
-
-        .login-footer a:hover {
-            text-decoration: underline;
-        }
-
-        /* Disable all interactions with background content */
-        .disable-interaction {
-            pointer-events: none;
-            user-select: none;
-            -webkit-user-select: none;
-            -moz-user-select: none;
-            -ms-user-select: none;
-        }
-
-        /* Make the login box stand out more */
-        .login-box {
-            position: relative;
-            overflow: hidden;
-        }
-
-        .login-box::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 4px;
-            background: linear-gradient(90deg, #7380ec, #41f1b6);
-        }
-    
-
-
-        /* Toast Notification Style */
-        #toast {
-            visibility: hidden;
-            min-width: 200px;
-            background-color: black;
-            color: white;
-            text-align: center;
-            padding: 16px;
-            border-radius: 8px;
-            position: fixed;
-            z-index: 1000;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            transition: all 0.3s ease-in-out;
-            opacity: 0;
-        }
-
-        #toast.show {
-            visibility: visible;
-            opacity: 1;
-        }
-
-@media (max-width: 576px) {
-  .login-box {
-    width: 98vw;
-    padding: 1.2rem;
+.login-header p {
+    color: #7f8c8d;
+    /* Softer grey for description */
     font-size: 0.95rem;
-  }
-  .login-header h2 {
+    /* Slightly larger font size */
+    line-height: 1.5;
+}
+
+/* Input Group Styling */
+.input-group {
+    position: relative;
+    margin-bottom: 1.6rem;
+    /* Space between input fields */
+}
+
+.input-group input {
+    width: 100%;
+    padding: 15px 40px 15px 50px;
+    /* Generous padding for better touch targets */
+    border: 1px solid #e0e0e0;
+    /* Lighter, subtle border */
+    border-radius: 10px;
+    /* Soft rounded corners */
+    font-size: 1rem;
+    /* Standard font size */
+    background: #fcfcfc;
+    /* Very light background */
+    transition: all 0.3s ease;
+    /* Smooth transition for all properties */
+    color: #34495e;
+    /* Professional text color */
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.04);
+    /* Subtle inner shadow */
+}
+
+.input-group input:focus {
+    border-color: #7380ec;
+    /* Primary color for focus */
+    box-shadow: 0 0 0 4px rgba(115, 128, 236, 0.25), inset 0 1px 3px rgba(0, 0, 0, 0.04);
+    /* Larger, softer shadow */
+    background: #ffffff;
+    /* White background on focus */
+    outline: none;
+}
+
+.input-group i {
+    position: absolute;
+    top: 50%;
+    left: 18px;
+    /* Icon position */
+    transform: translateY(-50%);
     font-size: 1.2rem;
-  }
-  .login-btn {
-    padding: 10px;
-    font-size: 0.95rem;
-  }
+    /* Icon size */
+    color: #95a5a6;
+    /* Softer icon color */
+    pointer-events: none;
+    /* Ensures clicks pass through to input */
 }
-@media (max-width: 400px) {
-  .login-box {
-    padding: 0.5rem;
+
+/* Toggle Password Icon */
+.toggle-password {
+    position: absolute;
+    top: 50%;
+    right: 18px;
+    /* Icon position */
+    transform: translateY(-50%);
+    font-size: 1.2rem;
+    /* Icon size */
+    cursor: pointer;
+    color: #95a5a6;
+    /* Softer icon color */
+    z-index: 2;
+    /* Ensure it's clickable */
+    transition: color 0.2s ease;
+}
+
+.toggle-password:hover {
+    color: #7380ec;
+    /* Highlight on hover */
+}
+
+/* Remember Me & Forgot Password Section */
+.remember-forgot {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    /* Space before the button */
     font-size: 0.9rem;
-  }
 }
-    
+
+.remember-forgot .remember-me {
+    display: flex;
+    align-items: center;
+    color: #555;
+    cursor: pointer;
+}
+
+.remember-forgot .remember-me input[type="checkbox"] {
+    margin-right: 8px;
+    accent-color: #7380ec;
+    /* Color of the checkbox */
+    transform: scale(1.1);
+    /* Slightly larger checkbox */
+}
+
+.remember-forgot .forgot-password {
+    color: #7380ec;
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.remember-forgot .forgot-password:hover {
+    color: #5d6bd6;
+    text-decoration: underline;
+}
+
+/* Login Button */
+.login-btn {
+    width: 100%;
+    padding: 15px;
+    /* Generous padding */
+    background: linear-gradient(45deg, #7380ec, #41f1b6);
+    /* Gradient background */
+    color: white;
+    border: none;
+    border-radius: 10px;
+    /* Match input field border-radius */
+    font-weight: 600;
+    font-size: 1.05rem;
+    /* Slightly larger font size */
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 12px 30px rgba(115, 128, 236, 0.35);
+    /* Initial shadow */
+    letter-spacing: 0.5px;
+    /* Slightly spaced letters */
+}
+
+.login-btn:hover {
+    background: linear-gradient(45deg, #5d6bd6, #36c79b);
+    /* Slightly darker gradient on hover */
+    transform: translateY(-3px);
+    /* More pronounced lift effect */
+    box-shadow: 0 18px 40px rgba(115, 128, 236, 0.45);
+    /* Larger shadow on hover */
+}
+
+/* Footer */
+.login-footer {
+    text-align: center;
+    margin-top: 2.5rem;
+    /* Space above footer */
+    font-size: 0.8rem;
+    color: #95a5a6;
+    /* Softer grey for footer text */
+}
+
+/* Toast Message */
+#toast {
+    visibility: hidden;
+    background-color: #333;
+    /* Dark background */
+    color: #fff;
+    text-align: center;
+    padding: 12px 25px;
+    border-radius: 8px;
+    position: fixed;
+    top: 25px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 20000;
+    /* Ensure it's above everything */
+    opacity: 0;
+    transition: all 0.4s ease-in-out;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    min-width: 250px;
+}
+
+#toast.show {
+    visibility: visible;
+    opacity: 1;
+    top: 30px;
+    /* Slight bounce effect */
+}
+
+/* --- Responsive Design --- */
+
+/* For smaller phones (e.g., iPhone SE) */
+@media (max-width: 375px) {
+    .login-box {
+        padding: 1.8rem 1.5rem;
+        border-radius: 15px;
+    }
+
+    .login-box::before {
+        height: 4px;
+        border-top-left-radius: 15px;
+        border-top-right-radius: 15px;
+    }
+
+    .login-header h2 {
+        font-size: 1.7rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .login-header p {
+        font-size: 0.85rem;
+    }
+
+    .input-group input {
+        padding: 12px 35px 12px 45px;
+        font-size: 0.9rem;
+        border-radius: 8px;
+    }
+
+    .input-group i,
+    .toggle-password {
+        font-size: 1.1rem;
+    }
+
+    .remember-forgot {
+        font-size: 0.8rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .login-btn {
+        padding: 12px;
+        font-size: 0.95rem;
+        border-radius: 8px;
+    }
+
+    .login-footer {
+        margin-top: 2rem;
+        font-size: 0.7rem;
+    }
+
+    #toast {
+        padding: 10px 20px;
+        font-size: 0.8rem;
+        border-radius: 6px;
+        top: 15px;
+    }
+}
+
+/* For tablets and larger phones */
+@media (min-width: 376px) and (max-width: 768px) {
+    .login-box {
+        padding: 2rem 2rem;
+    }
+
+    .login-header h2 {
+        font-size: 1.9rem;
+    }
+
+    .input-group input {
+        padding: 14px 40px 14px 48px;
+        font-size: 0.95rem;
+    }
+
+    .login-btn {
+        font-size: 1rem;
+    }
+}
+
+/* For larger desktops */
+@media (min-width: 1200px) {
+    .login-box {
+        max-width: 500px;
+        /* Slightly wider for large screens */
+        padding: 3rem 3rem;
+    }
+
+    .login-header h2 {
+        font-size: 2.4rem;
+    }
+
+    .login-header p {
+        font-size: 1rem;
+    }
+
+    .input-group input {
+        padding: 16px 45px 16px 55px;
+        font-size: 1.05rem;
+    }
+
+    .input-group i,
+    .toggle-password {
+        font-size: 1.3rem;
+    }
+
+    .login-btn {
+        padding: 16px;
+        font-size: 1.1rem;
+    }
+}
