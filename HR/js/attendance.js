@@ -36,37 +36,37 @@ const employeeAttendanceData = [
     { employeeId: "EMP001", date: "2025-05-29", status: "present", timeIn: "09:00 AM", timeOut: "05:00 PM" },
     { employeeId: "EMP001", date: "2025-05-30", status: "present", timeIn: "09:00 AM", timeOut: "05:00 PM" },
     { employeeId: "EMP001", date: "2025-05-31", status: "present", timeIn: "09:00 AM", timeOut: "05:00 PM" },
-    // Future dates for calendar display, but won't show in table
+    // --- June 2025 Data ---
     { employeeId: "EMP001", date: "2025-06-01", status: "weekend", timeIn: "", timeOut: "" },
-    { employeeId: "EMP001", date: "2025-06-02", status: "present", timeIn: "09:00 AM", timeOut: "05:00 PM" },
+    { employeeId: "EMP001", date: "2025-06-02", status: "present", timeIn: "09:00 AM", timeOut: "05:00 PM" }, // Monday
     { employeeId: "EMP001", date: "2025-06-03", status: "absent", timeIn: "", timeOut: "" },
     { employeeId: "EMP001", date: "2025-06-04", status: "leave", timeIn: "", timeOut: "" },
     { employeeId: "EMP001", date: "2025-06-05", status: "holiday", timeIn: "", timeOut: "" },
     { employeeId: "EMP001", date: "2025-06-06", status: "present", timeIn: "09:05 AM", timeOut: "05:00 PM" },
     { employeeId: "EMP001", date: "2025-06-07", status: "weekend", timeIn: "", timeOut: "" },
     { employeeId: "EMP001", date: "2025-06-08", status: "weekend", timeIn: "", timeOut: "" },
-    { employeeId: "EMP001", date: "2025-06-09", status: "late", timeIn: "10:30 AM", timeOut: "05:00 PM" },
+    { employeeId: "EMP001", date: "2025-06-09", status: "late", timeIn: "10:30 AM", timeOut: "05:00 PM" }, // Monday
     { employeeId: "EMP001", date: "2025-06-10", status: "half-day", timeIn: "01:00 PM", timeOut: "05:00 PM" },
     { employeeId: "EMP001", date: "2025-06-11", status: "present", timeIn: "09:00 AM", timeOut: "05:00 PM" },
     { employeeId: "EMP001", date: "2025-06-12", status: "present", timeIn: "09:00 AM", timeOut: "05:00 PM" },
     { employeeId: "EMP001", date: "2025-06-13", status: "present", timeIn: "09:00 AM", timeOut: "05:00 PM" },
     { employeeId: "EMP001", date: "2025-06-14", status: "weekend", timeIn: "", timeOut: "" },
     { employeeId: "EMP001", date: "2025-06-15", status: "weekend", timeIn: "", timeOut: "" },
-    { employeeId: "EMP001", date: "2025-06-16", status: "present", timeIn: "09:00 AM", timeOut: "05:00 PM" },
+    { employeeId: "EMP001", date: "2025-06-16", status: "present", timeIn: "09:00 AM", timeOut: "05:00 PM" }, // Monday
     { employeeId: "EMP001", date: "2025-06-17", status: "present", timeIn: "09:00 AM", timeOut: "05:00 PM" },
     { employeeId: "EMP001", date: "2025-06-18", status: "present", timeIn: "09:00 AM", timeOut: "05:00 PM" },
-    { employeeId: "EMP001", date: "2025-06-19", status: "present", timeIn: "09:00 AM", timeOut: "05:00 PM" },
+    { employeeId: "EMP001", date: "2025-06-19", status: "leave", timeIn: "", timeOut: "" },
     { employeeId: "EMP001", date: "2025-06-20", status: "present", timeIn: "09:00 AM", timeOut: "05:00 PM" },
     { employeeId: "EMP001", date: "2025-06-21", status: "weekend", timeIn: "", timeOut: "" },
     { employeeId: "EMP001", date: "2025-06-22", status: "weekend", timeIn: "", timeOut: "" },
-    { employeeId: "EMP001", date: "2025-06-23", status: "present", timeIn: "09:00 AM", timeOut: "05:00 PM" },
-    { employeeId: "EMP001", date: "2025-06-24", status: "present", timeIn: "09:00 AM", timeOut: "05:00 PM" },
+    { employeeId: "EMP001", date: "2025-06-23", status: "present", timeIn: "09:00 AM", timeOut: "05:00 PM" }, // Monday
+    { employeeId: "EMP001", date: "2025-06-24", status: "late", timeIn: "09:45 AM", timeOut: "06:00 PM" },
     { employeeId: "EMP001", date: "2025-06-25", status: "present", timeIn: "09:00 AM", timeOut: "05:00 PM" },
     { employeeId: "EMP001", date: "2025-06-26", status: "present", timeIn: "09:00 AM", timeOut: "05:00 PM" },
-    { employeeId: "EMP001", date: "2025-06-27", status: "present", timeIn: "09:00 AM", timeOut: "05:00 PM" },
+    { employeeId: "EMP001", date: "2025-06-27", status: "half-day", timeIn: "09:00 AM", timeOut: "01:00 PM" },
     { employeeId: "EMP001", date: "2025-06-28", status: "weekend", timeIn: "", timeOut: "" },
     { employeeId: "EMP001", date: "2025-06-29", status: "weekend", timeIn: "", timeOut: "" },
-    { employeeId: "EMP001", date: "2025-06-30", status: "present", timeIn: "09:00 AM", timeOut: "05:00 PM" },
+    { employeeId: "EMP001", date: "2025-06-30", status: "present", timeIn: "09:00 AM", timeOut: "05:00 PM" } // Monday
 ];
 
 // New: Public Holidays/Festivals data
@@ -84,7 +84,6 @@ const publicHolidays = [
 ];
 
 
-let calendarVisible = false;
 let calendarMonthOffset = 0;
 let isDragging = false;
 let selectedDates = []; // Stores all dates in the dragged range
@@ -93,13 +92,6 @@ let endDragDate = null;
 
 // Get references to main layout elements
 const container = document.querySelector('.container');
-const mainContent = document.getElementById('main-content');
-const rightSection = document.getElementById('right-section');
-
-// Pagination variables for "My Attendance Records" table
-const RECORDS_PER_PAGE = 7; // One week's worth of data
-let currentPage = 0; // 0-indexed page number
-let filteredAndSortedRecords = []; // Stores records for the current employee, filtered by date and sorted
 
 function formatDateToYMD(dateObj) {
     const year = dateObj.getFullYear();
@@ -111,29 +103,6 @@ function formatDateToYMD(dateObj) {
 function parseYMDToDate(ymdString) {
     const [year, month, day] = ymdString.split('-').map(Number);
     return new Date(year, month - 1, day);
-}
-
-function toggleCalendar() {
-    const calendar = document.getElementById('calendar');
-    const leaveForm = document.getElementById('leave-application-form');
-
-    // Toggle visibility state
-    calendarVisible = !calendarVisible;
-
-    // Apply display style
-    calendar.style.display = calendarVisible ? 'block' : 'none';
-
-    // Hide form and reset selection if calendar is being hidden
-    if (!calendarVisible) {
-        leaveForm.style.display = 'none';
-        selectedDates = [];
-        clearCalendarSelection();
-        hideLeaveApplicationButtons();
-        container.classList.remove('form-open'); // Reset layout
-    } else {
-        // If calendar is being shown, render it
-        renderCalendar(calendarMonthOffset);
-    }
 }
 
 function renderCalendar(monthOffset = 0) {
@@ -215,8 +184,6 @@ function renderCalendar(monthOffset = 0) {
 
         if (holiday) {
             cell.classList.add('holiday'); // Add holiday class for styling
-            // If there's already a status text, put holiday text below it, otherwise just holiday text
-            // Ensure holiday text is always present if it's a holiday
             cellContent += `<span class="holiday-text">${holiday.name}</span>`;
         }
         cell.innerHTML = cellContent;
@@ -228,7 +195,6 @@ function renderCalendar(monthOffset = 0) {
     addCalendarDragListeners();
     // Re-attach event listeners for the newly rendered buttons
     document.getElementById('apply-leave-btn').addEventListener('click', handleApplyLeaveClick);
-    document.getElementById('cancel-selection-btn').addEventListener('click', handleCancelSelectionClick);
 }
 
 function changeMonth(direction) {
@@ -236,7 +202,6 @@ function changeMonth(direction) {
     renderCalendar(calendarMonthOffset);
     selectedDates = []; // Clear selection on month change
     hideLeaveApplicationButtons(); // Hide buttons on month change
-    document.getElementById('leave-application-form').style.display = 'none'; // Hide form on month change
     container.classList.remove('form-open'); // Reset layout
 }
 
@@ -244,32 +209,60 @@ function addCalendarDragListeners() {
     const calendarGrid = document.querySelector('.calendar-grid');
     if (!calendarGrid) return;
 
+    // Helper to check if a date is in the future (strictly greater than today)
+    function isFutureDate(dateStr) {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const date = parseYMDToDate(dateStr);
+        return date > today;
+    }
+
     calendarGrid.addEventListener('mousedown', (e) => {
-        if (e.target.classList.contains('calendar-cell')) {
+        const cell = e.target.closest('.calendar-cell');
+        if (cell) {
+            if (!isFutureDate(cell.dataset.date)) return; // Only allow future dates
             isDragging = true;
             clearCalendarSelection();
             selectedDates = [];
-            startDragDate = e.target.dataset.date;
-            e.target.classList.add('selected');
+            startDragDate = cell.dataset.date;
+            cell.classList.add('selected');
             hideLeaveApplicationButtons(); // Hide buttons immediately on new drag
-            document.getElementById('leave-application-form').style.display = 'none'; // Hide form immediately on new drag
             container.classList.remove('form-open'); // Reset layout
         }
     });
 
     calendarGrid.addEventListener('mouseover', (e) => {
-        if (isDragging && e.target.classList.contains('calendar-cell')) {
-            endDragDate = e.target.dataset.date;
-            updateCalendarSelection(startDragDate, endDragDate);
+        if (isDragging) {
+            const cell = e.target.closest('.calendar-cell');
+            if (cell) {
+                if (!isFutureDate(cell.dataset.date)) return; // Only allow future dates
+                endDragDate = cell.dataset.date;
+                updateCalendarSelection(startDragDate, endDragDate, isFutureDate);
+            }
         }
     });
 
-    calendarGrid.addEventListener('mouseup', () => {
+    calendarGrid.addEventListener('mouseup', (e) => {
         isDragging = false;
         if (selectedDates.length > 0) {
             showLeaveApplicationButtons();
         } else {
             hideLeaveApplicationButtons();
+        }
+    });
+
+    // New: Allow single click to select a single date for leave application
+    calendarGrid.addEventListener('click', (e) => {
+        const cell = e.target.closest('.calendar-cell');
+        if (cell) {
+            if (!isFutureDate(cell.dataset.date)) return; // Only allow future dates
+            // If not dragging, treat as single date selection
+            if (!isDragging) {
+                clearCalendarSelection();
+                selectedDates = [cell.dataset.date];
+                cell.classList.add('selected');
+                showLeaveApplicationButtons();
+            }
         }
     });
 
@@ -285,7 +278,7 @@ function clearCalendarSelection() {
     });
 }
 
-function updateCalendarSelection(startDateStr, endDateStr) {
+function updateCalendarSelection(startDateStr, endDateStr, isFutureDateFn) {
     clearCalendarSelection();
     selectedDates = [];
 
@@ -297,7 +290,8 @@ function updateCalendarSelection(startDateStr, endDateStr) {
 
     document.querySelectorAll('.calendar-cell').forEach(cell => {
         const cellDate = parseYMDToDate(cell.dataset.date);
-        if (cellDate >= minDate && cellDate <= maxDate) {
+        // Only select if in range and (if provided) is a future date
+        if (cellDate >= minDate && cellDate <= maxDate && (!isFutureDateFn || isFutureDateFn(cell.dataset.date))) {
             cell.classList.add('selected');
             selectedDates.push(cell.dataset.date);
         }
@@ -317,18 +311,8 @@ function hideLeaveApplicationButtons() {
 
 // Event handler for "Leave Application" button
 function handleApplyLeaveClick() {
-    const leaveForm = document.getElementById('leave-application-form');
-    leaveForm.style.display = 'block';
-    hideLeaveApplicationButtons(); // Hide buttons after clicking "Leave Application"
-
-    // Adjust layout
-    container.classList.add('form-open');
-
-    // Populate form fields
     document.getElementById('emp-id').value = currentEmployeeId;
     document.getElementById('employee-name').value = currentEmployeeName;
-
-    // Populate start and end dates from selectedDates array
     if (selectedDates.length > 0) {
         document.getElementById('start-date').value = selectedDates[0];
         document.getElementById('end-date').value = selectedDates[selectedDates.length - 1];
@@ -336,211 +320,101 @@ function handleApplyLeaveClick() {
         document.getElementById('start-date').value = '';
         document.getElementById('end-date').value = '';
     }
+    document.getElementById('leave-drawer').classList.add('open');
+    document.querySelector('.container').classList.add('leave-drawer-open');
 }
 
-// Event handler for "Cancel" button (for date selection)
-function handleCancelSelectionClick() {
-    selectedDates = [];
-    clearCalendarSelection();
-    hideLeaveApplicationButtons();
-    document.getElementById('leave-application-form').style.display = 'none'; // Also hide form if it was open
-    container.classList.remove('form-open'); // Reset layout
+function hideLeaveDrawer() {
+    document.getElementById('leave-drawer').classList.remove('open');
+    document.querySelector('.container').classList.remove('leave-drawer-open');
 }
 
-// Function to hide the leave application form
-function hideLeaveForm() {
-    document.getElementById('leave-application-form').style.display = 'none';
-    // Calendar remains visible, no need to toggle its display
-    // Clear form fields
-    document.getElementById('leave-subject').value = '';
-    document.getElementById('leave-description').value = '';
-    document.getElementById('start-date').value = '';
-    document.getElementById('end-date').value = '';
-    selectedDates = []; // Clear selection when form is cancelled
-    clearCalendarSelection(); // Clear visual selection
-    container.classList.remove('form-open'); // Reset layout
-}
+// Initial render of the calendar and the employee's attendance table
+document.addEventListener('DOMContentLoaded', function () {
+    console.log("Attendance script loaded and DOM is ready.");
 
-// Event listener for "Mark Attendance" button
-document.getElementById('mark-attendance-btn').addEventListener('click', () => {
-    const now = new Date();
-    const currentTime = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
-    const currentDate = formatDateToYMD(now);
+    renderCalendar(calendarMonthOffset);
 
-    // Prevent marking attendance for future dates
-    const todayYMD = formatDateToYMD(new Date());
-    if (currentDate > todayYMD) {
-        alert("You cannot mark attendance for a future date.");
+    const markAttendanceBtn = document.getElementById('mark-attendance-btn');
+    const statusNotification = document.getElementById('status-notification');
+    const statusMessage = document.getElementById('status-notification-message');
+
+    if (!markAttendanceBtn) {
+        console.error("Mark Attendance button not found!");
         return;
     }
-
-    let status = "present";
-    let timeIn = currentTime;
-    let timeOut = "";
-
-    const checkTime = now.getHours() * 60 + now.getMinutes(); // minutes from midnight
-
-    // 9:20 AM = 9*60 + 20 = 560 minutes
-    // 12:30 PM = 12*60 + 30 = 750 minutes
-    // 3:00 PM = 15*60 + 0 = 900 minutes
-
-    if (checkTime > 560 && checkTime <= 750) { // After 9:20 AM and before or at 12:30 PM
-        status = "late";
-    } else if (checkTime > 750 && checkTime <= 900) { // After 12:30 PM and before or at 3:00 PM
-        status = "half-day";
-    } else if (checkTime > 900) { // After 3:00 PM
-        alert("It's too late to mark attendance for a full or half day.");
-        return;
+    if (!statusNotification) {
+        console.error("Status notification element not found!");
     }
 
-    // Check if attendance for today already exists
-    const existingRecordIndex = employeeAttendanceData.findIndex(
-        r => r.employeeId === currentEmployeeId && r.date === currentDate
-    );
+    markAttendanceBtn.addEventListener('click', () => {
+        console.log("Mark Attendance button clicked!");
 
-    if (existingRecordIndex !== -1) {
-        // If status is already present/half-day, update timeOut
-        if (employeeAttendanceData[existingRecordIndex].status === "present" || employeeAttendanceData[existingRecordIndex].status === "half-day") {
-            employeeAttendanceData[existingRecordIndex].timeOut = currentTime;
-            alert(`Attendance updated for today (${currentDate}): Time Out set to ${currentTime}.`);
+        // Show success notification
+        if (statusNotification && statusMessage) {
+            statusMessage.textContent = "Attendance marked successfully!";
+            statusNotification.classList.add('show');
+            console.log("Added 'show' class to notification.");
+
+            // Hide after 3 seconds
+            setTimeout(() => {
+                statusNotification.classList.remove('show');
+                console.log("Removed 'show' class from notification.");
+            }, 3000);
         } else {
-            alert(`Attendance for today (${currentDate}) is already marked as ${employeeAttendanceData[existingRecordIndex].status}. Cannot mark again.`);
-            return;
+            // Fallback for some reason if elements are not found
+            console.error("Could not show notification because elements were not found.");
+            alert("Attendance marked successfully!");
         }
-    } else {
-        // Add new attendance record
-        employeeAttendanceData.push({
-            employeeId: currentEmployeeId,
-            date: currentDate,
-            status: status,
-            timeIn: timeIn,
-            timeOut: timeOut
+    });
+
+    // Fix: Add event listener for Cancel button in leave application selection
+    const cancelSelectionBtn = document.getElementById('cancel-selection-btn');
+    if (cancelSelectionBtn) {
+        cancelSelectionBtn.addEventListener('click', function () {
+            clearCalendarSelection();
+            selectedDates = [];
+            hideLeaveApplicationButtons();
         });
-        alert(`Attendance marked for today (${currentDate}): Status - ${status.toUpperCase()}, Time In - ${timeIn}.`);
     }
 
-    renderMyAttendanceTable(); // Re-render the table to show the updated status
-    if (calendarVisible) { // If calendar is open, re-render it too
-        renderCalendar(calendarMonthOffset);
+    // Show notification on leave application submit
+    const leaveForm = document.getElementById('leave-application-form');
+    if (leaveForm) {
+        leaveForm.addEventListener('submit', function (e) {
+            e.preventDefault();
+            // You can add your form submission logic here (AJAX, etc.)
+            if (statusNotification && statusMessage) {
+                statusMessage.textContent = "Leave application sent successfully!";
+                statusNotification.classList.add('show');
+                setTimeout(() => {
+                    statusNotification.classList.remove('show');
+                }, 3000);
+            } else {
+                alert("Leave application sent successfully!");
+            }
+            // Hide the leave drawer after submission
+            hideLeaveDrawer();
+            // Clear calendar selection and hide leave application buttons
+            clearCalendarSelection();
+            selectedDates = [];
+            hideLeaveApplicationButtons();
+            // Reset the leave application form fields
+            leaveForm.reset();
+        });
     }
+
+    // Filter functionality (if you use it)
+    const filterDateEl = document.getElementById("filter-date");
+    const filterStatusEl = document.getElementById("filter-status");
+
+    function applyGeneralFilters() {
+        const filterDate = filterDateEl ? filterDateEl.value : '';
+        const filterStatus = filterStatusEl ? filterStatusEl.value : '';
+        console.log("General Filter Applied - Date:", filterDate, "Status:", filterStatus);
+    }
+
+    if (filterDateEl) filterDateEl.addEventListener("change", applyGeneralFilters);
+    if (filterStatusEl) filterStatusEl.addEventListener("change", applyGeneralFilters);
+    applyGeneralFilters();
 });
-
-
-// Render employee's specific attendance table with pagination
-function renderMyAttendanceTable() {
-    const myAttendanceTbody = document.getElementById("my-attendance-tbody");
-    myAttendanceTbody.innerHTML = "";
-
-    const todayYMD = formatDateToYMD(new Date());
-
-    // Filter data for the current employee only and for dates up to today
-    filteredAndSortedRecords = employeeAttendanceData.filter(
-        (record) => record.employeeId === currentEmployeeId && record.date <= todayYMD
-    ).sort((a, b) => new Date(b.date) - new Date(a.date)); // Sort by date descending
-
-    const totalPages = Math.ceil(filteredAndSortedRecords.length / RECORDS_PER_PAGE);
-
-    // Ensure currentPage is within valid bounds
-    if (currentPage < 0) currentPage = 0;
-    if (currentPage >= totalPages && totalPages > 0) currentPage = totalPages - 1;
-
-    const startIndex = currentPage * RECORDS_PER_PAGE;
-    const endIndex = startIndex + RECORDS_PER_PAGE;
-    const recordsToDisplay = filteredAndSortedRecords.slice(startIndex, endIndex);
-
-    if (recordsToDisplay.length === 0) {
-        myAttendanceTbody.innerHTML = `
-          <tr>
-            <td colspan="4" style="text-align:center; padding: 2rem; color: var(--color-dark-variant); font-style: italic;">
-              No attendance records found for this period.
-            </td>
-          </tr>
-        `;
-    } else {
-        for (const record of recordsToDisplay) {
-            const statusInfo = {
-                present: { text: "Present", class: "status-badge present" },
-                absent: { text: "Absent", class: "status-badge absent" },
-                late: { text: "Late", class: "status-badge late" },
-                onleave: { text: "On Leave", class: "status-badge onleave" },
-                "half-day": { text: "Half Day", class: "status-badge half-day" },
-                "holiday": { text: "Holiday", class: "status-badge onleave" }, // Using onleave style for holiday
-                "weekend": { text: "Weekend", class: "status-badge onleave" } // Using onleave style for weekend
-            };
-            const statusDisplay = statusInfo[record.status] || { text: record.status, class: "status-badge" };
-
-            myAttendanceTbody.innerHTML += `
-              <tr>
-                <td>${record.date}</td>
-                <td><span class="${statusDisplay.class}">${statusDisplay.text}</span></td>
-                <td>${record.timeIn || '-'}</td>
-                <td>${record.timeOut || '-'}</td>
-              </tr>
-            `;
-        }
-    }
-    updatePaginationControls(totalPages);
-}
-
-function updatePaginationControls(totalPages) {
-    const prevBtn = document.getElementById('prev-week-btn');
-    const nextBtn = document.getElementById('next-week-btn');
-    const weekRangeDisplay = document.getElementById('current-week-range');
-
-    prevBtn.disabled = currentPage === 0;
-    nextBtn.disabled = currentPage >= totalPages - 1;
-
-    if (filteredAndSortedRecords.length > 0) {
-        const startRecordIndex = currentPage * RECORDS_PER_PAGE;
-        const endRecordIndex = Math.min(startRecordIndex + RECORDS_PER_PAGE - 1, filteredAndSortedRecords.length - 1);
-
-        const startDate = filteredAndSortedRecords[startRecordIndex].date;
-        const endDate = filteredAndSortedRecords[endRecordIndex].date;
-
-        weekRangeDisplay.textContent = `${startDate} to ${endDate}`;
-    } else {
-        weekRangeDisplay.textContent = 'No records';
-    }
-}
-
-// Event listeners for pagination buttons
-document.getElementById('prev-week-btn').addEventListener('click', () => {
-    if (currentPage > 0) {
-        currentPage--;
-        renderMyAttendanceTable();
-    }
-});
-
-document.getElementById('next-week-btn').addEventListener('click', () => {
-    const totalPages = Math.ceil(filteredAndSortedRecords.length / RECORDS_PER_PAGE);
-    if (currentPage < totalPages - 1) {
-        currentPage++;
-        renderMyAttendanceTable();
-    }
-});
-
-
-// Initial render of the employee's attendance table
-renderMyAttendanceTable();
-
-
-// Filter functionality (kept for general filtering, though the main table is gone)
-const filterDateEl = document.getElementById("filter-date");
-const filterStatusEl = document.getElementById("filter-status");
-
-// This function now only logs to console as the main table is removed.
-// If you want to filter the "My Attendance Records" table, you'd modify renderMyAttendanceTable
-// to accept filters.
-function applyGeneralFilters() {
-    const filterDate = filterDateEl.value;
-    const filterStatus = filterStatusEl.value;
-
-    // This part is for general attendance data, not the specific employee's table
-    // If you want to filter the "My Attendance Records" table, you'd call
-    // renderMyAttendanceTable with filter parameters.
-    console.log("General Filter Applied - Date:", filterDate, "Status:", filterStatus);
-}
-
-filterDateEl.addEventListener("change", applyGeneralFilters);
-filterStatusEl.addEventListener("change", applyGeneralFilters);
-applyGeneralFilters(); // Initial call
