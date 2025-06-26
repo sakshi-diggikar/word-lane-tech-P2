@@ -317,18 +317,9 @@ function hideLeaveApplicationButtons() {
 
 // Event handler for "Leave Application" button
 function handleApplyLeaveClick() {
-    const leaveForm = document.getElementById('leave-application-form');
-    leaveForm.style.display = 'block';
-    hideLeaveApplicationButtons(); // Hide buttons after clicking "Leave Application"
-
-    // Adjust layout
-    container.classList.add('form-open');
-
-    // Populate form fields
+    // Populate form fields as before
     document.getElementById('emp-id').value = currentEmployeeId;
     document.getElementById('employee-name').value = currentEmployeeName;
-
-    // Populate start and end dates from selectedDates array
     if (selectedDates.length > 0) {
         document.getElementById('start-date').value = selectedDates[0];
         document.getElementById('end-date').value = selectedDates[selectedDates.length - 1];
@@ -336,97 +327,16 @@ function handleApplyLeaveClick() {
         document.getElementById('start-date').value = '';
         document.getElementById('end-date').value = '';
     }
+    // Show the drawer
+    document.getElementById('leave-drawer').classList.add('open');
+    document.querySelector('.container').classList.add('leave-drawer-open');
 }
 
-// Event handler for "Cancel" button (for date selection)
-function handleCancelSelectionClick() {
-    selectedDates = [];
-    clearCalendarSelection();
-    hideLeaveApplicationButtons();
-    document.getElementById('leave-application-form').style.display = 'none'; // Also hide form if it was open
-    container.classList.remove('form-open'); // Reset layout
+function hideLeaveDrawer() {
+    document.getElementById('leave-drawer').classList.remove('open');
+    document.querySelector('.container').classList.remove('leave-drawer-open');
 }
 
-// Function to hide the leave application form
-function hideLeaveForm() {
-    document.getElementById('leave-application-form').style.display = 'none';
-    // Calendar remains visible, no need to toggle its display
-    // Clear form fields
-    document.getElementById('leave-subject').value = '';
-    document.getElementById('leave-description').value = '';
-    document.getElementById('start-date').value = '';
-    document.getElementById('end-date').value = '';
-    selectedDates = []; // Clear selection when form is cancelled
-    clearCalendarSelection(); // Clear visual selection
-    container.classList.remove('form-open'); // Reset layout
-}
-
-// Event listener for "Mark Attendance" button
-document.getElementById('mark-attendance-btn').addEventListener('click', () => {
-    const now = new Date();
-    const currentTime = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
-    const currentDate = formatDateToYMD(now);
-
-    // Prevent marking attendance for future dates
-    const todayYMD = formatDateToYMD(new Date());
-    if (currentDate > todayYMD) {
-        alert("You cannot mark attendance for a future date.");
-        return;
-    }
-
-    let status = "present";
-    let timeIn = currentTime;
-    let timeOut = "";
-
-    const checkTime = now.getHours() * 60 + now.getMinutes(); // minutes from midnight
-
-    // 9:20 AM = 9*60 + 20 = 560 minutes
-    // 12:30 PM = 12*60 + 30 = 750 minutes
-    // 3:00 PM = 15*60 + 0 = 900 minutes
-
-    if (checkTime > 560 && checkTime <= 750) { // After 9:20 AM and before or at 12:30 PM
-        status = "late";
-    } else if (checkTime > 750 && checkTime <= 900) { // After 12:30 PM and before or at 3:00 PM
-        status = "half-day";
-    } else if (checkTime > 900) { // After 3:00 PM
-        alert("It's too late to mark attendance for a full or half day.");
-        return;
-    }
-
-    // Check if attendance for today already exists
-    const existingRecordIndex = employeeAttendanceData.findIndex(
-        r => r.employeeId === currentEmployeeId && r.date === currentDate
-    );
-
-    if (existingRecordIndex !== -1) {
-        // If status is already present/half-day, update timeOut
-        if (employeeAttendanceData[existingRecordIndex].status === "present" || employeeAttendanceData[existingRecordIndex].status === "half-day") {
-            employeeAttendanceData[existingRecordIndex].timeOut = currentTime;
-            alert(`Attendance updated for today (${currentDate}): Time Out set to ${currentTime}.`);
-        } else {
-            alert(`Attendance for today (${currentDate}) is already marked as ${employeeAttendanceData[existingRecordIndex].status}. Cannot mark again.`);
-            return;
-        }
-    } else {
-        // Add new attendance record
-        employeeAttendanceData.push({
-            employeeId: currentEmployeeId,
-            date: currentDate,
-            status: status,
-            timeIn: timeIn,
-            timeOut: timeOut
-        });
-        alert(`Attendance marked for today (${currentDate}): Status - ${status.toUpperCase()}, Time In - ${timeIn}.`);
-    }
-
-    renderMyAttendanceTable(); // Re-render the table to show the updated status
-    if (calendarVisible) { // If calendar is open, re-render it too
-        renderCalendar(calendarMonthOffset);
-    }
-});
-
-
-// Render employee's specific attendance table with pagination
 function renderMyAttendanceTable() {
     const myAttendanceTbody = document.getElementById("my-attendance-tbody");
     myAttendanceTbody.innerHTML = "";

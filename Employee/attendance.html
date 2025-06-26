@@ -171,6 +171,50 @@
                 </div>
             </form>
         </div>
+
+        <!-- Leave Application Drawer (Hidden by default) -->
+        <div id="leave-drawer" class="leave-drawer">
+            <div class="leave-drawer-content">
+                <button class="leave-drawer-close" onclick="hideLeaveDrawer()">&times;</button>
+                <h2>Leave Application</h2>
+                <form id="leave-application-form" class="leave-form-container" style="display: block;">
+                    <div class="form-group">
+                        <label for="emp-id">Employee ID:</label>
+                        <input type="text" id="emp-id" name="emp-id" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label for="employee-name">Employee Name:</label>
+                        <input type="text" id="employee-name" name="employee-name" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label for="sender-name">Sender Name:</label>
+                        <input type="text" id="sender-name" name="sender-name" value="Bruno" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label for="leave-subject">Subject:</label>
+                        <input type="text" id="leave-subject" name="leave-subject"
+                            placeholder="e.g., Annual Leave Request" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="leave-description">Description:</label>
+                        <textarea id="leave-description" name="leave-description" rows="5"
+                            placeholder="Reason for leave and any other details" required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="start-date">Start Date:</label>
+                        <input type="text" id="start-date" name="start-date" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label for="end-date">End Date:</label>
+                        <input type="text" id="end-date" name="end-date" readonly>
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="send-btn">Send</button>
+                        <button type="button" class="cancel-btn" onclick="hideLeaveDrawer()">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
     </div>
 
