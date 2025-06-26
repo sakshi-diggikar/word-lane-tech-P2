@@ -122,8 +122,9 @@ body {
 
 .input-group input {
     width: 100%;
-    padding: 15px 40px 15px 50px;
-    /* Generous padding for better touch targets */
+    /* IMPORTANT: Increased right padding to make space for the eye icon */
+    padding: 15px 50px 15px 50px;
+    /* 50px left for icon, 50px right for eye icon */
     border: 1px solid #e0e0e0;
     /* Lighter, subtle border */
     border-radius: 10px;
@@ -160,16 +161,15 @@ body {
     /* Icon size */
     color: #95a5a6;
     /* Softer icon color */
-    pointer-events: none;
-    /* Ensures clicks pass through to input */
+    /* No pointer-events: none; here, as the toggle-password span handles clicks */
 }
 
 /* Toggle Password Icon */
 .toggle-password {
     position: absolute;
     top: 50%;
+    /* IMPORTANT: Positioned relative to the input-group, 18px from the right edge of the input field */
     right: 18px;
-    /* Icon position */
     transform: translateY(-50%);
     font-size: 1.2rem;
     /* Icon size */
@@ -177,7 +177,7 @@ body {
     color: #95a5a6;
     /* Softer icon color */
     z-index: 2;
-    /* Ensure it's clickable */
+    /* Ensure it's clickable and on top of the input */
     transition: color 0.2s ease;
 }
 
@@ -316,7 +316,9 @@ body {
     }
 
     .input-group input {
-        padding: 12px 35px 12px 45px;
+        /* Adjusted padding for smaller screens */
+        padding: 12px 45px 12px 45px;
+        /* 45px for both left and right */
         font-size: 0.9rem;
         border-radius: 8px;
     }
@@ -361,7 +363,9 @@ body {
     }
 
     .input-group input {
-        padding: 14px 40px 14px 48px;
+        /* Adjusted padding for tablets */
+        padding: 14px 48px 14px 48px;
+        /* 48px for both left and right */
         font-size: 0.95rem;
     }
 
@@ -387,7 +391,9 @@ body {
     }
 
     .input-group input {
-        padding: 16px 45px 16px 55px;
+        /* Adjusted padding for large desktops */
+        padding: 16px 55px 16px 55px;
+        /* 55px for both left and right */
         font-size: 1.05rem;
     }
 
