@@ -5,7 +5,6 @@ const backToTeamsBtn = document.getElementById("back-to-teams-btn");
 const teamCardsContainer = document.getElementById("team-cards");
 const projectCardsContainer = document.getElementById("project-cards");
 
-const projectModal = document.getElementById("modal");
 const modalTitle = document.getElementById("modal-title");
 const modalForm = document.getElementById("modal-form");
 const inputTeamName = document.getElementById("input-team-name");
@@ -80,6 +79,9 @@ let currentTeam = null;
 let currentProject = null;
 let currentTask = null;
 
+// Modal reference (will be set after DOM loads)
+let projectModal = null;
+
 // Get admin user ID from session storage
 function getAdminUserId() {
     return sessionStorage.getItem("emp_user_id");
@@ -94,11 +96,13 @@ async function loadTeams() {
     }
 
     try {
+        console.log('🔍 Loading teams for admin:', adminUserId);
         const response = await fetch(`/api/projects/teams/${adminUserId}`);
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
         const data = await response.json();
+        console.log('🔍 Teams loaded:', data);
         teams = data;
         renderTeams();
     } catch (error) {
@@ -220,25 +224,20 @@ function showTeamDetails(team) {
     </div>
     <div style="background:#f8f9fa;padding:1.5rem;border-radius:1rem;margin-bottom:1.5rem;">
         <h3 style="color:#363949;margin-bottom:0.8rem;">Team Details</h3>
-        <p style="color:#677483;white-space:pre-line;margin-bottom:1rem;">${team.description || 'No description provided.'}</p>
+        <p style="color:#677483;white-space:pre-line;margin-bottom:1rem;">${team.team_description || 'No description provided.'}</p>
         <div style="display:grid;grid-template-columns:auto 1fr;gap:1rem;margin-top:1rem;">
             <strong style="color:#363949;">Created:</strong>
-            <span style="color:#677483;">${team.createdAt ? formatDateTime(team.createdAt) : 'N/A'}</span>
+            <span style="color:#677483;">${team.team_created_at ? formatDateTime(new Date(team.team_created_at)) : 'N/A'}</span>
             <strong style="color:#363949;">Projects:</strong>
-            <span style="color:#677483;">${team.projects ? team.projects.length : 0}</span>
+            <span style="color:#677483;">${team.project_count || 0}</span>
             <strong style="color:#363949;">Leader:</strong>
             <span style="color:#677483;">
-                ${
-                    team.leaderId
-                        ? (() => {
-                            const emp = employees.find(e => e.id === team.leaderId);
-                            return emp
-                                ? `${emp.name} (${emp.id})`
-                                : team.leaderId;
-                        })()
-                        : 'N/A'
-                }
+                ${team.leader_name ? `${team.leader_name} (${team.team_leader_id})` : 'N/A'}
             </span>
+            <strong style="color:#363949;">Team ID:</strong>
+            <span style="color:#677483;">${team.team_id || 'N/A'}</span>
+            <strong style="color:#363949;">Created By:</strong>
+            <span style="color:#677483;">${team.team_created_by || 'N/A'}</span>
         </div>
     </div>
     <div style="background:#f8f9fa;padding:1.5rem;border-radius:1rem;">
@@ -255,8 +254,9 @@ function showTeamDetails(team) {
     content.querySelector('#update-team-btn').onclick = function () {
         showModal('team', team); // Pass the team object for update
         setTimeout(() => {
-            inputTeamName.value = team.name || '';
-            inputTeamDesc.value = team.description || '';
+            inputTeamName.value = team.team_name || '';
+            inputTeamDesc.value = team.team_description || '';
+            inputLeaderId.value = team.leader_name ? `${team.leader_name} (${team.team_leader_id})` : '';
             // Change heading and button
             modalTitle.textContent = 'Update Team';
             document.getElementById('create-btn').textContent = 'Update';
@@ -895,6 +895,7 @@ function createSubtaskCard(subtask) {
 
 // renderTeams function to display teams
 function renderTeams() {
+    console.log('🔍 Rendering teams, count:', teams.length);
     sectionTitle.textContent = "Teams";
     teamsView.hidden = false;
     projectsView.hidden = true;
@@ -906,10 +907,12 @@ function renderTeams() {
     currentTask = null;
 
     teamCardsContainer.innerHTML = "";
-    teams.forEach(team => {
+    teams.forEach((team, index) => {
+        console.log(`🔍 Creating card for team ${index}:`, team);
         const card = createTeamCard(team, openTeamFolder);
         teamCardsContainer.appendChild(card);
     });
+    console.log('🔍 Team cards created:', teamCardsContainer.children.length);
 }
 
 // Render projects list view (root level)
@@ -1007,8 +1010,12 @@ function renderSubtasks() {
 
 // Navigation functions
 function openTeamFolder(team) {
+    console.log('🔍 Team clicked:', team);
+    console.log('🔍 Team ID:', team.team_id);
+    console.log('🔍 Team name:', team.team_name);
+    
     currentTeam = team;
-    renderProjects();
+    loadProjectsByTeam(team.team_id);
 }
 
 function openProjectFolder(project) {
@@ -1147,11 +1154,11 @@ function showModal(type, subtaskToEdit = null) {
         }
         if (inputTeamName) inputTeamName.focus();
         if (subtaskToEdit) {
-            if (inputTeamName) inputTeamName.value = subtaskToEdit.name || '';
-            if (inputTeamDesc) inputTeamDesc.value = subtaskToEdit.description || '';
-            if (inputLeaderId) inputLeaderId.value = subtaskToEdit.leaderId || '';
+            if (inputTeamName) inputTeamName.value = subtaskToEdit.team_name || '';
+            if (inputTeamDesc) inputTeamDesc.value = subtaskToEdit.team_description || '';
+            if (inputLeaderId) inputLeaderId.value = subtaskToEdit.leader_name ? `${subtaskToEdit.leader_name} (${subtaskToEdit.team_leader_id})` : '';
             modalForm.setAttribute('data-editing-team', 'true');
-            modalForm.setAttribute('data-editing-team-name', subtaskToEdit.name);
+            modalForm.setAttribute('data-editing-team-name', subtaskToEdit.team_name);
         } else {
             if (inputLeaderId) inputLeaderId.value = '';
             modalForm.removeAttribute('data-editing-team');
@@ -1162,225 +1169,81 @@ function showModal(type, subtaskToEdit = null) {
             if (inputLeaderId) inputLeaderId.focus();
         }, 100);
     } else if (type === 'project') {
-        const isEditingProject = modalForm.getAttribute('data-editing-project') === 'true';
-        const editingProjectName = modalForm.getAttribute('data-editing-project-name');
-        if (!name) {
-            alert('Please enter a project name.');
-            inputName.focus();
-            return;
-        }
-        if (!client) {
-            alert('Please enter a client name.');
-            inputClient.focus();
-            return;
-        }
-        if (!startdate) {
-            alert('Please select a start date.');
-            inputStartDate.focus();
-            return;
-        }
-        if (!deadline) {
-            alert('Please select a deadline.');
-            inputDeadline.focus();
-            return;
-        }
-        if (!currentTeam) {
-            alert('No team selected for creating a project.');
-            closeModal();
-            return;
-        }
-        if (!isEditingProject && projectExistsInList(currentTeam.projects, name)) {
-            alert('Project with this name already exists.');
-            inputName.focus();
-            return;
-        }
-        if (
-            isEditingProject &&
-            name.toLowerCase() !== editingProjectName.toLowerCase() &&
-            projectExistsInList(currentTeam.projects, name)
-        ) {
-            alert('Project with this name already exists.');
-            inputName.focus();
-            return;
-        }
-        if (isEditingProject) {
-            // Find and update the project
-            const project = currentTeam.projects.find(p => p.name === editingProjectName);
-            if (project) {
-                project.name = name;
-                project.description = description;
-                project.client = client;
-                project.startdate = new Date(startdate);
-                project.deadline = new Date(deadline);
-                project.priority = inputPriority.value;
-            }
-            renderProjects();
-            closeModal();
-            return;
-        }
-        const newProject = {
-            name,
-            description,
-            client,
-            startdate: new Date(startdate),
-            deadline: new Date(deadline),
-            mentor: 'Unassigned',
-            createdAt: new Date(),
-            tasks: [],
-            status: 'active',
-            progress: 0,
-            priority: inputPriority.value
-        };
-        currentTeam.projects.unshift(newProject);
-        renderProjects();
-        closeModal();
+        // Show project fields
+        modalTitle.textContent = 'Create New Project';
+        const createBtn = document.getElementById('create-btn');
+        if (createBtn) createBtn.textContent = 'Create';
+        if (inputName) inputName.style.display = 'block';
+        const inputLabel = document.getElementById('input-label');
+        if (inputLabel) inputLabel.style.display = 'block';
+        if (inputDescription) inputDescription.style.display = 'block';
+        const inputDescriptionLabel = document.getElementById('input-description-label');
+        if (inputDescriptionLabel) inputDescriptionLabel.style.display = 'block';
+        if (inputClient) inputClient.style.display = 'block';
+        const inputClientLabel = document.getElementById('input-client-label');
+        if (inputClientLabel) inputClientLabel.style.display = 'block';
+        if (inputStartDate) inputStartDate.style.display = 'block';
+        const inputStartDateLabel = document.getElementById('input-startdate-label');
+        if (inputStartDateLabel) inputStartDateLabel.style.display = 'block';
+        if (inputDeadline) inputDeadline.style.display = 'block';
+        const inputDeadlineLabel = document.getElementById('input-deadline-label');
+        if (inputDeadlineLabel) inputDeadlineLabel.style.display = 'block';
+        if (priorityFieldWrapper) priorityFieldWrapper.style.display = 'block';
+        if (inputName) inputName.focus();
     } else if (type === 'task') {
-        const taskName = inputTaskName.value.trim();
-        const taskDesc = inputTaskDesc.value.trim();
-        const taskDeadline = inputTaskDeadline.value;
-        const taskPriority = inputTaskPriority.value;
-        let taskEmpidRaw = inputTaskEmpid.value.trim();
-        let taskEmpid = taskEmpidRaw;
-        const match = taskEmpidRaw.match(/\(([^)]+)\)$/);
-        if (match) {
-            taskEmpid = match[1];
-        }
-        const isEditingTask = modalForm.getAttribute('data-editing-task') === 'true';
-        const editingTaskName = modalForm.getAttribute('data-editing-task-name');
-        if (!taskName) {
-            alert('Please enter a task name.');
-            inputTaskName.focus();
-            return;
-        }
-        if (!taskDeadline) {
-            alert('Please select a task deadline.');
-            inputTaskDeadline.focus();
-            return;
-        }
-        if (!currentProject) {
-            alert('No project is open to add a task.');
-            closeModal();
-            return;
-        }
-        if (!isEditingTask && projectExistsInList(currentProject.tasks, taskName)) {
-            alert('Task with this name already exists in this project.');
-            inputTaskName.focus();
-            return;
-        }
-        if (
-            isEditingTask &&
-            taskName.toLowerCase() !== editingTaskName.toLowerCase() &&
-            projectExistsInList(currentProject.tasks, taskName)
-        ) {
-            alert('Task with this name already exists in this project.');
-            inputTaskName.focus();
-            return;
-        }
-        if (isEditingTask) {
-            // Find and update the task
-            const task = currentProject.tasks.find(t => t.name === editingTaskName);
-            if (task) {
-                task.name = taskName;
-                task.details = taskDesc;
-                task.empid = taskEmpid;
-                task.deadline = new Date(taskDeadline);
-                task.priority = taskPriority;
-            }
-            renderTasks();
-            closeModal();
-            return;
-        }
-        const newTask = {
-            name: taskName,
-            details: taskDesc,
-            empid: taskEmpid,
-            deadline: new Date(taskDeadline),
-            createdAt: new Date(),
-            subtasks: [],
-            status: 'active',
-            progress: 0,
-            priority: taskPriority
-        };
-        currentProject.tasks.unshift(newTask);
-        renderTasks();
-        closeModal();
+        // Show task fields
+        modalTitle.textContent = 'Create New Task';
+        const createBtn = document.getElementById('create-btn');
+        if (createBtn) createBtn.textContent = 'Create';
+        if (inputTaskName) inputTaskName.style.display = 'block';
+        const inputTaskNameLabel = document.getElementById('input-task-name-label');
+        if (inputTaskNameLabel) inputTaskNameLabel.style.display = 'block';
+        if (taskPriorityFieldWrapper) taskPriorityFieldWrapper.style.display = 'block';
+        if (inputTaskDesc) inputTaskDesc.style.display = 'block';
+        const inputTaskDescLabel = document.getElementById('input-task-desc-label');
+        if (inputTaskDescLabel) inputTaskDescLabel.style.display = 'block';
+        if (inputTaskEmpid) inputTaskEmpid.style.display = 'block';
+        const inputTaskEmpidLabel = document.getElementById('input-task-empid-label');
+        if (inputTaskEmpidLabel) inputTaskEmpidLabel.style.display = 'block';
+        if (inputTaskDeadline) inputTaskDeadline.style.display = 'block';
+        const inputTaskDeadlineLabel = document.getElementById('input-task-deadline-label');
+        if (inputTaskDeadlineLabel) inputTaskDeadlineLabel.style.display = 'block';
+        if (inputTaskName) inputTaskName.focus();
+        setTimeout(() => {
+            setupTaskEmployeeAutocomplete();
+        }, 100);
     } else if (type === 'subtask') {
-        const subtaskName = inputSubtaskName.value.trim();
-        const subtaskDesc = inputSubtaskDesc.value.trim();
-        // const subtaskEmpid = inputSubtaskEmpid.value.trim();
-        const subtaskDeadline = inputSubtaskDeadline.value;
-        const subtaskPriority = inputSubtaskPriority.value;
-        const subtaskEmpids = selectedEmployees.map(e => e.id);
-        const subtaskAttachment = inputSubtaskAttachment.files ? Array.from(inputSubtaskAttachment.files) : [];
-        if (!subtaskName) {
-            alert('Please enter a subtask name.');
-            inputSubtaskName.focus();
-            return;
-        }
-        if (!selectedEmployees.length) {
-            alert('Please select at least one employee.');
-            inputSubtaskEmpid.focus();
-            return;
-        }
-        if (!subtaskDeadline) {
-            alert('Please select a subtask deadline.');
-            inputSubtaskDeadline.focus();
-            return;
-        }
-        if (!currentTask) {
-            alert('No Task is open to add subtask.');
-            closeModal();
-            return;
-        }
-        const isEditing = modalForm.getAttribute('data-editing-subtask') === 'true';
-        const editingName = modalForm.getAttribute('data-editing-subtask-name');
-        if (!isEditing && projectExistsInList(currentTask.subtasks, subtaskName)) {
-            alert('Subtask with this name already exists in this task.');
-            inputSubtaskName.focus();
-            return;
-        }
-        // If editing, allow the same name as the one being edited
-        if (
-            isEditing &&
-            subtaskName.toLowerCase() !== editingName.toLowerCase() &&
-            projectExistsInList(currentTask.subtasks, subtaskName)
-        ) {
-            alert('Subtask with this name already exists in this task.');
-            inputSubtaskName.focus();
-            return;
-        }
-        if (isEditing) {
-            // Find and update the subtask
-            const subtask = currentTask.subtasks.find(st => st.name === editingName);
-            if (subtask) {
-                subtask.name = subtaskName;
-                subtask.details = subtaskDesc;
-                subtask.empids = subtaskEmpids;
-                subtask.deadline = new Date(subtaskDeadline);
-                subtask.priority = subtaskPriority;
-                // Optionally update attachments if new ones are uploaded
-                if (subtaskAttachment.length > 0) {
-                    subtask.attachments = subtaskAttachment;
-                }
-            }
-            renderSubtasks();
-            closeModal();
-            return;
-        } else {
-            const newSubtask = {
-                name: subtaskName,
-                details: subtaskDesc,
-                empids: subtaskEmpids,
-                deadline: new Date(subtaskDeadline),
-                createdAt: new Date(),
-                priority: subtaskPriority,
-                attachments: subtaskAttachment
-            };
-            currentTask.subtasks.unshift(newSubtask);
-            renderSubtasks();
-            closeModal();
-        }
+        // Show subtask fields
+        modalTitle.textContent = 'Create New Subtask';
+        const createBtn = document.getElementById('create-btn');
+        if (createBtn) createBtn.textContent = 'Create';
+        if (inputSubtaskName) inputSubtaskName.style.display = 'block';
+        const inputSubtaskNameLabel = document.getElementById('input-subtask-name-label');
+        if (inputSubtaskNameLabel) inputSubtaskNameLabel.style.display = 'block';
+        if (subtaskPriorityFieldWrapper) subtaskPriorityFieldWrapper.style.display = 'block';
+        if (inputSubtaskDesc) inputSubtaskDesc.style.display = 'block';
+        const inputSubtaskDescLabel = document.getElementById('input-subtask-desc-label');
+        if (inputSubtaskDescLabel) inputSubtaskDescLabel.style.display = 'block';
+        if (inputSubtaskEmpid) inputSubtaskEmpid.style.display = 'block';
+        const inputSubtaskEmpidLabel = document.getElementById('input-subtask-empid-label');
+        if (inputSubtaskEmpidLabel) inputSubtaskEmpidLabel.style.display = 'block';
+        if (inputSubtaskDeadline) inputSubtaskDeadline.style.display = 'block';
+        const inputSubtaskDeadlineLabel = document.getElementById('input-subtask-deadline-label');
+        if (inputSubtaskDeadlineLabel) inputSubtaskDeadlineLabel.style.display = 'block';
+        if (inputSubtaskPriority) inputSubtaskPriority.style.display = 'block';
+        if (inputSubtaskAttachment) inputSubtaskAttachment.style.display = 'block';
+        const inputSubtaskAttachmentLabel = document.getElementById('input-subtask-attachment-label');
+        if (inputSubtaskAttachmentLabel) inputSubtaskAttachmentLabel.style.display = 'block';
+        const subtaskEmpidSuggestions = document.getElementById('subtask-empid-suggestions');
+        if (subtaskEmpidSuggestions) subtaskEmpidSuggestions.style.display = 'block';
+        const selectedEmployeesDiv = document.getElementById('selected-employees');
+        if (selectedEmployeesDiv) selectedEmployeesDiv.style.display = 'block';
+        if (inputSubtaskName) inputSubtaskName.focus();
+        setTimeout(() => {
+            setupEmployeeAutocomplete();
+        }, 100);
     }
+    
     projectModal.setAttribute('aria-hidden', 'false');
     projectModal.classList.add('active');
     projectModal.style.display = 'flex';
@@ -1458,145 +1321,87 @@ backTasksBtn.addEventListener("click", () => {
 
 // Initial render of projects
 // Load teams from backend instead of using dummy data
-loadTeams();
+// loadTeams();
 
-flatpickr("#input-startdate", {
-    enableTime: true,
-    dateFormat: "Y-m-d H:i",
-    allowInput: true,
-    wrap: false,
-    clickOpens: true,
-    minDate: "today",
-    plugins: [new confirmDatePlugin({})]
-});
-flatpickr("#input-deadline", {
-    enableTime: true,
-    dateFormat: "Y-m-d H:i",
-    allowInput: true,
-    wrap: false,
-    clickOpens: true,
-    minDate: "today",
-    plugins: [new confirmDatePlugin({})]
-});
-flatpickr("#input-task-deadline", {
-    enableTime: true,
-    dateFormat: "Y-m-d H:i",
-    allowInput: true,
-    wrap: false,
-    clickOpens: true,
-    minDate: "today",
-    plugins: [new confirmDatePlugin({})]
-});
-flatpickr("#input-subtask-deadline", {
-    enableTime: true,
-    dateFormat: "Y-m-d H:i",
-    allowInput: true,
-    wrap: false,
-    clickOpens: true,
-    minDate: "today",
-    plugins: [new confirmDatePlugin({})]
-});
+// loadTeams();
+
+// flatpickr initialization - REMOVED (duplicate, handled in DOMContentLoaded)
+// flatpickr("#input-startdate", {
+//     enableTime: true,
+//     dateFormat: "Y-m-d H:i",
+//     allowInput: true,
+//     wrap: false,
+//     clickOpens: true,
+//     minDate: "today",
+//     plugins: [new confirmDatePlugin({})]
+// });
+// flatpickr("#input-deadline", {
+//     enableTime: true,
+//     dateFormat: "Y-m-d H:i",
+//     allowInput: true,
+//     wrap: false,
+//     clickOpens: true,
+//     minDate: "today",
+//     plugins: [new confirmDatePlugin({})]
+// });
+// flatpickr("#input-task-deadline", {
+//     enableTime: true,
+//     dateFormat: "Y-m-d H:i",
+//     allowInput: true,
+//     wrap: false,
+//     clickOpens: true,
+//     minDate: "today",
+//     plugins: [new confirmDatePlugin({})]
+// });
+// flatpickr("#input-subtask-deadline", {
+//     enableTime: true,
+//     dateFormat: "Y-m-d H:i",
+//     allowInput: true,
+//     wrap: false,
+//     clickOpens: true,
+//     minDate: "today",
+//     plugins: [new confirmDatePlugin({})]
+// });
 
 // Function to show project details
 function showProjectDetails(project) {
     const modal = projectDetailsModal;
     const content = document.getElementById("project-details-content");
-
-    // Calculate progress
-    let progress = 0;
-    if (project.tasks && project.tasks.length > 0) {
-        const completed = project.tasks.filter(t => t.completed).length;
-        progress = Math.round((completed / project.tasks.length) * 100);
-    }
-
-    // Status calculation
-    let status = project.status || 'Pending';
-    const now = new Date();
-    if (project.deadline && status !== 'Completed') {
-        if (now > project.deadline) status = 'Delayed';
-    }
-
-    // Priority color
-    let priority = project.priority || 'Medium';
-    let priorityColor = priority === 'High' ? '#ff4d4f' : priority === 'Medium' ? '#ffbb55' : '#41f1b6';
-
     content.innerHTML = `
-                <div style="margin-bottom: 2rem;">
-                    <div style="display:flex;align-items:center;justify-content:space-between;gap:1rem;">
-                        <h2 style="color:#7380ec;font-size:1.8rem;margin-bottom:0;">${project.name}</h2>
-                        <div style="display:flex;align-items:center;gap:0.7rem;">
-                            <span class="priority-label" style="padding:4px 12px;border-radius:8px;font-size:1em;background:${priorityColor};color:white;">
-                                ${priority}
-                            </span>
-                            <span class="status-label" style="padding:4px 12px;border-radius:8px;font-size:1em;background:${status === 'Completed' ? '#28a745' : status === 'Delayed' ? '#dc3545' : '#f0ad4e'};color:white;">
-                                ${status}
-                            </span>
-                        </div>
-                    </div>
-                </div>
-                
-                <div style="background:#f8f9fa;padding:1.5rem;border-radius:1rem;margin-bottom:1.5rem;">
-                    <h3 style="color:#363949;margin-bottom:0.8rem;">Project Details</h3>
-                    <p style="color:#677483;white-space:pre-line;margin-bottom:1rem;">${project.description || 'No description provided.'}</p>
-                    
-                    <div style="display:grid;grid-template-columns:auto 1fr;gap:1rem;margin-top:1rem;">
-                        <strong style="color:#363949;">Client:</strong>
-                        <span style="color:#677483;">${project.client || 'N/A'}</span>
-                        
-                        <strong style="color:#363949;">Start Date:</strong>
-                        <span style="color:#677483;">${project.startdate ? formatDateTime(project.startdate) : 'N/A'}</span>
-                        
-                        <strong style="color:#363949;">Deadline:</strong>
-                        <span style="color:#677483;">${project.deadline ? formatDateTime(project.deadline) : 'N/A'}</span>
-                        
-                        <strong style="color:#363949;">Created:</strong>
-                        <span style="color:#677483;">${project.createdAt ? formatDateTime(project.createdAt) : 'N/A'}</span>
-                    </div>
-                </div>
-
-
-
-                <div style="background:#f8f9fa;padding:1.5rem;border-radius:1rem;">
-                    <h3 style="color:#363949;margin-bottom:0.8rem;">Progress</h3>
-                    <div class="progress-bar" style="background:#eee;border-radius:8px;height:12px;width:100%;margin:0.5rem 0;">
-                        <div style="width:${progress}%;background:#7380ec;height:100%;border-radius:8px;transition:width 0.3s;"></div>
-                    </div>
-                    <div style="display:flex;justify-content:space-between;margin-top:0.5rem;">
-                        <span style="color:#677483;">${progress}% Complete</span>
-                        <span style="color:#677483;">${project.tasks ? project.tasks.length : 0} Tasks</span>
-                    </div>
-                </div>
-                <div style="margin-top:2rem;display:flex;justify-content:center;align-items:center;">
-                    <button id="update-project-btn" style="background:#7380ec;color:#fff;padding:0.5em 1.2em;border-radius:0.5em;border:none;font-size:1em;cursor:pointer;min-width:120px;">Update Project</button>
-                </div>
-            `;
-
+        <div style="margin-bottom: 2rem;">
+            <h2 style="color:#7380ec;font-size:1.8rem;margin-bottom:0;">${project.proj_name}</h2>
+        </div>
+        <div style="background:#f8f9fa;padding:1.5rem;border-radius:1rem;margin-bottom:1.5rem;">
+            <h3 style="color:#363949;margin-bottom:0.8rem;">Project Details</h3>
+            <div style="display:grid;grid-template-columns:auto 1fr;gap:1rem;margin-top:1rem;">
+                <strong style="color:#363949;">Project ID:</strong>
+                <span style="color:#677483;">${project.proj_id}</span>
+                <strong style="color:#363949;">Name:</strong>
+                <span style="color:#677483;">${project.proj_name}</span>
+                <strong style="color:#363949;">Description:</strong>
+                <span style="color:#677483;">${project.proj_description}</span>
+                <strong style="color:#363949;">Status:</strong>
+                <span style="color:#677483;">${project.proj_status}</span>
+                <strong style="color:#363949;">Start Date:</strong>
+                <span style="color:#677483;">${project.proj_start_date ? formatDateTime(project.proj_start_date) : 'N/A'}</span>
+                <strong style="color:#363949;">Deadline:</strong>
+                <span style="color:#677483;">${project.proj_deadline ? formatDateTime(project.proj_deadline) : 'N/A'}</span>
+                <strong style="color:#363949;">Created At:</strong>
+                <span style="color:#677483;">${project.proj_created_at ? formatDateTime(project.proj_created_at) : 'N/A'}</span>
+                <strong style="color:#363949;">Updated At:</strong>
+                <span style="color:#677483;">${project.proj_updated_at ? formatDateTime(project.proj_updated_at) : 'N/A'}</span>
+                <strong style="color:#363949;">Created By (Admin ID):</strong>
+                <span style="color:#677483;">${project.proj_created_by}</span>
+                <strong style="color:#363949;">Team ID:</strong>
+                <span style="color:#677483;">${project.team_id}</span>
+            </div>
+        </div>
+    `;
     modal.style.display = 'flex';
-
     // Close button handler
     const closeBtn = document.getElementById('close-project-details');
     closeBtn.onclick = () => modal.style.display = 'none';
-
-    // Close on outside click
-    modal.onclick = (e) => {
-        if (e.target === modal) modal.style.display = 'none';
-    };
-
-    // Update button handler
-    content.querySelector('#update-project-btn').onclick = function () {
-        showModal('project', project);
-        setTimeout(() => {
-            inputName.value = project.name || '';
-            inputDescription.value = project.description || '';
-            inputClient.value = project.client || '';
-            inputStartDate.value = project.startdate ? toFlatpickrString(project.startdate) : '';
-            inputDeadline.value = project.deadline ? toFlatpickrString(project.deadline) : '';
-            inputPriority.value = project.priority || 'Medium';
-            modalTitle.textContent = 'Update Project';
-            document.getElementById('create-btn').textContent = 'Update';
-        }, 100);
-        modal.style.display = 'none';
-    };
+    modal.onclick = (e) => { if (e.target === modal) modal.style.display = 'none'; };
 }
 
 // Function to show task details
@@ -2074,15 +1879,23 @@ modalForm.addEventListener('submit', async function(e) {
     const type = modalForm.getAttribute('data-type');
     
     if (type === 'team') {
-        await handleTeamCreation();
+        const isEditing = modalForm.getAttribute('data-editing-team') === 'true';
+        if (isEditing) {
+            await handleTeamUpdate();
+        } else {
+            await handleTeamCreation();
+        }
     } else if (type === 'project') {
-        // Handle project creation (existing logic)
+        // Handle project creation (DB logic)
         const name = inputName.value.trim();
         const description = inputDescription.value.trim();
         const client = inputClient.value.trim();
         const startdate = inputStartDate.value;
         const deadline = inputDeadline.value;
-        
+        const status = 1; // Default status (can be changed to a select if needed)
+        const adminUserId = getAdminUserId();
+        const teamId = currentTeam && currentTeam.team_id;
+
         if (!name) {
             alert('Please enter a project name.');
             inputName.focus();
@@ -2103,29 +1916,39 @@ modalForm.addEventListener('submit', async function(e) {
             inputDeadline.focus();
             return;
         }
-        if (!currentTeam) {
+        if (!teamId) {
             alert('No team selected for creating a project.');
             closeModal();
             return;
         }
-        
-        // Add project to current team (for now, just add to local array)
-        const newProject = {
-            name,
-            description,
-            client,
-            startdate: new Date(startdate),
-            deadline: new Date(deadline),
-            mentor: 'Unassigned',
-            createdAt: new Date(),
-            tasks: [],
-            status: 'active',
-            progress: 0,
-            priority: inputPriority.value
-        };
-        currentTeam.projects.unshift(newProject);
-        renderProjects();
-        closeModal();
+
+        // Send to backend
+        try {
+            const res = await fetch('/api/projects/create', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    proj_name: name,
+                    proj_description: description,
+                    proj_status: status,
+                    proj_start_date: startdate,
+                    proj_deadline: deadline,
+                    proj_created_by: adminUserId,
+                    team_id: teamId
+                })
+            });
+            const result = await res.json();
+            if (result.success) {
+                showNotification('Project created successfully!', 'success');
+                closeModal();
+                // Reload projects for this team
+                await loadProjectsByTeam(teamId);
+            } else {
+                showNotification(result.error || 'Failed to create project', 'error');
+            }
+        } catch (err) {
+            showNotification('Failed to create project. Please try again.', 'error');
+        }
     } else if (type === 'task') {
         // Handle task creation (existing logic)
         const taskName = inputTaskName.value.trim();
@@ -2269,10 +2092,224 @@ async function handleTeamCreation() {
     }
 }
 
-// Close modal on cancel or X icon
-closeModalBtn.addEventListener('click', () => {
-    closeModal();
+// Handle team update with backend API
+async function handleTeamUpdate() {
+    const teamName = inputTeamName.value.trim();
+    const teamDescription = inputTeamDesc.value.trim();
+    let leaderIdRaw = inputLeaderId.value.trim();
+    let leaderId = leaderIdRaw;
+    
+    // Extract leader ID from format "Name (ID)"
+    const match = leaderIdRaw.match(/\(([^)]+)\)$/);
+    if (match) {
+        leaderId = match[1];
+    }
+    
+    if (!teamName) {
+        alert('Please enter a team name.');
+        inputTeamName.focus();
+        return;
+    }
+    
+    const adminUserId = getAdminUserId();
+    if (!adminUserId) {
+        alert('No admin user ID found. Please log in again.');
+        return;
+    }
+    
+    // Get the team ID from the form data
+    const editingTeamName = modalForm.getAttribute('data-editing-team-name');
+    const teamToUpdate = teams.find(t => t.team_name === editingTeamName);
+    
+    if (!teamToUpdate) {
+        showNotification('Team not found for update', 'error');
+        return;
+    }
+    
+    try {
+        const response = await fetch(`/api/projects/update-team/${teamToUpdate.team_id}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                team_name: teamName,
+                team_description: teamDescription,
+                leader_id: leaderId || null,
+                admin_user_id: adminUserId
+            })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            showNotification('Team updated successfully!', 'success');
+            closeModal();
+            // Reload teams to show the updated team
+            await loadTeams();
+        } else {
+            showNotification(result.error || 'Failed to update team', 'error');
+        }
+    } catch (error) {
+        console.error('Team update error:', error);
+        showNotification('Failed to update team. Please try again.', 'error');
+    }
+}
+
+// Close modal on cancel or X icon - REMOVED (duplicate, handled in DOMContentLoaded)
+// closeModalBtn.addEventListener('click', () => {
+//     closeModal();
+// });
+// modalCloseIcon.addEventListener('click', () => {
+//     closeModal();
+// });
+
+// Helper function to check if a project/task/subtask exists in a list
+function projectExistsInList(list, name) {
+    return list && list.some(item => item.name && item.name.toLowerCase() === name.toLowerCase());
+}
+
+// --- 2. Fetch projects by team ---
+async function loadProjectsByTeam(teamId) {
+    console.log('🔍 Loading projects for team ID:', teamId);
+    console.log('🔍 Current team object:', currentTeam);
+    
+    try {
+        const url = `/api/projects/by-team/${teamId}`;
+        console.log('🔍 Fetching from URL:', url);
+        
+        const res = await fetch(url);
+        console.log('🔍 Response status:', res.status);
+        
+        if (!res.ok) {
+            throw new Error(`HTTP error! status: ${res.status}`);
+        }
+        
+        const projects = await res.json();
+        console.log('🔍 Projects received:', projects);
+        
+        currentTeam.projects = projects;
+        renderProjects();
+    } catch (err) {
+        console.error('❌ Error loading projects for team:', err);
+        console.error('❌ Team ID was:', teamId);
+        showNotification(`Failed to load projects for team: ${err.message}`, 'error');
+    }
+}
+
+console.log('projects.js loaded');
+
+// Initialize the page when DOM is loaded
+document.addEventListener("DOMContentLoaded", async () => {
+    const emp_user_id = sessionStorage.getItem("emp_user_id");
+    if (!emp_user_id) {
+        alert("Login required");
+        window.location.href = "../login.html";
+        return;
+    }
+
+    console.log('🔍 Page loaded, admin user ID:', emp_user_id);
+    
+    // Set modal reference after DOM is loaded
+    projectModal = document.getElementById("modal");
+    
+    // Add event listeners for modal
+    if (closeModalBtn) {
+        closeModalBtn.addEventListener('click', () => {
+            closeModal();
+        });
+    }
+    if (modalCloseIcon) {
+        modalCloseIcon.addEventListener('click', () => {
+            closeModal();
+        });
+    }
+    
+    // Add event listeners for create buttons
+    if (createProjectBtn) {
+        createProjectBtn.addEventListener('click', () => {
+            showModal('project');
+        });
+    }
+    if (createTeamBtn) {
+        createTeamBtn.addEventListener('click', () => {
+            console.log('Create Team button clicked');
+            showModal('team');
+        });
+    }
+    if (createTaskBtn) {
+        createTaskBtn.addEventListener('click', () => {
+            if (!currentProject) {
+                alert('No project selected for creating a task.');
+                return;
+            }
+            showModal('task');
+        });
+    }
+    
+    // Add event listeners for back buttons
+    if (backToTeamsBtn) {
+        backToTeamsBtn.addEventListener('click', () => {
+            renderTeams();
+        });
+    }
+    if (backProjectsBtn) {
+        backProjectsBtn.addEventListener('click', () => {
+            goBackToProjects();
+        });
+    }
+    if (backSubprojectBtn) {
+        backSubprojectBtn.addEventListener('click', () => {
+            goBackToTasks();
+        });
+    }
+    if (backTasksBtn) {
+        backTasksBtn.addEventListener('click', () => {
+            goBackToTasks();
+        });
+    }
+    
+    // Load teams for this admin
+    await loadTeams();
+    
+    // Initialize flatpickr date pickers
+    if (typeof flatpickr !== 'undefined') {
+        flatpickr("#input-startdate", {
+            enableTime: true,
+            dateFormat: "Y-m-d H:i",
+            allowInput: true,
+            wrap: false,
+            clickOpens: true,
+            minDate: "today",
+            plugins: [new confirmDatePlugin({})]
+        });
+        flatpickr("#input-deadline", {
+            enableTime: true,
+            dateFormat: "Y-m-d H:i",
+            allowInput: true,
+            wrap: false,
+            clickOpens: true,
+            minDate: "today",
+            plugins: [new confirmDatePlugin({})]
+        });
+        flatpickr("#input-task-deadline", {
+            enableTime: true,
+            dateFormat: "Y-m-d H:i",
+            allowInput: true,
+            wrap: false,
+            clickOpens: true,
+            minDate: "today",
+            plugins: [new confirmDatePlugin({})]
+        });
+        flatpickr("#input-subtask-deadline", {
+            enableTime: true,
+            dateFormat: "Y-m-d H:i",
+            allowInput: true,
+            wrap: false,
+            clickOpens: true,
+            minDate: "today",
+            plugins: [new confirmDatePlugin({})]
+        });
+    }
 });
-modalCloseIcon.addEventListener('click', () => {
-    closeModal();
-});
+

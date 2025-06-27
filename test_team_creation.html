@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Team Creation</title>
+</head>
+<body>
+    <h1>Test Team Creation</h1>
+    
+    <form id="teamForm">
+        <div>
+            <label for="teamName">Team Name:</label>
+            <input type="text" id="teamName" required>
+        </div>
+        <div>
+            <label for="teamDescription">Team Description:</label>
+            <textarea id="teamDescription" rows="3"></textarea>
+        </div>
+        <div>
+            <label for="leaderId">Leader ID:</label>
+            <input type="text" id="leaderId">
+        </div>
+        <div>
+            <label for="adminUserId">Admin User ID:</label>
+            <input type="text" id="adminUserId" value="admin001" required>
+        </div>
+        <button type="submit">Create Team</button>
+    </form>
+
+    <div id="result"></div>
+
+    <script>
+        document.getElementById('teamForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = {
+                team_name: document.getElementById('teamName').value,
+                team_description: document.getElementById('teamDescription').value,
+                leader_id: document.getElementById('leaderId').value || null,
+                admin_user_id: document.getElementById('adminUserId').value
+            };
+
+            try {
+                const response = await fetch('/api/projects/create-team', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                const result = await response.json();
+                
+                document.getElementById('result').innerHTML = `
+                    <h3>Response:</h3>
+                    <pre>${JSON.stringify(result, null, 2)}</pre>
+                `;
+
+                if (result.success) {
+                    alert('Team created successfully!');
+                } else {
+                    alert('Failed to create team: ' + (result.error || 'Unknown error'));
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('result').innerHTML = `
+                    <h3>Error:</h3>
+                    <pre>${error.message}</pre>
+                `;
+            }
+        });
+    </script>
+</body>
+</html> 

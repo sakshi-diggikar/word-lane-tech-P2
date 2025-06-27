@@ -21,10 +21,28 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Debug middleware to log all requests
+app.use((req, res, next) => {
+    console.log(`🔍 Server: ${req.method} ${req.url}`);
+    next();
+});
+
 // API Routes
 app.use('/api/auth', authRoutes);                 // Login authentication
 app.use('/api/hr/employees', hrAPI);               // HR employee management
 app.use('/api/projects', projectRoutes);           //  Project/task/S3 upload
+
+// Debug: List all routes
+console.log('🔍 Server: Mounted routes:');
+console.log('🔍 Server: - /api/auth');
+console.log('🔍 Server: - /api/hr/employees');
+console.log('🔍 Server: - /api/projects');
+
+// Test route at root level
+app.get('/test', (req, res) => {
+    console.log('🔍 Server: Root test route hit');
+    res.json({ message: "Server is working!", timestamp: new Date().toISOString() });
+});
 
 // Static File Serving (if needed for frontend)
 app.use(express.static(path.join(__dirname, 'public')));
@@ -36,7 +54,7 @@ pool.query('SELECT 1')
     .catch(err => console.error(' DB Connect Failed:', err.message));
 
 // Start Server
-const PORT = process.env.PORT || 5500;
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log(` Server running at http://localhost:${PORT}`);
 });

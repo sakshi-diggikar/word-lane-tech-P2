@@ -156,19 +156,19 @@
                 <label for="input-leader-id" id="input-leader-id-label" style="display:none;">Leader ID:</label>
                 <input autocomplete="off" id="input-leader-id" placeholder="Type leader ID or name" style="display:none;" type="text" />
                 <div class="autocomplete-suggestions" id="leader-id-suggestions" style="position:relative;z-index:10;display:none;"></div>
-                <label for="task-employee-select" id="task-employee-select-label">Assign to Employee:</label>
-                <select id="task-employee-select" required>
+                <label for="task-employee-select" id="task-employee-select-label" style="display:none;">Assign to Employee:</label>
+                <select id="task-employee-select" required style="display:none;">
                     <option disabled selected>Select an employee</option>
                 </select>
 
                 <!-- Project fields -->
                 <div style="display: flex; gap: 1.5rem;">
                     <div style="flex:2;">
-                        <label for="input-name" id="input-label">Project Name:</label>
+                        <label for="input-name" id="input-label" style="display:none;">Project Name:</label>
                         <input aria-required="true" autocomplete="off" id="input-name" placeholder="Enter project name"
-                            type="text" />
+                            type="text" style="display:none;" />
                     </div>
-                    <div id="priority-field-wrapper" style="flex:1;">
+                    <div id="priority-field-wrapper" style="flex:1;display:none;">
                         <label for="input-priority" id="input-priority-label">Priority:</label>
                         <select aria-required="true" id="input-priority"
                             style="width:100%;padding:0.8rem 0.7rem;border-radius:0.4rem;border:1px solid var(--color-light);font-size:1.08rem;">
@@ -178,29 +178,29 @@
                         </select>
                     </div>
                 </div>
-                <label for="input-description" id="input-description-label">Description:</label>
+                <label for="input-description" id="input-description-label" style="display:none;">Description:</label>
                 <textarea id="input-description" placeholder="Enter project description" rows="3"
-                    style="width:100%;resize:vertical;"></textarea>
-                <label for="input-client" id="input-client-label">Client Name:</label>
+                    style="width:100%;resize:vertical;display:none;"></textarea>
+                <label for="input-client" id="input-client-label" style="display:none;">Client Name:</label>
                 <input aria-required="true" autocomplete="off" id="input-client" placeholder="Enter client name"
-                    type="text" />
+                    type="text" style="display:none;" />
                 <div style="display: flex; gap: 1.5rem;">
                     <div style="flex:1;">
-                        <label for="input-startdate" id="input-startdate-label">Start Date &amp; Time:</label>
-                        <input aria-required="true" id="input-startdate" type="datetime-local" />
+                        <label for="input-startdate" id="input-startdate-label" style="display:none;">Start Date &amp; Time:</label>
+                        <input aria-required="true" id="input-startdate" type="datetime-local" style="display:none;" />
                     </div>
                     <div style="flex:1;">
-                        <label for="input-deadline" id="input-deadline-label">Deadline &amp; Time:</label>
-                        <input aria-required="true" id="input-deadline" type="datetime-local" />
+                        <label for="input-deadline" id="input-deadline-label" style="display:none;">Deadline &amp; Time:</label>
+                        <input aria-required="true" id="input-deadline" type="datetime-local" style="display:none;" />
                     </div>
                 </div>
                 <!-- Task fields (these will be shown for task modal only) -->
                 <div style="display: flex; gap: 1.5rem;">
                     <div style="flex:2;">
-                        <label for="input-task-name" id="input-task-name-label">Task Name:</label>
-                        <input autocomplete="off" id="input-task-name" placeholder="Enter task name" type="text" />
+                        <label for="input-task-name" id="input-task-name-label" style="display:none;">Task Name:</label>
+                        <input autocomplete="off" id="input-task-name" placeholder="Enter task name" type="text" style="display:none;" />
                     </div>
-                    <div id="task-priority-field-wrapper" style="flex:1;">
+                    <div id="task-priority-field-wrapper" style="flex:1;display:none;">
                         <label for="input-task-priority" id="input-task-priority-label">Priority:</label>
                         <select aria-required="true" id="input-task-priority"
                             style="width:100%;padding:0.8rem 0.7rem;border-radius:0.4rem;border:1px solid var(--color-light);font-size:1.08rem;">
@@ -210,23 +210,23 @@
                         </select>
                     </div>
                 </div>
-                <label for="input-task-desc" id="input-task-desc-label">Task Description:</label>
+                <label for="input-task-desc" id="input-task-desc-label" style="display:none;">Task Description:</label>
                 <textarea id="input-task-desc" placeholder="Enter task description" rows="3"
-                    style="width:100%;resize:vertical;"></textarea>
-                <label for="input-task-empid" id="input-task-empid-label">Employee ID:</label>
-                <input autocomplete="off" id="input-task-empid" placeholder="Assign to Employee ID" type="text" />
-                <div class="autocomplete-suggestions" id="task-empid-suggestions" style="position:relative;z-index:10;">
+                    style="width:100%;resize:vertical;display:none;"></textarea>
+                <label for="input-task-empid" id="input-task-empid-label" style="display:none;">Employee ID:</label>
+                <input autocomplete="off" id="input-task-empid" placeholder="Assign to Employee ID" type="text" style="display:none;" />
+                <div class="autocomplete-suggestions" id="task-empid-suggestions" style="position:relative;z-index:10;display:none;">
                 </div>
-                <label for="input-task-deadline" id="input-task-deadline-label">Task Deadline:</label>
-                <input id="input-task-deadline" type="datetime-local" />
+                <label for="input-task-deadline" id="input-task-deadline-label" style="display:none;">Task Deadline:</label>
+                <input id="input-task-deadline" type="datetime-local" style="display:none;" />
                 <!-- Subtask fields (shown only for subtask modal) -->
                 <div style="display: flex; gap: 1.5rem;">
                     <div style="flex:2;">
-                        <label for="input-subtask-name" id="input-subtask-name-label">Subtask Name:</label>
+                        <label for="input-subtask-name" id="input-subtask-name-label" style="display:none;">Subtask Name:</label>
                         <input autocomplete="off" id="input-subtask-name" placeholder="Enter subtask name"
-                            type="text" />
+                            type="text" style="display:none;" />
                     </div>
-                    <div id="subtask-priority-field-wrapper" style="flex:1;">
+                    <div id="subtask-priority-field-wrapper" style="flex:1;display:none;">
                         <label for="input-subtask-priority" id="input-subtask-priority-label">Priority:</label>
                         <select aria-required="true" id="input-subtask-priority"
                             style="width:100%;padding:0.8rem 0.7rem;border-radius:0.4rem;border:1px solid var(--color-light);font-size:1.08rem;">
@@ -242,19 +242,19 @@
                     style="width:100%;resize:vertical;display:none;"></textarea>
                 <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem;">
                     <label for="input-subtask-attachment" id="input-subtask-attachment-label"
-                        style="margin-bottom:0;">Attachment:</label>
-                    <input id="input-subtask-attachment" multiple="" style="margin-bottom:0;" type="file" />
+                        style="margin-bottom:0;display:none;">Attachment:</label>
+                    <input id="input-subtask-attachment" multiple="" style="margin-bottom:0;display:none;" type="file" />
                 </div>
                 <!-- <label for="input-subtask-empid" id="input-subtask-empid-label">Employee ID(s):</label>
               <input type="text" id="input-subtask-empid" placeholder="Assign to Employee IDs (comma separated)"
                   autocomplete="off" /> -->
-                <label for="input-subtask-empid" id="input-subtask-empid-label">Assign Employee(s):</label>
-                <input autocomplete="off" id="input-subtask-empid" placeholder="Type employee ID or name" type="text" />
+                <label for="input-subtask-empid" id="input-subtask-empid-label" style="display:none;">Assign Employee(s):</label>
+                <input autocomplete="off" id="input-subtask-empid" placeholder="Type employee ID or name" type="text" style="display:none;" />
                 <div class="autocomplete-suggestions" id="subtask-empid-suggestions"
-                    style="position:relative;z-index:10;"></div>
-                <div id="selected-employees" style="margin:0.5em 0 1em 0;display:flex;flex-wrap:wrap;gap:0.5em;"></div>
-                <label for="input-subtask-deadline" id="input-subtask-deadline-label">Subtask Deadline:</label>
-                <input id="input-subtask-deadline" type="text" />
+                    style="position:relative;z-index:10;display:none;"></div>
+                <div id="selected-employees" style="margin:0.5em 0 1em 0;display:flex;flex-wrap:wrap;gap:0.5em;display:none;"></div>
+                <label for="input-subtask-deadline" id="input-subtask-deadline-label" style="display:none;">Subtask Deadline:</label>
+                <input id="input-subtask-deadline" type="text" style="display:none;" />
                 <div class="modal-buttons">
                     <button id="create-btn" type="submit">Create</button>
                     <button id="close-modal" type="button">Cancel</button>
@@ -320,75 +320,6 @@
             <button type="submit" id="send-button">Send</button>
         </form>
     </div>
-    <script>
-        // admin/js/projects.js
-
-        document.addEventListener("DOMContentLoaded", async () => {
-            const emp_user_id = sessionStorage.getItem("emp_user_id");
-            if (!emp_user_id) {
-                alert("Login required");
-                window.location.href = "login.html";
-                return;
-            }
-
-            // 🔹 Load all projects of logged-in admin
-            loadProjects(emp_user_id);
-
-            // 🔹 Load employee list for task assignment dropdown
-            loadEmployees();
-        });
-
-        // 🔸 Call backend to fetch projects for this admin
-        async function loadProjects(emp_user_id) {
-                try {
-                    const res = await fetch(`/api/projects/by-user/${emp_user_id}`);
-                    const projects = await res.json();
-
-                    if (!Array.isArray(projects)) {
-                        console.error("Unexpected response:", projects);
-                        return;
-                    }
-
-                    const container = document.getElementById("project-cards");
-                    container.innerHTML = ""; // clear previous content
-                    if (projects.length === 0) {
-                        container.innerHTML = "<p>No projects found.</p>";
-                        return;
-                    }
-                    projects.forEach((proj) => {
-                        const card = document.createElement("div");
-                        card.className = "project-card";
-                        card.innerHTML = `
-                <h3>${proj.proj_name}</h3>
-                <p>${proj.proj_description}</p>
-                <p><strong>Deadline:</strong> ${proj.proj_deadline}</p>
-            `;
-                        container.appendChild(card);
-                    });
-                } catch (err) {
-                    console.error("Failed to load projects", err);
-                }
-            }
-
-        // 🔸 Load employees to assign in task creation
-        async function loadEmployees() {
-            try {
-                const res = await fetch("/api/hr/employees"); // assuming this gives all employees
-                const employees = await res.json();
-                const select = document.getElementById("task-employee-select");
-
-                employees.forEach((emp) => {
-                    const opt = document.createElement("option");
-                    opt.value = emp.emp_user_id;
-                    opt.textContent = `${emp.emp_user_id} - ${emp.emp_fname} ${emp.emp_lname}`;
-                    select.appendChild(opt);
-                });
-            } catch (err) {
-                console.error("Failed to load employees", err);
-            }
-        }
-
-    </script>
-    </body>
+</body>
 
 </html>

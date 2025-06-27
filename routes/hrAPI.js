@@ -98,13 +98,15 @@ router.put('/update-employee/:id', async (req, res) => {
 // ✅ List all employees (GET)
 router.get('/', async (req, res) => {
     try {
+        console.log('Fetching employees...');
         const [rows] = await pool.query(
             'SELECT emp_user_id, emp_first_name AS emp_fname, emp_last_name AS emp_lname FROM employees'
         );
+        console.log('Employees fetched:', rows.length);
         res.json(rows); // ✅ Your frontend expects these exact fields
     } catch (err) {
         console.error("Fetch employees failed:", err);
-        res.status(500).json({ success: false, message: 'Fetch failed' });
+        res.status(500).json({ success: false, message: 'Fetch failed', error: err.message });
     }
 });
 
