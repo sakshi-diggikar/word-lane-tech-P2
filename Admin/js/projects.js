@@ -63,41 +63,8 @@ const subtaskDetailsModal = document.getElementById("subtask-details-modal");
 const projectDetailsModal = document.getElementById("project-details-modal");
 const taskDetailsModal = document.getElementById("task-details-modal");
 
-// Data structure: projects array, each project has tasks, each task has subtasks
-let teams = [
-    {
-        name: "Frontend Team",
-        description: "Handles all frontend work.",
-        createdAt: new Date(),
-        projects: [
-            {
-                name: "Website Redesign",
-                description: "Redesign the company website.",
-                client: "Acme Corp",
-                startdate: new Date("2025-05-01T10:30:00"),
-                deadline: new Date("2025-06-01T10:30:00"),
-                mentor: "Alice Smith",
-                createdAt: new Date("2025-05-01T10:30:00"),
-                tasks: [
-                    {
-                        name: "Design Homepage",
-                        details: "Create a modern homepage.",
-                        createdAt: new Date("2025-05-02T10:30:00"),
-                        subtasks: [
-                            {
-                                name: "Wireframe",
-                                details: "Draw wireframe",
-                                createdAt: new Date("2025-05-03T10:30:00")
-                            }
-                        ]
-                    }
-                ],
-                status: "active",
-                progress: 0
-            }
-        ]
-    }
-];
+// Data structure: teams array loaded from backend
+let teams = [];
 
 // Example employee list
 const employees = [
@@ -112,6 +79,80 @@ const employees = [
 let currentTeam = null;
 let currentProject = null;
 let currentTask = null;
+
+// Get admin user ID from session storage
+function getAdminUserId() {
+    return sessionStorage.getItem("emp_user_id");
+}
+
+// Load teams from backend
+async function loadTeams() {
+    const adminUserId = getAdminUserId();
+    if (!adminUserId) {
+        console.error("No admin user ID found");
+        return;
+    }
+
+    try {
+        const response = await fetch(`/api/projects/teams/${adminUserId}`);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+        teams = data;
+        renderTeams();
+    } catch (error) {
+        console.error("Failed to load teams:", error);
+        showNotification("Failed to load teams", "error");
+    }
+}
+
+// Show notification function
+function showNotification(message, type = "success") {
+    // Create notification element
+    const notification = document.createElement('div');
+    notification.className = `notification ${type}`;
+    notification.textContent = message;
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 1rem 2rem;
+        border-radius: 8px;
+        color: white;
+        font-weight: bold;
+        z-index: 10000;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        transform: translateX(100%);
+        transition: transform 0.3s ease;
+    `;
+    
+    // Set background color based on type
+    if (type === "success") {
+        notification.style.background = "#28a745";
+    } else if (type === "error") {
+        notification.style.background = "#dc3545";
+    } else {
+        notification.style.background = "#17a2b8";
+    }
+    
+    document.body.appendChild(notification);
+    
+    // Animate in
+    setTimeout(() => {
+        notification.style.transform = "translateX(0)";
+    }, 100);
+    
+    // Remove after 3 seconds
+    setTimeout(() => {
+        notification.style.transform = "translateX(100%)";
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.parentNode.removeChild(notification);
+            }
+        }, 300);
+    }, 3000);
+}
 
 // Format date/time
 function formatDateTime(date) {
@@ -175,7 +216,7 @@ function showTeamDetails(team) {
     const content = document.getElementById('team-details-content');
     content.innerHTML = `
     <div style="margin-bottom: 2rem;">
-        <h2 style="color:#7380ec;font-size:1.8rem;margin-bottom:0.5rem;">${team.name}</h2>
+        <h2 style="color:#7380ec;font-size:1.8rem;margin-bottom:0.5rem;">${team.team_name}</h2>
     </div>
     <div style="background:#f8f9fa;padding:1.5rem;border-radius:1rem;margin-bottom:1.5rem;">
         <h3 style="color:#363949;margin-bottom:0.8rem;">Team Details</h3>
@@ -229,9 +270,9 @@ function createTeamCard(team, onOpen) {
     card.classList.add("project-card");
     card.setAttribute("role", "listitem");
     card.tabIndex = 0;
-    card.setAttribute("aria-label", `Team: ${team.name}, description: ${team.description || 'No details'}`);
+    card.setAttribute("aria-label", `Team: ${team.team_name}, description: ${team.team_description || 'No details'}`);
 
-    let desc = team.description || '';
+    let desc = team.team_description || '';
     let descShort = desc;
     if (desc.length > 160 || desc.split('\n').length > 2) {
         let lines = desc.split('\n');
@@ -239,9 +280,10 @@ function createTeamCard(team, onOpen) {
         if (descShort.length > 160) descShort = descShort.slice(0, 160);
         descShort += '...';
     }
+    
     card.innerHTML = `
     <div class="project-header">
-        <h3 style="font-size:1.25rem;">${team.name}</h3>
+        <h3 style="font-size:1.25rem;">${team.team_name}</h3>
         <span class="material-icons-sharp three-dots" tabindex="0" aria-haspopup="true" aria-label="Team options menu" style="margin-left:auto;">more_vert</span>
         <div class="dropdown-menu" role="menu">
             <button class="route-btn" role="menuitem">Route</button>
@@ -252,39 +294,18 @@ function createTeamCard(team, onOpen) {
     <div class="project-details" title="${desc.replace(/"/g, '&quot;')}">${descShort.replace(/\n/g, '<br>')}</div>
     <div style="font-size:0.97em;color:#7d8da1;margin-bottom:0.3em;">
         <b>Leader:</b>
-        ${
-            team.leaderId
-                ? (() => {
-                    const emp = employees.find(e => e.id === team.leaderId);
-                    return emp
-                        ? `${emp.name} (${emp.id})`
-                        : team.leaderId;
-                })()
-                : 'N/A'
-        }
+        ${team.leader_name ? `${team.leader_name} (${team.team_leader_id})` : 'N/A'}
     </div>
     <div style="display:flex;justify-content:space-between;align-items:flex-end;">
         <div></div>
         <div class="avatar-stack" style="display:flex;align-items:center;">
-            ${(team.projects || []).slice(0, 3).map((p, i) => `
-                <span class="avatar-dot" style="
-                    display:inline-block;
-                    width:26px;height:26px;
-                    border-radius:50%;
-                    background:${['#7380ec', '#41f1b6', '#ffbb55'][i % 3]};
-                    border:2px solid #fff;
-                    margin-left:-10px;
-                    z-index:${10 - i};
-                    box-shadow:0 1px 4px rgba(0,0,0,0.07);
-                " title="${p.name}"></span>
-            `).join('')}
             <span style="margin-left:8px;font-weight:600;color:#7380ec;font-size:1.1em;">
-                ${team.projects ? team.projects.length : 0}
+                ${team.project_count || 0}
             </span>
         </div>
     </div>
     <div style="display:flex;flex-direction:column;align-items:flex-end;margin-top:0.4em;position:relative;">
-        <span style="font-size:0.97em;color:#7d8da1;margin-bottom:0.1em;">${team.createdAt ? formatDateTime(team.createdAt) : 'N/A'}</span>
+        <span style="font-size:0.97em;color:#7d8da1;margin-bottom:0.1em;">${team.team_created_at ? formatDateTime(new Date(team.team_created_at)) : 'N/A'}</span>
     </div>
 `;
 
@@ -304,11 +325,12 @@ function createTeamCard(team, onOpen) {
         dropdown.classList.remove("show");
     });
     card.querySelector(".archive-btn").addEventListener("click", () => {
-        alert(`Team "${team.name}" archived.`);
+        alert(`Team "${team.team_name}" archived.`);
         dropdown.classList.remove("show");
     });
     card.querySelector(".delete-btn").addEventListener("click", () => {
-        if (confirm(`Are you sure you want to delete team "${team.name}"?`)) {
+        if (confirm(`Are you sure you want to delete team "${team.team_name}"?`)) {
+            // TODO: Add backend API call to delete team
             teams = teams.filter(t => t !== team);
             renderTeams();
         }
@@ -1010,255 +1032,135 @@ function goBackToTasks() {
 // Show modal for creating project, task or subtask
 function showModal(type, subtaskToEdit = null) {
     modalForm.reset();
+    // Hide all fields by default (with null checks)
+    if (inputTeamName) inputTeamName.style.display = 'none';
+    const teamNameLabel = document.getElementById('input-team-name-label');
+    if (teamNameLabel) teamNameLabel.style.display = 'none';
+    if (inputTeamDesc) inputTeamDesc.style.display = 'none';
+    const teamDescLabel = document.getElementById('input-team-desc-label');
+    if (teamDescLabel) teamDescLabel.style.display = 'none';
+    if (inputLeaderId) inputLeaderId.style.display = 'none';
+    const leaderIdLabel = document.getElementById('input-leader-id-label');
+    if (leaderIdLabel) leaderIdLabel.style.display = 'none';
+    if (leaderIdSuggestions) leaderIdSuggestions.style.display = 'none';
+    if (inputName) inputName.style.display = 'none';
+    const inputLabel = document.getElementById('input-label');
+    if (inputLabel) inputLabel.style.display = 'none';
+    if (inputDescription) inputDescription.style.display = 'none';
+    const inputDescriptionLabel = document.getElementById('input-description-label');
+    if (inputDescriptionLabel) inputDescriptionLabel.style.display = 'none';
+    if (inputClient) inputClient.style.display = 'none';
+    const inputClientLabel = document.getElementById('input-client-label');
+    if (inputClientLabel) inputClientLabel.style.display = 'none';
+    if (inputStartDate) inputStartDate.style.display = 'none';
+    const inputStartDateLabel = document.getElementById('input-startdate-label');
+    if (inputStartDateLabel) inputStartDateLabel.style.display = 'none';
+    if (inputDeadline) inputDeadline.style.display = 'none';
+    const inputDeadlineLabel = document.getElementById('input-deadline-label');
+    if (inputDeadlineLabel) inputDeadlineLabel.style.display = 'none';
+    if (priorityFieldWrapper) priorityFieldWrapper.style.display = 'none';
+    if (inputTaskName) inputTaskName.style.display = 'none';
+    const inputTaskNameLabel = document.getElementById('input-task-name-label');
+    if (inputTaskNameLabel) inputTaskNameLabel.style.display = 'none';
+    if (taskPriorityFieldWrapper) taskPriorityFieldWrapper.style.display = 'none';
+    if (inputTaskDesc) inputTaskDesc.style.display = 'none';
+    const inputTaskDescLabel = document.getElementById('input-task-desc-label');
+    if (inputTaskDescLabel) inputTaskDescLabel.style.display = 'none';
+    if (inputTaskEmpid) inputTaskEmpid.style.display = 'none';
+    const inputTaskEmpidLabel = document.getElementById('input-task-empid-label');
+    if (inputTaskEmpidLabel) inputTaskEmpidLabel.style.display = 'none';
+    if (inputTaskDeadline) inputTaskDeadline.style.display = 'none';
+    const inputTaskDeadlineLabel = document.getElementById('input-task-deadline-label');
+    if (inputTaskDeadlineLabel) inputTaskDeadlineLabel.style.display = 'none';
+    if (inputSubtaskName) inputSubtaskName.style.display = 'none';
+    const inputSubtaskNameLabel = document.getElementById('input-subtask-name-label');
+    if (inputSubtaskNameLabel) inputSubtaskNameLabel.style.display = 'none';
+    if (inputSubtaskDesc) inputSubtaskDesc.style.display = 'none';
+    const inputSubtaskDescLabel = document.getElementById('input-subtask-desc-label');
+    if (inputSubtaskDescLabel) inputSubtaskDescLabel.style.display = 'none';
+    if (inputSubtaskEmpid) inputSubtaskEmpid.style.display = 'none';
+    const inputSubtaskEmpidLabel = document.getElementById('input-subtask-empid-label');
+    if (inputSubtaskEmpidLabel) inputSubtaskEmpidLabel.style.display = 'none';
+    if (inputSubtaskDeadline) inputSubtaskDeadline.style.display = 'none';
+    const inputSubtaskDeadlineLabel = document.getElementById('input-subtask-deadline-label');
+    if (inputSubtaskDeadlineLabel) inputSubtaskDeadlineLabel.style.display = 'none';
+    if (inputSubtaskPriority) inputSubtaskPriority.style.display = 'none';
+    if (subtaskPriorityFieldWrapper) subtaskPriorityFieldWrapper.style.display = 'none';
+    if (inputSubtaskAttachment) inputSubtaskAttachment.style.display = 'none';
+    const inputSubtaskAttachmentLabel = document.getElementById('input-subtask-attachment-label');
+    if (inputSubtaskAttachmentLabel) inputSubtaskAttachmentLabel.style.display = 'none';
+    const taskEmpidSuggestions = document.getElementById('task-empid-suggestions');
+    if (taskEmpidSuggestions) taskEmpidSuggestions.style.display = 'none';
+    const subtaskEmpidSuggestions = document.getElementById('subtask-empid-suggestions');
+    if (subtaskEmpidSuggestions) subtaskEmpidSuggestions.style.display = 'none';
+    const selectedEmployeesDiv = document.getElementById('selected-employees');
+    if (selectedEmployeesDiv) selectedEmployeesDiv.style.display = 'none';
 
-    // Hide all fields by default
-    inputTeamName.style.display = 'none';
-    document.getElementById('input-team-name-label').style.display = 'none';
-    inputTeamDesc.style.display = 'none';
-    document.getElementById('input-team-desc-label').style.display = 'none';
-    inputName.style.display = 'none';
-    inputLeaderId.style.display = 'none';
-    document.getElementById('input-leader-id-label').style.display = 'none';
-    leaderIdSuggestions.style.display = 'none';
-    document.getElementById('input-label').style.display = 'none';
-    inputDescription.style.display = 'none';
-    document.getElementById('input-description-label').style.display = 'none';
-    inputClient.style.display = 'none';
-    document.getElementById('input-client-label').style.display = 'none';
-    inputStartDate.style.display = 'none';
-    document.getElementById('input-startdate-label').style.display = 'none';
-    inputDeadline.style.display = 'none';
-    document.getElementById('input-deadline-label').style.display = 'none';
-    priorityFieldWrapper.style.display = 'none'; // Project priority
-    inputTaskName.style.display = 'none';
-    document.getElementById('input-task-name-label').style.display = 'none';
-    taskPriorityFieldWrapper.style.display = 'none'; // Task priority
-    inputTaskDesc.style.display = 'none';
-    document.getElementById('input-task-desc-label').style.display = 'none';
-    inputTaskEmpid.style.display = 'none';
-    document.getElementById('input-task-empid-label').style.display = 'none';
-    inputTaskDeadline.style.display = 'none';
-    document.getElementById('input-task-deadline-label').style.display = 'none';
-    inputSubtaskName.style.display = 'none';
-    document.getElementById('input-subtask-name-label').style.display = 'none';
-    inputSubtaskDesc.style.display = 'none';
-    document.getElementById('input-subtask-desc-label').style.display = 'none';
-    inputSubtaskEmpid.style.display = 'none';
-    document.getElementById('input-subtask-empid-label').style.display = 'none';
-    inputSubtaskDeadline.style.display = 'none';
-    document.getElementById('input-subtask-deadline-label').style.display = 'none';
-    inputSubtaskPriority.style.display = 'none';
-    subtaskPriorityFieldWrapper.style.display = 'none';
-    inputSubtaskAttachment.style.display = 'none';
-    document.getElementById('input-subtask-attachment-label').style.display = 'none';
+    const taskEmployeeSelect = document.getElementById('task-employee-select');
+    const taskEmployeeSelectLabel = document.getElementById('task-employee-select-label');
+    if (taskEmployeeSelect) taskEmployeeSelect.style.display = 'none';
+    if (taskEmployeeSelectLabel) taskEmployeeSelectLabel.style.display = 'none';
 
-    // Hide employee suggestion divs by default
-    document.getElementById('task-empid-suggestions').style.display = 'none';
-    document.getElementById('subtask-empid-suggestions').style.display = 'none';
-    document.getElementById('selected-employees').style.display = 'none';
-
-    if (type === 'project') {
-        modalTitle.textContent = subtaskToEdit ? 'Update Project' : 'Create New Project';
-        document.getElementById('create-btn').textContent = subtaskToEdit ? 'Update' : 'Create';
-        inputName.style.display = 'block';
-        document.getElementById('input-label').style.display = 'block';
-        inputDescription.style.display = 'block';
-        document.getElementById('input-description-label').style.display = 'block';
-        inputClient.style.display = 'block';
-        document.getElementById('input-client-label').style.display = 'block';
-        inputStartDate.style.display = 'block';
-        document.getElementById('input-startdate-label').style.display = 'block';
-        inputDeadline.style.display = 'block';
-        document.getElementById('input-deadline-label').style.display = 'block';
-        priorityFieldWrapper.style.display = 'block';
-        // Reset date fields and flatpickr
-        inputStartDate.value = '';
-        inputDeadline.value = '';
-        if (inputStartDate._flatpickr) inputStartDate._flatpickr.clear();
-        if (inputDeadline._flatpickr) inputDeadline._flatpickr.clear();
-        inputName.focus();
-        if (subtaskToEdit) {
-            inputName.value = subtaskToEdit.name || '';
-            inputDescription.value = subtaskToEdit.description || '';
-            inputClient.value = subtaskToEdit.client || '';
-            inputStartDate.value = subtaskToEdit.startdate ? (typeof subtaskToEdit.startdate === 'string' ? subtaskToEdit.startdate : subtaskToEdit.startdate.toISOString().slice(0, 16)) : '';
-            inputDeadline.value = subtaskToEdit.deadline ? (typeof subtaskToEdit.deadline === 'string' ? subtaskToEdit.deadline : subtaskToEdit.deadline.toISOString().slice(0, 16)) : '';
-            inputPriority.value = subtaskToEdit.priority || 'Medium';
-            modalForm.setAttribute('data-editing-project', 'true');
-            modalForm.setAttribute('data-editing-project-name', subtaskToEdit.name);
-        } else {
-            modalForm.removeAttribute('data-editing-project');
-            modalForm.removeAttribute('data-editing-project-name');
+    if (type === 'team') {
+        // Fetch employees for leader suggestion if not already loaded
+        if (!window._employeesLoadedForTeam) {
+            fetch('/api/hr/employees')
+                .then(res => res.json())
+                .then(data => {
+                    if (Array.isArray(data)) {
+                        employees.length = 0;
+                        data.forEach(emp => employees.push({
+                            id: emp.emp_user_id || emp.id,
+                            name: (emp.emp_first_name || emp.emp_fname || '') + ' ' + (emp.emp_last_name || emp.emp_lname || '')
+                        }));
+                        window._employeesLoadedForTeam = true;
+                    }
+                });
         }
-    } else if (type === 'team') {
+        // Hide task employee select and label
+        const taskEmployeeSelect = document.getElementById('task-employee-select');
+        const taskEmployeeSelectLabel = document.getElementById('task-employee-select-label');
+        if (taskEmployeeSelect) taskEmployeeSelect.style.display = 'none';
+        if (taskEmployeeSelectLabel) taskEmployeeSelectLabel.style.display = 'none';
+        // Show only team fields
         modalTitle.textContent = subtaskToEdit ? 'Update Team' : 'Create New Team';
-        document.getElementById('create-btn').textContent = subtaskToEdit ? 'Update' : 'Create';
-        inputTeamName.style.display = 'block';
-        document.getElementById('input-team-name-label').style.display = 'block';
-        inputTeamDesc.style.display = 'block';
-        document.getElementById('input-team-desc-label').style.display = 'block';
-        inputLeaderId.style.display = 'block';
-        document.getElementById('input-leader-id-label').style.display = 'block';
-        leaderIdSuggestions.style.display = 'block';
-        inputTeamName.focus();
+        const createBtn = document.getElementById('create-btn');
+        if (createBtn) createBtn.textContent = subtaskToEdit ? 'Update' : 'Create';
+        if (inputTeamName) inputTeamName.style.display = 'block';
+        const teamNameLabel = document.getElementById('input-team-name-label');
+        if (teamNameLabel) teamNameLabel.style.display = 'block';
+        if (inputTeamDesc) inputTeamDesc.style.display = 'block';
+        const teamDescLabel = document.getElementById('input-team-desc-label');
+        if (teamDescLabel) teamDescLabel.style.display = 'block';
+        if (inputLeaderId) {
+            inputLeaderId.style.display = 'block';
+            inputLeaderId.style.display = '';
+            inputLeaderId.removeAttribute('hidden');
+        }
+        const leaderIdLabel = document.getElementById('input-leader-id-label');
+        if (leaderIdLabel) {
+            leaderIdLabel.style.display = '';
+            leaderIdLabel.removeAttribute('hidden');
+        }
+        if (leaderIdSuggestions) {
+            leaderIdSuggestions.style.display = 'block';
+        }
+        if (inputTeamName) inputTeamName.focus();
         if (subtaskToEdit) {
-            inputTeamName.value = subtaskToEdit.name || '';
-            inputTeamDesc.value = subtaskToEdit.description || '';
-            inputLeaderId.value = subtaskToEdit.leaderId || '';
+            if (inputTeamName) inputTeamName.value = subtaskToEdit.name || '';
+            if (inputTeamDesc) inputTeamDesc.value = subtaskToEdit.description || '';
+            if (inputLeaderId) inputLeaderId.value = subtaskToEdit.leaderId || '';
             modalForm.setAttribute('data-editing-team', 'true');
             modalForm.setAttribute('data-editing-team-name', subtaskToEdit.name);
         } else {
-            inputLeaderId.value = '';
+            if (inputLeaderId) inputLeaderId.value = '';
             modalForm.removeAttribute('data-editing-team');
             modalForm.removeAttribute('data-editing-team-name');
         }
-        setTimeout(setupLeaderAutocomplete, 100);
-    } else if (type === 'task') {
-        modalTitle.textContent = subtaskToEdit ? 'Update Task' : 'Create New Task';
-        document.getElementById('create-btn').textContent = subtaskToEdit ? 'Update' : 'Create';
-        inputTaskName.style.display = 'block';
-        document.getElementById('input-task-name-label').style.display = 'block';
-        taskPriorityFieldWrapper.style.display = 'block';
-        inputTaskDesc.style.display = 'block';
-        document.getElementById('input-task-desc-label').style.display = 'block';
-        inputTaskEmpid.style.display = 'block';
-        document.getElementById('input-task-empid-label').style.display = 'block';
-        inputTaskDeadline.style.display = 'block';
-        document.getElementById('input-task-deadline-label').style.display = 'block';
-        document.getElementById('task-empid-suggestions').style.display = 'block';
-        // Reset deadline field and flatpickr
-        inputTaskDeadline.value = '';
-        if (inputTaskDeadline._flatpickr) inputTaskDeadline._flatpickr.clear();
-        inputTaskName.focus();
-        if (subtaskToEdit) {
-            inputTaskName.value = subtaskToEdit.name || '';
-            inputTaskDesc.value = subtaskToEdit.details || '';
-            inputTaskEmpid.value = subtaskToEdit.empid || '';
-            inputTaskDeadline.value = subtaskToEdit.deadline ? (typeof subtaskToEdit.deadline === 'string' ? subtaskToEdit.deadline : subtaskToEdit.deadline.toISOString().slice(0, 16)) : '';
-            inputTaskPriority.value = subtaskToEdit.priority || 'Medium';
-            modalForm.setAttribute('data-editing-task', 'true');
-            modalForm.setAttribute('data-editing-task-name', subtaskToEdit.name);
-        } else {
-            modalForm.removeAttribute('data-editing-task');
-            modalForm.removeAttribute('data-editing-task-name');
-        }
-        setTimeout(setupTaskEmployeeAutocomplete, 100);
-    } else if (type === 'subtask') {
-        modalTitle.textContent = subtaskToEdit ? 'Update the Subtask' : 'Create New Subtask';
-        document.getElementById('create-btn').textContent = subtaskToEdit ? 'Update' : 'Create';
-        inputSubtaskName.style.display = 'block';
-        document.getElementById('input-subtask-name-label').style.display = 'block';
-        inputSubtaskDesc.style.display = 'block';
-        document.getElementById('input-subtask-desc-label').style.display = 'block';
-        inputSubtaskEmpid.style.display = 'block';
-        document.getElementById('input-subtask-empid-label').style.display = 'block';
-        inputSubtaskDeadline.style.display = 'block';
-        document.getElementById('input-subtask-deadline-label').style.display = 'block';
-        inputSubtaskPriority.style.display = 'block';
-        subtaskPriorityFieldWrapper.style.display = 'block';
-        inputSubtaskAttachment.style.display = 'block';
-        document.getElementById('input-subtask-attachment-label').style.display = 'block';
-        document.getElementById('subtask-empid-suggestions').style.display = 'block';
-        document.getElementById('selected-employees').style.display = 'flex';
-        inputSubtaskDeadline.value = '';
-        if (inputSubtaskDeadline._flatpickr) inputSubtaskDeadline._flatpickr.clear();
-        inputSubtaskName.focus();
-        if (subtaskToEdit) {
-            inputSubtaskName.value = subtaskToEdit.name || '';
-            inputSubtaskDesc.value = subtaskToEdit.details || '';
-            inputSubtaskEmpid.value = (Array.isArray(subtaskToEdit.empids) ? subtaskToEdit.empids.join(', ') : subtaskToEdit.empids || '');
-            inputSubtaskDeadline.value = subtaskToEdit.deadline ? (typeof subtaskToEdit.deadline === 'string' ? subtaskToEdit.deadline : subtaskToEdit.deadline.toISOString().slice(0, 16)) : '';
-            inputSubtaskPriority.value = subtaskToEdit.priority || 'Medium';
-            // Attachments cannot be pre-filled for security reasons
-            modalForm.setAttribute('data-editing-subtask', 'true');
-            modalForm.setAttribute('data-editing-subtask-name', subtaskToEdit.name);
-        } else {
-            modalForm.removeAttribute('data-editing-subtask');
-            modalForm.removeAttribute('data-editing-subtask-name');
-        }
-        setTimeout(setupEmployeeAutocomplete, 100);
-    }
-
-    document.querySelector('.modal-buttons').style.display = 'flex';
-    modalForm.setAttribute('data-type', type);
-    projectModal.setAttribute('aria-hidden', 'false');
-    projectModal.classList.add('active');
-}
-
-
-// Close modal
-function closeModal() {
-    projectModal.classList.remove('active');
-    projectModal.setAttribute('aria-hidden', 'true');
-}
-
-// Form submit handler (create project, task or subtask)
-modalForm.addEventListener('submit', (e) => {
-    e.preventDefault();
-    const type = modalForm.getAttribute('data-type');
-    const name = inputName.value.trim();
-    const description = inputDescription.value.trim();
-    const client = inputClient ? inputClient.value.trim() : "";
-    const startdate = inputStartDate.value;
-    const deadline = inputDeadline.value;
-
-    function projectExistsInList(list, name) {
-        return list.some(p => p.name.toLowerCase() === name.toLowerCase());
-    }
-
-    if (type === 'team') {
-        const teamName = inputTeamName.value.trim();
-        const teamDesc = inputTeamDesc.value.trim();
-        const leaderIdRaw = inputLeaderId.value.trim();
-        const isEditingTeam = modalForm.getAttribute('data-editing-team') === 'true';
-        const editingTeamName = modalForm.getAttribute('data-editing-team-name');
-        let leaderId = leaderIdRaw;
-        const match = leaderIdRaw.match(/\(([^)]+)\)$/);
-        if (match) {
-            leaderId = match[1];
-        }
-        if (!teamName) {
-            alert('Please enter a team name.');
-            inputTeamName.focus();
-            return;
-        }
-        if (!isEditingTeam && teams.some(t => t.name.toLowerCase() === teamName.toLowerCase())) {
-            alert('Team with this name already exists.');
-            inputTeamName.focus();
-            return;
-        }
-        if (
-            isEditingTeam &&
-            teamName.toLowerCase() !== editingTeamName.toLowerCase() &&
-            teams.some(t => t.name.toLowerCase() === teamName.toLowerCase())
-        ) {
-            alert('Team with this name already exists.');
-            inputTeamName.focus();
-            return;
-        }
-        if (isEditingTeam) {
-            // Find and update the team
-            const team = teams.find(t => t.name === editingTeamName);
-            if (team) {
-                team.name = teamName;
-                team.description = teamDesc;
-                team.leaderId = leaderId;
-            }
-            renderTeams();
-            closeModal();
-            return;
-        }
-        const newTeam = {
-            name: teamName,
-            description: teamDesc,
-            createdAt: new Date(),
-            projects: [],
-            leaderId: leaderId
-        };
-        teams.unshift(newTeam);
-        renderTeams();
-        closeModal();
-        return;
+        setTimeout(() => {
+            setupLeaderAutocomplete();
+            if (inputLeaderId) inputLeaderId.focus();
+        }, 100);
     } else if (type === 'project') {
         const isEditingProject = modalForm.getAttribute('data-editing-project') === 'true';
         const editingProjectName = modalForm.getAttribute('data-editing-project-name');
@@ -1479,15 +1381,34 @@ modalForm.addEventListener('submit', (e) => {
             closeModal();
         }
     }
-});
+    projectModal.setAttribute('aria-hidden', 'false');
+    projectModal.classList.add('active');
+    projectModal.style.display = 'flex';
+    const modalButtons = projectModal.querySelector('.modal-buttons');
+    if (modalButtons) {
+        modalButtons.style.display = 'flex';
+    } else {
+        console.warn('No .modal-buttons found inside #modal!');
+    }
+    modalForm.setAttribute('data-type', type);
+}
 
-// Close modal on cancel or X icon
-closeModalBtn.addEventListener('click', () => {
-    closeModal();
-});
-modalCloseIcon.addEventListener('click', () => {
-    closeModal();
-});
+// Close modal function
+function closeModal() {
+    projectModal.style.display = 'none';
+    projectModal.classList.remove('active');
+    projectModal.setAttribute('aria-hidden', 'true');
+    modalForm.reset();
+    modalForm.removeAttribute('data-type');
+    modalForm.removeAttribute('data-editing-team');
+    modalForm.removeAttribute('data-editing-team-name');
+    modalForm.removeAttribute('data-editing-project');
+    modalForm.removeAttribute('data-editing-project-name');
+    modalForm.removeAttribute('data-editing-task');
+    modalForm.removeAttribute('data-editing-task-name');
+    modalForm.removeAttribute('data-editing-subtask');
+    modalForm.removeAttribute('data-editing-subtask-name');
+}
 
 // Open modal to create root level project
 createProjectBtn.addEventListener("click", () => {
@@ -1496,7 +1417,12 @@ createProjectBtn.addEventListener("click", () => {
 
 // Open modal to create team
 createTeamBtn.addEventListener("click", () => {
+    console.log('Create Team button clicked');
     showModal('team');
+    // Fallback: force modal to display in case of CSS issues
+    projectModal.style.display = 'flex';
+    projectModal.classList.add('active');
+    projectModal.setAttribute('aria-hidden', 'false');
 });
 
 // Open modal to create task
@@ -1531,7 +1457,8 @@ backTasksBtn.addEventListener("click", () => {
 });
 
 // Initial render of projects
-renderTeams();
+// Load teams from backend instead of using dummy data
+loadTeams();
 
 flatpickr("#input-startdate", {
     enableTime: true,
@@ -2125,6 +2052,7 @@ function setupLeaderAutocomplete() {
             };
             leaderIdSuggestions.appendChild(div);
         });
+        leaderIdSuggestions.style.display = filtered.length ? 'block' : 'none';
     };
 
     inputLeaderId.onblur = function () {
@@ -2138,3 +2066,213 @@ function setupLeaderAutocomplete() {
         }
     };
 }
+
+// Form submission handler
+modalForm.addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const type = modalForm.getAttribute('data-type');
+    
+    if (type === 'team') {
+        await handleTeamCreation();
+    } else if (type === 'project') {
+        // Handle project creation (existing logic)
+        const name = inputName.value.trim();
+        const description = inputDescription.value.trim();
+        const client = inputClient.value.trim();
+        const startdate = inputStartDate.value;
+        const deadline = inputDeadline.value;
+        
+        if (!name) {
+            alert('Please enter a project name.');
+            inputName.focus();
+            return;
+        }
+        if (!client) {
+            alert('Please enter a client name.');
+            inputClient.focus();
+            return;
+        }
+        if (!startdate) {
+            alert('Please select a start date.');
+            inputStartDate.focus();
+            return;
+        }
+        if (!deadline) {
+            alert('Please select a deadline.');
+            inputDeadline.focus();
+            return;
+        }
+        if (!currentTeam) {
+            alert('No team selected for creating a project.');
+            closeModal();
+            return;
+        }
+        
+        // Add project to current team (for now, just add to local array)
+        const newProject = {
+            name,
+            description,
+            client,
+            startdate: new Date(startdate),
+            deadline: new Date(deadline),
+            mentor: 'Unassigned',
+            createdAt: new Date(),
+            tasks: [],
+            status: 'active',
+            progress: 0,
+            priority: inputPriority.value
+        };
+        currentTeam.projects.unshift(newProject);
+        renderProjects();
+        closeModal();
+    } else if (type === 'task') {
+        // Handle task creation (existing logic)
+        const taskName = inputTaskName.value.trim();
+        const taskDesc = inputTaskDesc.value.trim();
+        const taskDeadline = inputTaskDeadline.value;
+        const taskPriority = inputTaskPriority.value;
+        let taskEmpidRaw = inputTaskEmpid.value.trim();
+        let taskEmpid = taskEmpidRaw;
+        const match = taskEmpidRaw.match(/\(([^)]+)\)$/);
+        if (match) {
+            taskEmpid = match[1];
+        }
+        
+        if (!taskName) {
+            alert('Please enter a task name.');
+            inputTaskName.focus();
+            return;
+        }
+        if (!taskDeadline) {
+            alert('Please select a task deadline.');
+            inputTaskDeadline.focus();
+            return;
+        }
+        if (!currentProject) {
+            alert('No project is open to add a task.');
+            closeModal();
+            return;
+        }
+        
+        const newTask = {
+            name: taskName,
+            details: taskDesc,
+            empid: taskEmpid,
+            deadline: new Date(taskDeadline),
+            createdAt: new Date(),
+            subtasks: [],
+            status: 'active',
+            progress: 0,
+            priority: taskPriority
+        };
+        currentProject.tasks.unshift(newTask);
+        renderTasks();
+        closeModal();
+    } else if (type === 'subtask') {
+        // Handle subtask creation (existing logic)
+        const subtaskName = inputSubtaskName.value.trim();
+        const subtaskDesc = inputSubtaskDesc.value.trim();
+        const subtaskDeadline = inputSubtaskDeadline.value;
+        const subtaskPriority = inputSubtaskPriority.value;
+        const subtaskEmpids = selectedEmployees.map(e => e.id);
+        const subtaskAttachment = inputSubtaskAttachment.files ? Array.from(inputSubtaskAttachment.files) : [];
+        
+        if (!subtaskName) {
+            alert('Please enter a subtask name.');
+            inputSubtaskName.focus();
+            return;
+        }
+        if (!selectedEmployees.length) {
+            alert('Please select at least one employee.');
+            inputSubtaskEmpid.focus();
+            return;
+        }
+        if (!subtaskDeadline) {
+            alert('Please select a subtask deadline.');
+            inputSubtaskDeadline.focus();
+            return;
+        }
+        if (!currentTask) {
+            alert('No Task is open to add subtask.');
+            closeModal();
+            return;
+        }
+        
+        const newSubtask = {
+            name: subtaskName,
+            details: subtaskDesc,
+            empids: subtaskEmpids,
+            deadline: new Date(subtaskDeadline),
+            createdAt: new Date(),
+            priority: subtaskPriority,
+            attachments: subtaskAttachment
+        };
+        currentTask.subtasks.unshift(newSubtask);
+        renderSubtasks();
+        closeModal();
+    }
+});
+
+// Handle team creation with backend API
+async function handleTeamCreation() {
+    const teamName = inputTeamName.value.trim();
+    const teamDescription = inputTeamDesc.value.trim();
+    let leaderIdRaw = inputLeaderId.value.trim();
+    let leaderId = leaderIdRaw;
+    
+    // Extract leader ID from format "Name (ID)"
+    const match = leaderIdRaw.match(/\(([^)]+)\)$/);
+    if (match) {
+        leaderId = match[1];
+    }
+    
+    if (!teamName) {
+        alert('Please enter a team name.');
+        inputTeamName.focus();
+        return;
+    }
+    
+    const adminUserId = getAdminUserId();
+    if (!adminUserId) {
+        alert('No admin user ID found. Please log in again.');
+        return;
+    }
+    
+    try {
+        const response = await fetch('/api/projects/create-team', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                team_name: teamName,
+                team_description: teamDescription,
+                leader_id: leaderId || null,
+                admin_user_id: adminUserId
+            })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            showNotification('Team created successfully!', 'success');
+            closeModal();
+            // Reload teams to show the new team
+            await loadTeams();
+        } else {
+            showNotification(result.error || 'Failed to create team', 'error');
+        }
+    } catch (error) {
+        console.error('Team creation error:', error);
+        showNotification('Failed to create team. Please try again.', 'error');
+    }
+}
+
+// Close modal on cancel or X icon
+closeModalBtn.addEventListener('click', () => {
+    closeModal();
+});
+modalCloseIcon.addEventListener('click', () => {
+    closeModal();
+});

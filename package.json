@@ -4,6 +4,7 @@
   "description": "Video: [Responsive Admin Dashboard Using HTML CSS & JavaScript with Light & Dark Mode](https://youtu.be/BOF79TAIkYQ)",
   "main": "index.js",
   "scripts": {
+    "start": "node server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {

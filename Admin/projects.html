@@ -154,14 +154,13 @@
                 <textarea id="input-team-desc" placeholder="Enter team description" rows="3"
                     style="width:100%;resize:vertical;display:none;"></textarea>
                 <label for="input-leader-id" id="input-leader-id-label" style="display:none;">Leader ID:</label>
+                <input autocomplete="off" id="input-leader-id" placeholder="Type leader ID or name" style="display:none;" type="text" />
+                <div class="autocomplete-suggestions" id="leader-id-suggestions" style="position:relative;z-index:10;display:none;"></div>
                 <label for="task-employee-select" id="task-employee-select-label">Assign to Employee:</label>
                 <select id="task-employee-select" required>
                     <option disabled selected>Select an employee</option>
                 </select>
 
-
-                <div class="autocomplete-suggestions" id="leader-id-suggestions"
-                    style="position:relative;z-index:10;display:none;"></div>
                 <!-- Project fields -->
                 <div style="display: flex; gap: 1.5rem;">
                     <div style="flex:2;">

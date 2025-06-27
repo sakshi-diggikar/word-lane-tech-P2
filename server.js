@@ -5,6 +5,9 @@ const path = require('path');
 const express = require('express');
 const cors = require('cors');
 const pool = require('./db');
+const { s3, S3_BUCKET } = require('./s3');
+const multer = require('multer');
+const upload = multer();
 
 const app = express();
 
@@ -19,7 +22,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // API Routes
-app.use('/api/auth', authRoutes);                  // Login authentication
+app.use('/api/auth', authRoutes);                 // Login authentication
 app.use('/api/hr/employees', hrAPI);               // HR employee management
 app.use('/api/projects', projectRoutes);           //  Project/task/S3 upload
 
