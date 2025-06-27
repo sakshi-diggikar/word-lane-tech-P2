@@ -65,14 +65,8 @@ const taskDetailsModal = document.getElementById("task-details-modal");
 // Data structure: teams array loaded from backend
 let teams = [];
 
-// Example employee list
-const employees = [
-    { id: "101", name: "Alice" },
-    { id: "102", name: "Bob" },
-    { id: "103", name: "Charlie" },
-    { id: "104", name: "David" },
-    { id: "105", name: "Eva" }
-];
+// Example employee list - will be populated from backend
+let employees = [];
 
 // Current navigation state
 let currentTeam = null;
@@ -375,13 +369,10 @@ function createProjectCard(project, onOpen) {
     card.classList.add("project-card");
     card.setAttribute("role", "listitem");
     card.tabIndex = 0;
-    card.setAttribute("aria-label", `Project: ${project.name}, client: ${project.client || 'N/A'}`);
+    card.setAttribute("aria-label", `Project: ${project.proj_name}, client: ${project.proj_client || 'N/A'}`);
 
     // Truncate description to 2 lines (approx 160 chars)
-    let priority = project.priority || 'Medium';
-    let priorityColor = priority === 'High' ? '#ff4d4f' : priority === 'Medium' ? '#ffbb55' : '#41f1b6';
-
-    let desc = project.description || '';
+    let desc = project.proj_description || '';
     let descShort = desc;
     if (desc.length > 160 || desc.split('\n').length > 2) {
         let lines = desc.split('\n');
@@ -390,86 +381,59 @@ function createProjectCard(project, onOpen) {
         descShort += '...';
     }
 
-    // Status calculation
-    let status = project.status || 'Pending';
-    const now = new Date();
-    if (project.deadline && status !== 'Completed') {
-        if (now > project.deadline) status = 'Delayed';
-    }
+    // Priority (if available)
+    let priority = project.proj_priority || project.priority || 'Medium';
+    let priorityColor = priority === 'High' ? '#ff4d4f' : priority === 'Medium' ? '#ffbb55' : '#41f1b6';
 
-    // Progress bar (tasks completed / total)
-    let progress = 0;
-    if (project.tasks && project.tasks.length > 0) {
-        const completed = project.tasks.filter(t => t.completed).length;
-        progress = Math.round((completed / project.tasks.length) * 100);
-    } else {
-        progress = project.progress || 0;
+    // Status
+    let status = project.proj_status || project.status || 'Pending';
+    if (typeof status === 'number') {
+        status = status === 1 ? 'Active' : status === 2 ? 'Completed' : 'Pending';
     }
+    let statusColor = status === 'Completed' ? '#28a745' : status === 'Delayed' ? '#dc3545' : '#f0ad4e';
+
+    // Dates
+    let startDate = project.proj_start_date ? formatDateTime(project.proj_start_date) : 'N/A';
+    let endDate = project.proj_deadline ? formatDateTime(project.proj_deadline) : 'N/A';
+    let createdAt = project.proj_created_at ? formatDateTime(project.proj_created_at) : '';
 
     card.innerHTML = `
-                <div class="project-header">
-                    <h3 style="font-size:1.25rem;">${project.name}</h3>
-                    <span class="priority-label" style="margin-left:auto;padding:2px 12px;border-radius:8px;font-size:1em;background:${priorityColor};color:white;align-self:center;">
-                        ${priority}
-                    </span>
-                    <span class="material-icons-sharp three-dots" tabindex="0" aria-haspopup="true" aria-label="Project options menu" style="margin-left:8px;">more_vert</span>
-                    <div class="dropdown-menu" role="menu">
-                        <button class="route-btn" role="menuitem">Route</button>
-                        <button class="archive-btn" role="menuitem">Archive</button>
-                        <button class="delete-btn" role="menuitem">Delete</button>
-                    </div>
-                </div>
-                <div class="project-details" title="${desc.replace(/"/g, '&quot;')}" style="margin-bottom:0.4em;">${descShort.replace(/\n/g, '<br>')}</div>
-                <div class="project-client" style="color:#7380ec;font-weight:600;margin-bottom:0.5em;">
-                    Client: ${project.client ? project.client : 'N/A'}
-                </div>
-                <div class="project-footer" style="display:flex;justify-content:space-between;align-items:center;margin-top:0.2em;">
-                    <div class="project-dates" style="display:flex;flex-direction:column;align-items:flex-start;">
-                        <span title="Start date" style="font-size:0.97em;color:#7d8da1;"><b>Start:</b> ${project.startdate ? formatDateTime(project.startdate) : 'N/A'}</span>
-                        <span title="Due date" style="font-size:0.97em;color:#7d8da1;margin-top:0.3em;"><b>Due:</b> ${project.deadline ? formatDateTime(project.deadline) : 'N/A'}</span>
-                    </div>
-                </div>
-                <div style="display:flex;justify-content:space-between;align-items:flex-end;">
-                    <div></div>
-                    <div class="task-avatars" style="display:flex;align-items:center;gap:0.3em;">
-                        <div class="avatar-stack" style="display:flex;align-items:center;">
-                            ${(project.tasks || []).slice(0, 3).map((t, i) => `
-                                <span class="avatar-dot" style="
-                                    display:inline-block;
-                                    width:26px;height:26px;
-                                    border-radius:50%;
-                                    background:${['#7380ec', '#41f1b6', '#ffbb55'][i % 3]};
-                                    border:2px solid #fff;
-                                    margin-left:-10px;
-                                    z-index:${10 - i};
-                                    box-shadow:0 1px 4px rgba(0,0,0,0.07);
-                                " title="${t.name}"></span>
-                            `).join('')}
-                        </div>
-                        <span style="margin-left:8px;font-weight:600;color:#7380ec;font-size:1.1em;">
-                            ${project.tasks ? project.tasks.length : 0}
-                        </span>
-                    </div>
-                </div>
-                <div style="display:flex;flex-direction:column;align-items:flex-start;">
-                    <div class="progress-bar" style="background:#eee;border-radius:8px;height:10px;width:100%;margin:0.3rem 0 0.3rem 0;">
-                        <div style="width:${progress}%;background:#7380ec;height:100%;border-radius:8px;transition:width 0.3s;"></div>
-                    </div>
-                </div>
-                <div style="display:flex;justify-content:space-between;align-items:center;margin-top:0.3em;">
-                    <span class="status-label" style="padding:2px 12px;border-radius:8px;font-size:1em;background:${status === 'Completed' ? '#28a745' : status === 'Delayed' ? '#dc3545' : '#f0ad4e'};color:white;">
-                        ${status}
-                    </span>
-                    <span style="font-size:0.97em;color:#7d8da1;text-align:right;">
-                        ${project.createdAt ? formatDateTime(project.createdAt) : ''}
-                    </span>
-                </div>
-            `;
+        <div class="project-header">
+            <h3 style="font-size:1.25rem;">${project.proj_name}</h3>
+            <span class="priority-label" style="margin-left:auto;padding:2px 12px;border-radius:8px;font-size:1em;background:${priorityColor};color:white;align-self:center;">
+                ${priority}
+            </span>
+            <span class="material-icons-sharp three-dots" tabindex="0" aria-haspopup="true" aria-label="Project options menu" style="margin-left:8px;">more_vert</span>
+            <div class="dropdown-menu" role="menu">
+                <button class="route-btn" role="menuitem">Route</button>
+                <button class="archive-btn" role="menuitem">Archive</button>
+                <button class="delete-btn" role="menuitem">Delete</button>
+            </div>
+        </div>
+        <div class="project-details" title="${desc.replace(/"/g, '&quot;')}" style="margin-bottom:0.4em;">${descShort.replace(/\n/g, '<br>')}</div>
+        <div class="project-client" style="color:#7380ec;font-weight:600;margin-bottom:0.5em;">
+            Client: ${project.proj_client ? project.proj_client : 'N/A'}
+        </div>
+        <div class="project-dates" style="display:flex;flex-direction:column;align-items:flex-start;">
+            <span title="Start date" style="font-size:0.97em;color:#7d8da1;"><b>Start:</b> ${startDate}</span>
+            <span title="Due date" style="font-size:0.97em;color:#7d8da1;margin-top:0.3em;"><b>Due:</b> ${endDate}</span>
+        </div>
+        <div style="font-size:0.97em;color:#7d8da1;margin-bottom:0.3em;">
+            <b>Status:</b> ${status}
+        </div>
+        <div style="font-size:0.97em;color:#7d8da1;margin-bottom:0.3em;">
+            <b>Created At:</b> ${createdAt}
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:0.3em;">
+            <span class="status-label" style="padding:2px 12px;border-radius:8px;font-size:1em;background:${statusColor};color:white;">
+                ${status}
+            </span>
+        </div>
+    `;
 
-    // Dropdown menu toggle
+    // Dropdown menu toggle and actions (Route, Archive, Delete)
     const dots = card.querySelector(".three-dots");
     const dropdown = card.querySelector(".dropdown-menu");
-
     dots.addEventListener("click", (e) => {
         e.stopPropagation();
         document.querySelectorAll(".dropdown-menu").forEach(menu => {
@@ -477,26 +441,17 @@ function createProjectCard(project, onOpen) {
         });
         dropdown.classList.toggle("show");
     });
-
-    // Only add this ONCE globally, not per card
-    if (!window._dropdownGlobalHandlerAdded) {
-        document.addEventListener("click", function (e) {
-            document.querySelectorAll(".dropdown-menu").forEach(menu => {
-                menu.classList.remove("show");
-            });
-        });
-        window._dropdownGlobalHandlerAdded = true;
-    }
-
-    // Archive button
-    card.querySelector(".archive-btn").addEventListener("click", () => {
-        alert(`Project "${project.name}" archived.`);
+    document.addEventListener("click", () => dropdown.classList.remove("show"));
+    card.querySelector(".route-btn").addEventListener("click", () => {
+        if (onOpen) onOpen(project);
         dropdown.classList.remove("show");
     });
-
-    // Delete button
+    card.querySelector(".archive-btn").addEventListener("click", () => {
+        alert(`Project "${project.proj_name}" archived.`);
+        dropdown.classList.remove("show");
+    });
     card.querySelector(".delete-btn").addEventListener("click", () => {
-        if (confirm(`Are you sure you want to delete project "${project.name}"?`)) {
+        if (confirm(`Are you sure you want to delete project "${project.proj_name}"?`)) {
             currentTeam.projects = currentTeam.projects.filter(p => p !== project);
             renderProjects();
         }
@@ -511,14 +466,13 @@ function createProjectCard(project, onOpen) {
 
     // Handle details button click separately
     detailsButton.addEventListener("click", function (e) {
-        e.preventDefault(); // Prevent any default behavior
-        e.stopPropagation(); // Prevent card click/navigation
-        showProjectDetails(project); // Only show details
+        e.preventDefault();
+        e.stopPropagation();
+        showProjectDetails(project);
     });
 
     // Handle card click for navigation only
     card.addEventListener("click", function (e) {
-        // Don't navigate if clicking on dropdown, three-dots, or details button
         if (
             e.target.closest('.dropdown-menu') ||
             e.target.classList.contains('three-dots') ||
@@ -526,7 +480,6 @@ function createProjectCard(project, onOpen) {
         ) {
             return;
         }
-        // Only navigate
         onOpen(project);
     });
 
@@ -539,10 +492,10 @@ function createTaskCard(task, onOpen) {
     card.classList.add("task-card");
     card.setAttribute("role", "listitem");
     card.tabIndex = 0;
-    card.setAttribute("aria-label", `Task: ${task.name}, details: ${task.details || 'No details'}`);
+    card.setAttribute("aria-label", `Task: ${task.task_name}, details: ${task.task_description || 'No details'}`);
 
     // Truncate description to 2 lines
-    let desc = task.details || '';
+    let desc = task.task_description || '';
     let descShort = desc;
     if (desc.length > 160 || desc.split('\n').length > 2) {
         let lines = desc.split('\n');
@@ -551,19 +504,18 @@ function createTaskCard(task, onOpen) {
         descShort += '...';
     }
 
-    // Priority color
-    let priority = task.priority || 'Medium';
+    // Priority color (assuming priority is stored in task_priority or default to Medium)
+    let priority = task.task_priority || 'Medium';
     let priorityColor = priority === 'High' ? '#ff4d4f' : priority === 'Medium' ? '#ffbb55' : '#41f1b6';
 
-
     // Status calculation
-    let status = task.status || 'Pending';
+    let status = task.task_status === 1 ? 'Active' : task.task_status === 2 ? 'Completed' : 'Pending';
     const now = new Date();
-    if (task.deadline && status !== 'Completed') {
-        if (now > task.deadline) status = 'Delayed';
+    if (task.task_deadline && status !== 'Completed') {
+        if (now > new Date(task.task_deadline)) status = 'Delayed';
     }
 
-    // Progress bar (subtasks completed / total)
+    // Progress bar (subtasks completed / total) - placeholder for now
     let progress = 0;
     if (task.subtasks && task.subtasks.length > 0) {
         const completed = task.subtasks.filter(st => st.completed).length;
@@ -572,13 +524,12 @@ function createTaskCard(task, onOpen) {
         progress = task.progress || 0;
     }
 
-    // Placeholder for employee name (UI only)
-    let empName = task.empid ? "Employee Name" : "N/A";
-
+    // Employee name from database
+    let empName = task.employee_name || task.employee_user_id || task.task_employee_id || "N/A";
 
     card.innerHTML = `
                 <div class="task-header">
-                    <h3 style="font-size:1.15rem;">${task.name}</h3>
+                    <h3 style="font-size:1.15rem;">${task.task_name}</h3>
                     <span class="priority-label" style="margin-left:auto;padding:2px 12px;border-radius:8px;font-size:1em;background:${priorityColor};color:white;align-self:center;">
                         ${priority}
                     </span>
@@ -591,8 +542,8 @@ function createTaskCard(task, onOpen) {
                 </div>
                 <div class="task-details" title="${desc.replace(/"/g, '&quot;')}" style="margin-bottom:0.4em;">${descShort.replace(/\n/g, '<br>')}</div>
                 <div class="task-footer" style="display:flex;flex-direction:column;align-items:flex-start;margin-top:0.2em;">
-                    <span style="font-size:0.97em;color:#7d8da1;"><b>Employee ID:</b> ${task.empid ? task.empid : 'N/A'}</span>
-                    <span title="Deadline" style="font-size:0.97em;color:#7d8da1;"><b>Deadline:</b> ${task.deadline ? formatDateTime(task.deadline) : 'N/A'}</span>
+                    <span style="font-size:0.97em;color:#7d8da1;"><b>Employee:</b> ${empName}</span>
+                    <span title="Deadline" style="font-size:0.97em;color:#7d8da1;"><b>Deadline:</b> ${task.task_deadline ? formatDateTime(task.task_deadline) : 'N/A'}</span>
                 </div>
                 <div style="display:flex;justify-content:space-between;align-items:flex-end;">
                     <div></div>
@@ -626,7 +577,7 @@ function createTaskCard(task, onOpen) {
                         ${status}
                     </span>
                     <span style="font-size:0.97em;color:#7d8da1;text-align:right;">
-                        ${task.createdAt ? formatDateTime(task.createdAt) : ''}
+                        ${task.task_created_at ? formatDateTime(task.task_created_at) : ''}
                     </span>
                 </div>
             `;
@@ -660,7 +611,7 @@ function createTaskCard(task, onOpen) {
 
     // Delete button for task
     card.querySelector(".delete-btn").addEventListener("click", () => {
-        if (confirm(`Are you sure you want to delete task "${task.name}"?`)) {
+        if (confirm(`Are you sure you want to delete task "${task.task_name}"?`)) {
             currentProject.tasks = currentProject.tasks.filter(t => t !== task);
             renderTasks();
         }
@@ -939,7 +890,7 @@ function renderProjects() {
 
 
 // Render tasks list view
-function renderTasks() {
+async function renderTasks() {
     sectionTitle.textContent = "Tasks";
     projectsView.hidden = true;
     tasksView.hidden = false;
@@ -948,7 +899,7 @@ function renderTasks() {
     currentTask = null;
 
     // Breadcrumb
-    breadcrumbProject.textContent = currentProject.name;
+    breadcrumbProject.textContent = currentProject.proj_name;
     breadcrumbProject.onclick = goBackToProjects;
     breadcrumbProject.onkeydown = (e) => { if (e.key === 'Enter') goBackToProjects(); };
     breadcrumbSubproject.hidden = true;
@@ -960,7 +911,11 @@ function renderTasks() {
     backSubprojectBtn.hidden = true;
 
     // Title
-    taskProjectTitle.textContent = `Tasks - ${currentProject.name}`;
+    taskProjectTitle.textContent = `Tasks - ${currentProject.proj_name}`;
+
+    // Load tasks from backend
+    const tasks = await loadTasksByProject(currentProject.proj_id);
+    currentProject.tasks = tasks;
 
     // Show tasks for current project
     taskCardsContainer.innerHTML = "";
@@ -968,6 +923,13 @@ function renderTasks() {
         const card = createTaskCard(task, openTaskFolder);
         taskCardsContainer.appendChild(card);
     });
+}
+
+// Load tasks for current project
+async function loadTasksForCurrentProject() {
+    if (currentProject) {
+        await renderTasks();
+    }
 }
 
 // Render subtasks list view
@@ -1020,7 +982,7 @@ function openTeamFolder(team) {
 
 function openProjectFolder(project) {
     currentProject = project;
-    renderTasks();
+    renderTasks(); // This is now async but we don't need to await it here
 }
 
 function openTaskFolder(task) {
@@ -1417,20 +1379,20 @@ function showTaskDetails(task) {
     }
 
     // Status calculation
-    let status = task.status || 'Pending';
+    let status = task.task_status === 1 ? 'Active' : task.task_status === 2 ? 'Completed' : 'Pending';
     const now = new Date();
-    if (task.deadline && status !== 'Completed') {
-        if (now > task.deadline) status = 'Delayed';
+    if (task.task_deadline && status !== 'Completed') {
+        if (now > new Date(task.task_deadline)) status = 'Delayed';
     }
 
     // Priority color
-    let priority = task.priority || 'Medium';
+    let priority = task.task_priority || 'Medium';
     let priorityColor = priority === 'High' ? '#ff4d4f' : priority === 'Medium' ? '#ffbb55' : '#41f1b6';
 
     content.innerHTML = `
                 <div style="margin-bottom: 2rem;">
                     <div style="display:flex;align-items:center;justify-content:space-between;gap:1rem;">
-                        <h2 style="color:#7380ec;font-size:1.8rem;margin-bottom:0;">${task.name}</h2>
+                        <h2 style="color:#7380ec;font-size:1.8rem;margin-bottom:0;">${task.task_name}</h2>
                         <div style="display:flex;align-items:center;gap:0.7rem;">
                             <span class="priority-label" style="padding:4px 12px;border-radius:8px;font-size:1em;background:${priorityColor};color:white;">
                                 ${priority}
@@ -1444,26 +1406,24 @@ function showTaskDetails(task) {
                 
                 <div style="background:#f8f9fa;padding:1.5rem;border-radius:1rem;margin-bottom:1.5rem;">
                     <h3 style="color:#363949;margin-bottom:0.8rem;">Task Details</h3>
-                    <p style="color:#677483;white-space:pre-line;margin-bottom:1rem;">${task.details || 'No details provided.'}</p>
+                    <p style="color:#677483;white-space:pre-line;margin-bottom:1rem;">${task.task_description || 'No details provided.'}</p>
                     
                     <div style="display:grid;grid-template-columns:auto 1fr;gap:1rem;margin-top:1rem;">
                         <strong style="color:#363949;">Employee:</strong>
                         <span style="color:#677483;">
-                            ${(() => {
-            const emp = employees.find(e => e.id === task.empid);
-            return task.empid
-                ? emp
-                    ? `${emp.name} (${emp.id})`
-                    : `${task.empid} (Unknown)`
-                : 'Not assigned';
-        })()
-        }
+                            ${task.employee_name ? `${task.employee_name} (${task.employee_user_id})` : task.employee_user_id || task.task_employee_id || 'Not assigned'}
                         </span>
                         <strong style="color:#363949;">Deadline:</strong>
-                        <span style="color:#677483;">${task.deadline ? formatDateTime(task.deadline) : 'N/A'}</span>
+                        <span style="color:#677483;">${task.task_deadline ? formatDateTime(task.task_deadline) : 'N/A'}</span>
                         
                         <strong style="color:#363949;">Created:</strong>
-                        <span style="color:#677483;">${task.createdAt ? formatDateTime(task.createdAt) : 'N/A'}</span>
+                        <span style="color:#677483;">${task.task_created_at ? formatDateTime(task.task_created_at) : 'N/A'}</span>
+                        
+                        <strong style="color:#363949;">Task ID:</strong>
+                        <span style="color:#677483;">${task.task_id || 'N/A'}</span>
+                        
+                        <strong style="color:#363949;">Project ID:</strong>
+                        <span style="color:#677483;">${task.task_project_id || 'N/A'}</span>
                     </div>
                 </div>
 
@@ -1497,11 +1457,11 @@ function showTaskDetails(task) {
     content.querySelector('#update-task-btn').onclick = function () {
         showModal('task', task); // Pass the task object for update
         setTimeout(() => {
-            inputTaskName.value = task.name || '';
-            inputTaskDesc.value = task.details || '';
-            inputTaskEmpid.value = task.empid || '';
-            inputTaskDeadline.value = task.deadline ? toFlatpickrString(task.deadline) : '';
-            inputTaskPriority.value = task.priority || 'Medium';
+            inputTaskName.value = task.task_name || '';
+            inputTaskDesc.value = task.task_description || '';
+            inputTaskEmpid.value = task.employee_name ? `${task.employee_name} (${task.employee_user_id})` : task.employee_user_id || task.task_employee_id || '';
+            inputTaskDeadline.value = task.task_deadline ? toFlatpickrString(task.task_deadline) : '';
+            inputTaskPriority.value = task.task_priority || 'Medium';
             // Change heading and button
             modalTitle.textContent = 'Update Task';
             document.getElementById('create-btn').textContent = 'Update';
@@ -1727,10 +1687,13 @@ function setupTaskEmployeeAutocomplete() {
         const val = input.value.trim().toLowerCase();
         suggestions.innerHTML = '';
         if (!val) return;
+        
+        // Filter employees that start with 'emp' and match the input
         const filtered = employees.filter(emp =>
-            emp.id.includes(val) ||
+            emp.id.toLowerCase().includes(val) ||
             emp.name.toLowerCase().includes(val)
         );
+        
         filtered.forEach(emp => {
             const div = document.createElement('div');
             div.className = 'autocomplete-suggestion';
@@ -1741,11 +1704,16 @@ function setupTaskEmployeeAutocomplete() {
             };
             suggestions.appendChild(div);
         });
+        
+        suggestions.style.display = filtered.length ? 'block' : 'none';
     };
 
     // Hide suggestions on blur
     input.onblur = function () {
-        setTimeout(() => { suggestions.innerHTML = ''; }, 150);
+        setTimeout(() => { 
+            suggestions.innerHTML = ''; 
+            suggestions.style.display = 'none';
+        }, 150);
     };
 
     // On Enter, select first suggestion if available
@@ -1950,7 +1918,7 @@ modalForm.addEventListener('submit', async function(e) {
             showNotification('Failed to create project. Please try again.', 'error');
         }
     } else if (type === 'task') {
-        // Handle task creation (existing logic)
+        // Handle task creation (DB logic)
         const taskName = inputTaskName.value.trim();
         const taskDesc = inputTaskDesc.value.trim();
         const taskDeadline = inputTaskDeadline.value;
@@ -1972,26 +1940,50 @@ modalForm.addEventListener('submit', async function(e) {
             inputTaskDeadline.focus();
             return;
         }
+        if (!taskEmpid) {
+            alert('Please select an employee.');
+            inputTaskEmpid.focus();
+            return;
+        }
         if (!currentProject) {
             alert('No project is open to add a task.');
             closeModal();
             return;
         }
-        
-        const newTask = {
-            name: taskName,
-            details: taskDesc,
-            empid: taskEmpid,
-            deadline: new Date(taskDeadline),
-            createdAt: new Date(),
-            subtasks: [],
-            status: 'active',
-            progress: 0,
-            priority: taskPriority
-        };
-        currentProject.tasks.unshift(newTask);
-        renderTasks();
-        closeModal();
+
+        const adminUserId = getAdminUserId();
+        if (!adminUserId) {
+            alert('No admin user ID found. Please log in again.');
+            return;
+        }
+
+        // Send to backend
+        try {
+            const res = await fetch('/api/projects/create-task', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    task_name: taskName,
+                    task_description: taskDesc,
+                    task_priority: taskPriority,
+                    task_employee_id: taskEmpid,
+                    task_deadline: taskDeadline,
+                    project_id: currentProject.proj_id,
+                    admin_user_id: adminUserId
+                })
+            });
+            const result = await res.json();
+            if (result.success) {
+                showNotification('Task created successfully!', 'success');
+                closeModal();
+                // Reload tasks for this project
+                await loadTasksForCurrentProject();
+            } else {
+                showNotification(result.error || 'Failed to create task', 'error');
+            }
+        } catch (err) {
+            showNotification('Failed to create task. Please try again.', 'error');
+        }
     } else if (type === 'subtask') {
         // Handle subtask creation (existing logic)
         const subtaskName = inputSubtaskName.value.trim();
@@ -2269,8 +2261,8 @@ document.addEventListener("DOMContentLoaded", async () => {
         });
     }
     
-    // Load teams for this admin
-    await loadTeams();
+    // Load employees and teams for this admin
+    await Promise.all([loadEmployees(), loadTeams()]);
     
     // Initialize flatpickr date pickers
     if (typeof flatpickr !== 'undefined') {
@@ -2312,4 +2304,41 @@ document.addEventListener("DOMContentLoaded", async () => {
         });
     }
 });
+
+// Load employees from backend for autocomplete
+async function loadEmployees() {
+    try {
+        const response = await fetch('/api/projects/employees');
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+        employees = data.map(emp => ({
+            id: emp.emp_user_id,
+            name: `${emp.emp_first_name} ${emp.emp_last_name}`
+        }));
+        console.log('🔍 Employees loaded:', employees);
+    } catch (error) {
+        console.error("Failed to load employees:", error);
+    }
+}
+
+// Load tasks for a project
+async function loadTasksByProject(projectId) {
+    console.log('🔍 Loading tasks for project ID:', projectId);
+    
+    try {
+        const response = await fetch(`/api/projects/tasks/${projectId}`);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const tasks = await response.json();
+        console.log('🔍 Tasks loaded:', tasks);
+        return tasks;
+    } catch (error) {
+        console.error('❌ Error loading tasks for project:', error);
+        showNotification(`Failed to load tasks: ${error.message}`, 'error');
+        return [];
+    }
+}
 

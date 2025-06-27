@@ -12,6 +12,43 @@ require("dotenv").config();
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
+// Create progress_levels table if it doesn't exist
+async function createProgressLevelsTable() {
+    try {
+        // Check if the table exists and has the correct structure
+        const [columns] = await db.query("SHOW COLUMNS FROM progress_levels LIKE 'progress_level'");
+        if (columns.length === 0) {
+            // Table doesn't exist or has wrong structure, create it
+            await db.query(`
+                CREATE TABLE IF NOT EXISTS progress_levels (
+                    progress_id INT AUTO_INCREMENT PRIMARY KEY,
+                    progress_level VARCHAR(50) NOT NULL UNIQUE,
+                    progress_created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    progress_updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+                )
+            `);
+        }
+        
+        // Insert default progress levels if they don't exist
+        const [existingLevels] = await db.query("SELECT COUNT(*) as count FROM progress_levels");
+        if (existingLevels[0].count === 0) {
+            await db.query(`
+                INSERT INTO progress_levels (progress_id, progress_level) VALUES
+                (1, 'Pending'),
+                (2, 'In Progress'),
+                (3, 'Completed'),
+                (4, 'On Hold'),
+                (5, 'Cancelled')
+            `);
+            console.log("Progress levels table created and populated");
+        } else {
+            console.log("Progress levels table ready");
+        }
+    } catch (error) {
+        console.error("Error creating progress_levels table:", error);
+    }
+}
+
 // Create teams table if it doesn't exist
 async function createTeamsTable() {
     try {
@@ -53,6 +90,7 @@ async function updateProjectsTable() {
 }
 
 // Initialize tables
+createProgressLevelsTable();
 createTeamsTable();
 updateProjectsTable();
 
@@ -333,6 +371,132 @@ router.get("/by-team/:team_id", async (req, res) => {
     } catch (err) {
         console.error("❌ Backend: Fetch projects by team error:", err);
         res.status(500).json({ error: "Failed to fetch projects for team" });
+    }
+});
+
+/**
+ * ✅ POST /api/projects/create-task
+ * Create new task with S3 folder structure: admin_id/team_name/project_name/task_name/
+ */
+router.post("/create-task", async (req, res) => {
+    const {
+        task_name,
+        task_description,
+        task_priority,
+        task_employee_id,
+        task_deadline,
+        project_id,
+        admin_user_id
+    } = req.body;
+
+    try {
+        // Validate project exists and get project details
+        const [projectRows] = await db.query(
+            `SELECT p.*, t.team_name, t.team_created_by 
+             FROM projects p 
+             JOIN teams t ON p.team_id = t.team_id 
+             WHERE p.proj_id = ?`,
+            [project_id]
+        );
+        
+        if (projectRows.length === 0) {
+            return res.status(400).json({ success: false, error: "Invalid project ID" });
+        }
+        
+        const project = projectRows[0];
+        
+        // Validate employee exists and get the emp_id (not emp_user_id)
+        const [employeeRows] = await db.query(
+            "SELECT emp_id, emp_user_id, emp_first_name, emp_last_name FROM employees WHERE emp_user_id = ? AND emp_user_id LIKE 'emp%'",
+            [task_employee_id]
+        );
+        
+        if (employeeRows.length === 0) {
+            return res.status(400).json({ success: false, error: "Invalid employee ID or not an employee" });
+        }
+
+        const employee = employeeRows[0];
+        const employeeEmpId = employee.emp_id; // Use emp_id for foreign key
+
+        // Create S3 folder structure: admin_id/team_name/project_name/task_name/
+        const s3FolderPath = `${admin_user_id}/${project.team_name}/${project.proj_name}/${task_name}`;
+        await createS3Folder(s3FolderPath);
+
+        // Insert task into database using emp_id for foreign key
+        const [result] = await db.query(
+            `INSERT INTO tasks 
+            (task_project_id, task_employee_id, task_name, task_description, task_status, task_created_at, task_updated_at) 
+            VALUES (?, ?, ?, ?, 1, NOW(), NOW())`,
+            [project_id, employeeEmpId, task_name, task_description]
+        );
+
+        const taskId = result.insertId;
+
+        // Fetch the created task with employee details
+        const [taskRows] = await db.query(
+            `SELECT t.*, 
+                    CONCAT(e.emp_first_name, ' ', e.emp_last_name) as employee_name,
+                    e.emp_user_id as employee_user_id
+             FROM tasks t 
+             LEFT JOIN employees e ON t.task_employee_id = e.emp_id 
+             WHERE t.task_id = ?`,
+            [taskId]
+        );
+
+        res.json({ 
+            success: true, 
+            message: "Task created successfully",
+            task: taskRows[0]
+        });
+    } catch (error) {
+        console.error("Task creation error:", error);
+        res.status(500).json({ success: false, error: "Internal server error" });
+    }
+});
+
+/**
+ * ✅ GET /api/projects/tasks/:project_id
+ * Fetch tasks for a specific project
+ */
+router.get("/tasks/:project_id", async (req, res) => {
+    const { project_id } = req.params;
+    console.log('🔍 Backend: Fetching tasks for project_id:', project_id);
+    
+    try {
+        const [tasks] = await db.query(
+            `SELECT t.*, 
+                    CONCAT(e.emp_first_name, ' ', e.emp_last_name) as employee_name,
+                    e.emp_user_id as employee_user_id
+             FROM tasks t 
+             LEFT JOIN employees e ON t.task_employee_id = e.emp_id 
+             WHERE t.task_project_id = ? 
+             ORDER BY t.task_created_at DESC`,
+            [project_id]
+        );
+        console.log('🔍 Backend: Found', tasks.length, 'tasks for project', project_id);
+        res.json(tasks);
+    } catch (err) {
+        console.error("❌ Backend: Fetch tasks error:", err);
+        res.status(500).json({ error: "Failed to fetch tasks for project" });
+    }
+});
+
+/**
+ * ✅ GET /api/projects/employees
+ * Fetch only employees (IDs starting with 'emp') for autocomplete
+ */
+router.get("/employees", async (req, res) => {
+    try {
+        const [employees] = await db.query(
+            `SELECT emp_user_id, emp_first_name, emp_last_name 
+             FROM employees 
+             WHERE emp_user_id LIKE 'emp%' 
+             ORDER BY emp_first_name, emp_last_name`
+        );
+        res.json(employees);
+    } catch (err) {
+        console.error("Fetch employees error:", err);
+        res.status(500).json({ error: "Failed to fetch employees" });
     }
 });
 
