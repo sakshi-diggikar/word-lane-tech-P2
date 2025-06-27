@@ -1,6 +1,4 @@
 // Elements ref
-const createProjectBtn = document.getElementById("create-project-btn");
-const createTeamBtn = document.getElementById("create-team-btn");
 const backToTeamsBtn = document.getElementById("back-to-teams-btn");
 const teamCardsContainer = document.getElementById("team-cards");
 const projectCardsContainer = document.getElementById("project-cards");
@@ -35,7 +33,6 @@ const subtasksView = document.getElementById("subtasks-view");
 
 const taskProjectTitle = document.getElementById("task-project-title");
 const priorityFieldWrapper = document.getElementById("priority-field-wrapper");
-const createTaskBtn = document.getElementById("create-task-btn");
 const taskCardsContainer = document.getElementById("task-cards");
 const inputTaskName = document.getElementById("input-task-name");
 const inputTaskPriority = document.getElementById("input-task-priority");
@@ -48,7 +45,6 @@ const subtaskCardsContainer = document.getElementById("subtask-cards");
 const subtaskPriorityFieldWrapper = document.getElementById("subtask-priority-field-wrapper");
 const inputSubtaskPriority = document.getElementById("input-subtask-priority");
 const inputSubtaskAttachment = document.getElementById("input-subtask-attachment");
-const createSubtaskBtn = document.getElementById("create-subtask-btn");
 const subtaskProjectTitle = document.getElementById("subtask-project-title");
 const inputSubtaskName = document.getElementById("input-subtask-name");
 const inputSubtaskDesc = document.getElementById("input-subtask-desc");
@@ -67,33 +63,137 @@ const taskDetailsModal = document.getElementById("task-details-modal");
 let teams = [
     {
         name: "Frontend Team",
-        description: "Handles all frontend work.",
-        createdAt: new Date(),
+        description: "Handles all frontend work, including UI/UX and client-side logic.",
+        createdAt: new Date("2025-05-01T10:30:00"),
+        leaderId: "101",
         projects: [
             {
                 name: "Website Redesign",
-                description: "Redesign the company website.",
+                description: "Redesign the company website for a modern look and improved UX.",
                 client: "Acme Corp",
                 startdate: new Date("2025-05-01T10:30:00"),
                 deadline: new Date("2025-06-01T10:30:00"),
                 mentor: "Alice Smith",
                 createdAt: new Date("2025-05-01T10:30:00"),
+                priority: "High",
+                status: "active",
+                progress: 60,
                 tasks: [
                     {
                         name: "Design Homepage",
-                        details: "Create a modern homepage.",
+                        details: "Create a modern homepage with responsive design.",
+                        empid: "102",
                         createdAt: new Date("2025-05-02T10:30:00"),
+                        deadline: new Date("2025-05-10T18:00:00"),
+                        priority: "High",
+                        status: "Completed",
+                        progress: 100,
                         subtasks: [
                             {
                                 name: "Wireframe",
-                                details: "Draw wireframe",
-                                createdAt: new Date("2025-05-03T10:30:00")
+                                details: "Draw wireframe for homepage layout.",
+                                createdAt: new Date("2025-05-03T10:30:00"),
+                                empids: ["102"],
+                                deadline: new Date("2025-05-04T18:00:00"),
+                                priority: "Medium",
+                                status: "Completed",
+                                progress: 100,
+                                attachments: [
+                                    "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf"
+                                ],
+                                uploadedTaskFiles: [
+                                    "https://file-examples.com/wp-content/uploads/2017/10/file-sample_150kB.pdf"
+                                ],
+                                completionDetails: "Created wireframe using Figma.",
+                            }
+                        ]
+                    },
+                    {
+                        name: "Implement Navigation",
+                        details: "Develop the navigation bar and menu.",
+                        empid: "103",
+                        createdAt: new Date("2025-05-05T09:00:00"),
+                        deadline: new Date("2025-05-12T18:00:00"),
+                        priority: "Medium",
+                        status: "Pending",
+                        progress: 50,
+                        subtasks: [
+                            {
+                                name: "Dropdown Menu",
+                                details: "Add dropdown functionality to the menu.",
+                                createdAt: new Date("2025-05-06T10:00:00"),
+                                empids: ["103"],
+                                deadline: new Date("2025-05-08T18:00:00"),
+                                priority: "Low",
+                                status: "Pending",
+                                progress: 50,
+                                attachments: [],
+                                uploadedTaskFiles: [],
+                                completionDetails: "Dropdown logic half done.",
                             }
                         ]
                     }
-                ],
+                ]
+            },
+            {
+                name: "Landing Page Optimization",
+                description: "Optimize landing page for SEO and performance.",
+                client: "Beta Ltd",
+                startdate: new Date("2025-05-10T09:00:00"),
+                deadline: new Date("2025-06-15T17:00:00"),
+                mentor: "Bob",
+                createdAt: new Date("2025-05-10T09:00:00"),
+                priority: "Medium",
+                status: "Pending",
+                progress: 0,
+                tasks: []
+            }
+        ]
+    },
+    {
+        name: "Backend Team",
+        description: "Responsible for server-side logic, APIs, and database management.",
+        createdAt: new Date("2025-04-15T11:00:00"),
+        leaderId: "104",
+        projects: [
+            {
+                name: "API Development",
+                description: "Develop RESTful APIs for the new mobile app.",
+                client: "Gamma Inc",
+                startdate: new Date("2025-05-20T09:00:00"),
+                deadline: new Date("2025-07-01T17:00:00"),
+                mentor: "David",
+                createdAt: new Date("2025-05-20T09:00:00"),
+                priority: "High",
                 status: "active",
-                progress: 0
+                progress: 30,
+                tasks: [
+                    {
+                        name: "User Authentication",
+                        details: "Implement JWT-based authentication.",
+                        empid: "105",
+                        createdAt: new Date("2025-05-21T10:00:00"),
+                        deadline: new Date("2025-05-28T18:00:00"),
+                        priority: "High",
+                        status: "Pending",
+                        progress: 0,
+                        subtasks: [
+                            {
+                                name: "JWT Token Logic",
+                                details: "Write logic for issuing and verifying JWT tokens.",
+                                createdAt: new Date("2025-05-22T10:00:00"),
+                                empids: ["105"],
+                                deadline: new Date("2025-05-25T18:00:00"),
+                                priority: "High",
+                                status: "Pending",
+                                progress: 0,
+                                attachments: [],
+                                uploadedTaskFiles: [],
+                                completionDetails: "",
+                            }
+                        ]
+                    }
+                ]
             }
         ]
     }
@@ -204,24 +304,8 @@ function showTeamDetails(team) {
         <h3 style="color:#363949;margin-bottom:0.8rem;">Members</h3>
         <div style="color:#677483;">(Members info can be added here)</div>
     </div>
-    <div style="margin-top:2rem;display:flex;justify-content:center;align-items:center;">
-        <button id="update-team-btn" style="background:#7380ec;color:#fff;padding:0.5em 1.2em;border-radius:0.5em;border:none;font-size:1em;cursor:pointer;min-width:120px;">Update Team</button>
-    </div>
 `;
     modal.style.display = 'flex';
-
-    // Add update button handler
-    content.querySelector('#update-team-btn').onclick = function () {
-        showModal('team', team); // Pass the team object for update
-        setTimeout(() => {
-            inputTeamName.value = team.name || '';
-            inputTeamDesc.value = team.description || '';
-            // Change heading and button
-            modalTitle.textContent = 'Update Team';
-            document.getElementById('create-btn').textContent = 'Update';
-        }, 100);
-        modal.style.display = 'none';
-    };
 }
 // createTeamCard function to generate team card HTML
 function createTeamCard(team, onOpen) {
@@ -242,12 +326,6 @@ function createTeamCard(team, onOpen) {
     card.innerHTML = `
     <div class="project-header">
         <h3 style="font-size:1.25rem;">${team.name}</h3>
-        <span class="material-icons-sharp three-dots" tabindex="0" aria-haspopup="true" aria-label="Team options menu" style="margin-left:auto;">more_vert</span>
-        <div class="dropdown-menu" role="menu">
-            <button class="route-btn" role="menuitem">Route</button>
-            <button class="archive-btn" role="menuitem">Archive</button>
-            <button class="delete-btn" role="menuitem">Delete</button>
-        </div>
     </div>
     <div class="project-details" title="${desc.replace(/"/g, '&quot;')}">${descShort.replace(/\n/g, '<br>')}</div>
     <div style="font-size:0.97em;color:#7d8da1;margin-bottom:0.3em;">
@@ -287,33 +365,6 @@ function createTeamCard(team, onOpen) {
         <span style="font-size:0.97em;color:#7d8da1;margin-bottom:0.1em;">${team.createdAt ? formatDateTime(team.createdAt) : 'N/A'}</span>
     </div>
 `;
-
-    // Dropdown menu toggle and actions (Route, Archive, Delete)
-    const dots = card.querySelector(".three-dots");
-    const dropdown = card.querySelector(".dropdown-menu");
-    dots.addEventListener("click", (e) => {
-        e.stopPropagation();
-        document.querySelectorAll(".dropdown-menu").forEach(menu => {
-            if (menu !== dropdown) menu.classList.remove("show");
-        });
-        dropdown.classList.toggle("show");
-    });
-    document.addEventListener("click", () => dropdown.classList.remove("show"));
-    card.querySelector(".route-btn").addEventListener("click", () => {
-        if (onOpen) onOpen(team);
-        dropdown.classList.remove("show");
-    });
-    card.querySelector(".archive-btn").addEventListener("click", () => {
-        alert(`Team "${team.name}" archived.`);
-        dropdown.classList.remove("show");
-    });
-    card.querySelector(".delete-btn").addEventListener("click", () => {
-        if (confirm(`Are you sure you want to delete team "${team.name}"?`)) {
-            teams = teams.filter(t => t !== team);
-            renderTeams();
-        }
-        dropdown.classList.remove("show");
-    });
 
     // Add details button at bottom right below date/time
     const detailsButton = document.createElement('button');
@@ -375,11 +426,11 @@ function createProjectCard(project, onOpen) {
         if (now > project.deadline) status = 'Delayed';
     }
 
-    // Progress bar (tasks completed / total)
+    // Progress bar (average of task progress)
     let progress = 0;
     if (project.tasks && project.tasks.length > 0) {
-        const completed = project.tasks.filter(t => t.completed).length;
-        progress = Math.round((completed / project.tasks.length) * 100);
+        const total = project.tasks.reduce((sum, t) => sum + (t.progress || 0), 0);
+        progress = Math.round(total / project.tasks.length);
     } else {
         progress = project.progress || 0;
     }
@@ -390,12 +441,6 @@ function createProjectCard(project, onOpen) {
                     <span class="priority-label" style="margin-left:auto;padding:2px 12px;border-radius:8px;font-size:1em;background:${priorityColor};color:white;align-self:center;">
                         ${priority}
                     </span>
-                    <span class="material-icons-sharp three-dots" tabindex="0" aria-haspopup="true" aria-label="Project options menu" style="margin-left:8px;">more_vert</span>
-                    <div class="dropdown-menu" role="menu">
-                        <button class="route-btn" role="menuitem">Route</button>
-                        <button class="archive-btn" role="menuitem">Archive</button>
-                        <button class="delete-btn" role="menuitem">Delete</button>
-                    </div>
                 </div>
                 <div class="project-details" title="${desc.replace(/"/g, '&quot;')}" style="margin-bottom:0.4em;">${descShort.replace(/\n/g, '<br>')}</div>
                 <div class="project-client" style="color:#7380ec;font-weight:600;margin-bottom:0.5em;">
@@ -443,43 +488,6 @@ function createProjectCard(project, onOpen) {
                     </span>
                 </div>
             `;
-
-    // Dropdown menu toggle
-    const dots = card.querySelector(".three-dots");
-    const dropdown = card.querySelector(".dropdown-menu");
-
-    dots.addEventListener("click", (e) => {
-        e.stopPropagation();
-        document.querySelectorAll(".dropdown-menu").forEach(menu => {
-            if (menu !== dropdown) menu.classList.remove("show");
-        });
-        dropdown.classList.toggle("show");
-    });
-
-    // Only add this ONCE globally, not per card
-    if (!window._dropdownGlobalHandlerAdded) {
-        document.addEventListener("click", function (e) {
-            document.querySelectorAll(".dropdown-menu").forEach(menu => {
-                menu.classList.remove("show");
-            });
-        });
-        window._dropdownGlobalHandlerAdded = true;
-    }
-
-    // Archive button
-    card.querySelector(".archive-btn").addEventListener("click", () => {
-        alert(`Project "${project.name}" archived.`);
-        dropdown.classList.remove("show");
-    });
-
-    // Delete button
-    card.querySelector(".delete-btn").addEventListener("click", () => {
-        if (confirm(`Are you sure you want to delete project "${project.name}"?`)) {
-            currentTeam.projects = currentTeam.projects.filter(p => p !== project);
-            renderProjects();
-        }
-        dropdown.classList.remove("show");
-    });
 
     // Add details button
     const detailsButton = document.createElement('button');
@@ -541,11 +549,11 @@ function createTaskCard(task, onOpen) {
         if (now > task.deadline) status = 'Delayed';
     }
 
-    // Progress bar (subtasks completed / total)
+    // Progress bar (average of subtask progress)
     let progress = 0;
     if (task.subtasks && task.subtasks.length > 0) {
-        const completed = task.subtasks.filter(st => st.completed).length;
-        progress = Math.round((completed / task.subtasks.length) * 100);
+        const total = task.subtasks.reduce((sum, st) => sum + (st.progress || 0), 0);
+        progress = Math.round(total / task.subtasks.length);
     } else {
         progress = task.progress || 0;
     }
@@ -560,12 +568,6 @@ function createTaskCard(task, onOpen) {
                     <span class="priority-label" style="margin-left:auto;padding:2px 12px;border-radius:8px;font-size:1em;background:${priorityColor};color:white;align-self:center;">
                         ${priority}
                     </span>
-                    <span class="material-icons-sharp three-dots" tabindex="0" aria-haspopup="true" aria-label="Task options menu" style="margin-left:8px;">more_vert</span>
-                    <div class="dropdown-menu" role="menu">
-                        <button class="route-btn" role="menuitem">Route</button>
-                        <button class="archive-btn" role="menuitem">Archive</button>
-                        <button class="delete-btn" role="menuitem">Delete</button>
-                    </div>
                 </div>
                 <div class="task-details" title="${desc.replace(/"/g, '&quot;')}" style="margin-bottom:0.4em;">${descShort.replace(/\n/g, '<br>')}</div>
                 <div class="task-footer" style="display:flex;flex-direction:column;align-items:flex-start;margin-top:0.2em;">
@@ -608,42 +610,6 @@ function createTaskCard(task, onOpen) {
                     </span>
                 </div>
             `;
-
-    // Dropdown menu toggle
-    const dots = card.querySelector(".three-dots");
-    const dropdown = card.querySelector(".dropdown-menu");
-
-    dots.addEventListener("click", (e) => {
-        e.stopPropagation();
-        document.querySelectorAll(".dropdown-menu").forEach(menu => {
-            if (menu !== dropdown) menu.classList.remove("show");
-        });
-        dropdown.classList.toggle("show");
-    });
-
-    // Remove this from inside the function:
-    // document.addEventListener("click", () => {
-    //     dropdown.classList.remove("show");
-    // });
-
-    // Instead, add this ONCE after all card functions, outside any function:
-    if (!window._dropdownGlobalHandlerAdded) {
-        document.addEventListener("click", function (e) {
-            document.querySelectorAll(".dropdown-menu").forEach(menu => {
-                menu.classList.remove("show");
-            });
-        });
-        window._dropdownGlobalHandlerAdded = true;
-    }
-
-    // Delete button for task
-    card.querySelector(".delete-btn").addEventListener("click", () => {
-        if (confirm(`Are you sure you want to delete task "${task.name}"?`)) {
-            currentProject.tasks = currentProject.tasks.filter(t => t !== task);
-            renderTasks();
-        }
-        dropdown.classList.remove("show");
-    });
 
     // Add details button
     const detailsButton = document.createElement('button');
@@ -739,12 +705,6 @@ function createSubtaskCard(subtask) {
                     <span class="priority-label" style="margin-left:auto;padding:2px 12px;border-radius:8px;font-size:1em;background:${priorityColor};color:white;align-self:center;">
                         ${priority}
                     </span>
-                    <span class="material-icons-sharp three-dots" tabindex="0" aria-haspopup="true" aria-label="Subtask options menu" style="margin-left:8px;">more_vert</span>
-                    <div class="dropdown-menu" role="menu">
-                        <button class="route-btn" role="menuitem">Route</button>
-                        <button class="archive-btn" role="menuitem">Archive</button>
-                        <button class="delete-btn" role="menuitem">Delete</button>
-                    </div>
                 </div>
                 <div class="task-details" title="${desc.replace(/"/g, '&quot;')}" style="margin-bottom:0.4em;">${descShort.replace(/\n/g, '<br>')}</div>
                 <div style="font-size:0.97em;color:#7d8da1;margin-bottom:0.3em;">
@@ -770,48 +730,34 @@ function createSubtaskCard(subtask) {
                 </div>
             `;
 
-    // Dropdown menu toggle
-    const dots = card.querySelector(".three-dots");
-    const dropdown = card.querySelector(".dropdown-menu");
+    // Add details button
+    const detailsButton = document.createElement('button');
+    detailsButton.className = 'details-btn';
+    detailsButton.textContent = 'View Details';
+    card.appendChild(detailsButton);
 
-    dots.addEventListener("click", (e) => {
-        e.stopPropagation();
-        document.querySelectorAll(".dropdown-menu").forEach(menu => {
-            if (menu !== dropdown) menu.classList.remove("show");
-        });
-        dropdown.classList.toggle("show");
+    // Handle details button click separately
+    detailsButton.addEventListener("click", function (e) {
+        e.preventDefault(); // Prevent any default behavior
+        e.stopPropagation(); // Prevent card click/navigation
+        showSubtaskDetails(subtask); // Only show details
     });
 
-    // Remove this from inside the function:
-    // document.addEventListener("click", () => {
-    //     dropdown.classList.remove("show");
-    // });
-
-    // Instead, add this ONCE after all card functions, outside any function:
-    if (!window._dropdownGlobalHandlerAdded) {
-        document.addEventListener("click", function (e) {
-            document.querySelectorAll(".dropdown-menu").forEach(menu => {
-                menu.classList.remove("show");
-            });
-        });
-        window._dropdownGlobalHandlerAdded = true;
-    }
-
-    // Delete button for subtask
-    card.querySelector(".delete-btn").addEventListener("click", () => {
-        if (confirm(`Are you sure you want to delete subtask "${subtask.name}"?`)) {
-            currentTask.subtasks = currentTask.subtasks.filter(st => st !== subtask);
-            renderSubtasks();
-        }
-        dropdown.classList.remove("show");
+    // Handle card click for navigation only
+    card.addEventListener("click", function (e) {
+        // Prevent click on dropdown menu or three-dots from opening details
+        if (e.target.closest('.dropdown-menu') || e.target.classList.contains('three-dots')) return;
+        showSubtaskDetails(subtask);
     });
 
-    // Download all attachments handler (works for 1 or more files)
-    if (attachments.length > 0) {
-        card.querySelector('.download-all-attachments').addEventListener('click', function (e) {
+    // Download all attachments handler (modal)
+    if (subtask.attachments && subtask.attachments.length > 0) {
+        const allAttachmentsBtn = card.querySelector('.download-all-attachments');
+        if (allAttachmentsBtn) {
+            allAttachmentsBtn.onclick = function(e) {
             e.preventDefault();
             e.stopPropagation();
-            attachments.forEach(file => {
+                subtask.attachments.forEach(file => {
                 let url, filename;
                 if (file instanceof File) {
                     url = URL.createObjectURL(file);
@@ -830,15 +776,17 @@ function createSubtaskCard(subtask) {
                     setTimeout(() => URL.revokeObjectURL(url), 1000);
                 }
             });
-        });
+            };
+        }
     }
-
-    // Download all task files handler
-    if (uploadedTaskFiles.length > 0) {
-        card.querySelector('.download-all-taskfiles').addEventListener('click', function (e) {
+    // Download all task files handler (modal)
+    if (subtask.uploadedTaskFiles && subtask.uploadedTaskFiles.length > 0) {
+        const allTaskFilesBtn = card.querySelector('.download-all-taskfiles');
+        if (allTaskFilesBtn) {
+            allTaskFilesBtn.onclick = function(e) {
             e.preventDefault();
             e.stopPropagation();
-            uploadedTaskFiles.forEach(file => {
+                subtask.uploadedTaskFiles.forEach(file => {
                 let url, filename;
                 if (file instanceof File) {
                     url = URL.createObjectURL(file);
@@ -857,16 +805,9 @@ function createSubtaskCard(subtask) {
                     setTimeout(() => URL.revokeObjectURL(url), 1000);
                 }
             });
-        });
+            };
+        }
     }
-
-    // --- Single click to show subtask details modal ---
-    card.addEventListener("click", function (e) {
-        // Prevent click on dropdown menu or three-dots from opening details
-        if (e.target.closest('.dropdown-menu') || e.target.classList.contains('three-dots')) return;
-        showSubtaskDetails(subtask);
-    });
-    // --------------------------------------------------
 
     return card;
 }
@@ -952,8 +893,8 @@ function renderSubtasks() {
     tasksView.hidden = true;
     subtasksView.hidden = false;
     breadcrumb.hidden = false;
-    createSubtaskBtn.hidden = false;
-    createSubtaskBtn.onclick = () => showModal('subtask');
+    // createSubtaskBtn.hidden = false;
+    // createSubtaskBtn.onclick = () => showModal('subtask');
 
     // Breadcrumb
     breadcrumbProject.textContent = currentProject.name;
@@ -1007,480 +948,6 @@ function goBackToTasks() {
     renderTasks();
 }
 
-// Show modal for creating project, task or subtask
-function showModal(type, subtaskToEdit = null) {
-    modalForm.reset();
-
-    // Hide all fields by default
-    inputTeamName.style.display = 'none';
-    document.getElementById('input-team-name-label').style.display = 'none';
-    inputTeamDesc.style.display = 'none';
-    document.getElementById('input-team-desc-label').style.display = 'none';
-    inputName.style.display = 'none';
-    inputLeaderId.style.display = 'none';
-    document.getElementById('input-leader-id-label').style.display = 'none';
-    leaderIdSuggestions.style.display = 'none';
-    document.getElementById('input-label').style.display = 'none';
-    inputDescription.style.display = 'none';
-    document.getElementById('input-description-label').style.display = 'none';
-    inputClient.style.display = 'none';
-    document.getElementById('input-client-label').style.display = 'none';
-    inputStartDate.style.display = 'none';
-    document.getElementById('input-startdate-label').style.display = 'none';
-    inputDeadline.style.display = 'none';
-    document.getElementById('input-deadline-label').style.display = 'none';
-    priorityFieldWrapper.style.display = 'none'; // Project priority
-    inputTaskName.style.display = 'none';
-    document.getElementById('input-task-name-label').style.display = 'none';
-    taskPriorityFieldWrapper.style.display = 'none'; // Task priority
-    inputTaskDesc.style.display = 'none';
-    document.getElementById('input-task-desc-label').style.display = 'none';
-    inputTaskEmpid.style.display = 'none';
-    document.getElementById('input-task-empid-label').style.display = 'none';
-    inputTaskDeadline.style.display = 'none';
-    document.getElementById('input-task-deadline-label').style.display = 'none';
-    inputSubtaskName.style.display = 'none';
-    document.getElementById('input-subtask-name-label').style.display = 'none';
-    inputSubtaskDesc.style.display = 'none';
-    document.getElementById('input-subtask-desc-label').style.display = 'none';
-    inputSubtaskEmpid.style.display = 'none';
-    document.getElementById('input-subtask-empid-label').style.display = 'none';
-    inputSubtaskDeadline.style.display = 'none';
-    document.getElementById('input-subtask-deadline-label').style.display = 'none';
-    inputSubtaskPriority.style.display = 'none';
-    subtaskPriorityFieldWrapper.style.display = 'none';
-    inputSubtaskAttachment.style.display = 'none';
-    document.getElementById('input-subtask-attachment-label').style.display = 'none';
-
-    // Hide employee suggestion divs by default
-    document.getElementById('task-empid-suggestions').style.display = 'none';
-    document.getElementById('subtask-empid-suggestions').style.display = 'none';
-    document.getElementById('selected-employees').style.display = 'none';
-
-    if (type === 'project') {
-        modalTitle.textContent = subtaskToEdit ? 'Update Project' : 'Create New Project';
-        document.getElementById('create-btn').textContent = subtaskToEdit ? 'Update' : 'Create';
-        inputName.style.display = 'block';
-        document.getElementById('input-label').style.display = 'block';
-        inputDescription.style.display = 'block';
-        document.getElementById('input-description-label').style.display = 'block';
-        inputClient.style.display = 'block';
-        document.getElementById('input-client-label').style.display = 'block';
-        inputStartDate.style.display = 'block';
-        document.getElementById('input-startdate-label').style.display = 'block';
-        inputDeadline.style.display = 'block';
-        document.getElementById('input-deadline-label').style.display = 'block';
-        priorityFieldWrapper.style.display = 'block';
-        // Reset date fields and flatpickr
-        inputStartDate.value = '';
-        inputDeadline.value = '';
-        if (inputStartDate._flatpickr) inputStartDate._flatpickr.clear();
-        if (inputDeadline._flatpickr) inputDeadline._flatpickr.clear();
-        inputName.focus();
-        if (subtaskToEdit) {
-            inputName.value = subtaskToEdit.name || '';
-            inputDescription.value = subtaskToEdit.description || '';
-            inputClient.value = subtaskToEdit.client || '';
-            inputStartDate.value = subtaskToEdit.startdate ? (typeof subtaskToEdit.startdate === 'string' ? subtaskToEdit.startdate : subtaskToEdit.startdate.toISOString().slice(0, 16)) : '';
-            inputDeadline.value = subtaskToEdit.deadline ? (typeof subtaskToEdit.deadline === 'string' ? subtaskToEdit.deadline : subtaskToEdit.deadline.toISOString().slice(0, 16)) : '';
-            inputPriority.value = subtaskToEdit.priority || 'Medium';
-            modalForm.setAttribute('data-editing-project', 'true');
-            modalForm.setAttribute('data-editing-project-name', subtaskToEdit.name);
-        } else {
-            modalForm.removeAttribute('data-editing-project');
-            modalForm.removeAttribute('data-editing-project-name');
-        }
-    } else if (type === 'team') {
-        modalTitle.textContent = subtaskToEdit ? 'Update Team' : 'Create New Team';
-        document.getElementById('create-btn').textContent = subtaskToEdit ? 'Update' : 'Create';
-        inputTeamName.style.display = 'block';
-        document.getElementById('input-team-name-label').style.display = 'block';
-        inputTeamDesc.style.display = 'block';
-        document.getElementById('input-team-desc-label').style.display = 'block';
-        inputLeaderId.style.display = 'block';
-        document.getElementById('input-leader-id-label').style.display = 'block';
-        leaderIdSuggestions.style.display = 'block';
-        inputTeamName.focus();
-        if (subtaskToEdit) {
-            inputTeamName.value = subtaskToEdit.name || '';
-            inputTeamDesc.value = subtaskToEdit.description || '';
-            inputLeaderId.value = subtaskToEdit.leaderId || '';
-            modalForm.setAttribute('data-editing-team', 'true');
-            modalForm.setAttribute('data-editing-team-name', subtaskToEdit.name);
-        } else {
-            inputLeaderId.value = '';
-            modalForm.removeAttribute('data-editing-team');
-            modalForm.removeAttribute('data-editing-team-name');
-        }
-        setTimeout(setupLeaderAutocomplete, 100);
-    } else if (type === 'task') {
-        modalTitle.textContent = subtaskToEdit ? 'Update Task' : 'Create New Task';
-        document.getElementById('create-btn').textContent = subtaskToEdit ? 'Update' : 'Create';
-        inputTaskName.style.display = 'block';
-        document.getElementById('input-task-name-label').style.display = 'block';
-        taskPriorityFieldWrapper.style.display = 'block';
-        inputTaskDesc.style.display = 'block';
-        document.getElementById('input-task-desc-label').style.display = 'block';
-        inputTaskEmpid.style.display = 'block';
-        document.getElementById('input-task-empid-label').style.display = 'block';
-        inputTaskDeadline.style.display = 'block';
-        document.getElementById('input-task-deadline-label').style.display = 'block';
-        document.getElementById('task-empid-suggestions').style.display = 'block';
-        // Reset deadline field and flatpickr
-        inputTaskDeadline.value = '';
-        if (inputTaskDeadline._flatpickr) inputTaskDeadline._flatpickr.clear();
-        inputTaskName.focus();
-        if (subtaskToEdit) {
-            inputTaskName.value = subtaskToEdit.name || '';
-            inputTaskDesc.value = subtaskToEdit.details || '';
-            inputTaskEmpid.value = subtaskToEdit.empid || '';
-            inputTaskDeadline.value = subtaskToEdit.deadline ? (typeof subtaskToEdit.deadline === 'string' ? subtaskToEdit.deadline : subtaskToEdit.deadline.toISOString().slice(0, 16)) : '';
-            inputTaskPriority.value = subtaskToEdit.priority || 'Medium';
-            modalForm.setAttribute('data-editing-task', 'true');
-            modalForm.setAttribute('data-editing-task-name', subtaskToEdit.name);
-        } else {
-            modalForm.removeAttribute('data-editing-task');
-            modalForm.removeAttribute('data-editing-task-name');
-        }
-        setTimeout(setupTaskEmployeeAutocomplete, 100);
-    } else if (type === 'subtask') {
-        modalTitle.textContent = subtaskToEdit ? 'Update the Subtask' : 'Create New Subtask';
-        document.getElementById('create-btn').textContent = subtaskToEdit ? 'Update' : 'Create';
-        inputSubtaskName.style.display = 'block';
-        document.getElementById('input-subtask-name-label').style.display = 'block';
-        inputSubtaskDesc.style.display = 'block';
-        document.getElementById('input-subtask-desc-label').style.display = 'block';
-        inputSubtaskEmpid.style.display = 'block';
-        document.getElementById('input-subtask-empid-label').style.display = 'block';
-        inputSubtaskDeadline.style.display = 'block';
-        document.getElementById('input-subtask-deadline-label').style.display = 'block';
-        inputSubtaskPriority.style.display = 'block';
-        subtaskPriorityFieldWrapper.style.display = 'block';
-        inputSubtaskAttachment.style.display = 'block';
-        document.getElementById('input-subtask-attachment-label').style.display = 'block';
-        document.getElementById('subtask-empid-suggestions').style.display = 'block';
-        document.getElementById('selected-employees').style.display = 'flex';
-        inputSubtaskDeadline.value = '';
-        if (inputSubtaskDeadline._flatpickr) inputSubtaskDeadline._flatpickr.clear();
-        inputSubtaskName.focus();
-        if (subtaskToEdit) {
-            inputSubtaskName.value = subtaskToEdit.name || '';
-            inputSubtaskDesc.value = subtaskToEdit.details || '';
-            inputSubtaskEmpid.value = (Array.isArray(subtaskToEdit.empids) ? subtaskToEdit.empids.join(', ') : subtaskToEdit.empids || '');
-            inputSubtaskDeadline.value = subtaskToEdit.deadline ? (typeof subtaskToEdit.deadline === 'string' ? subtaskToEdit.deadline : subtaskToEdit.deadline.toISOString().slice(0, 16)) : '';
-            inputSubtaskPriority.value = subtaskToEdit.priority || 'Medium';
-            // Attachments cannot be pre-filled for security reasons
-            modalForm.setAttribute('data-editing-subtask', 'true');
-            modalForm.setAttribute('data-editing-subtask-name', subtaskToEdit.name);
-        } else {
-            modalForm.removeAttribute('data-editing-subtask');
-            modalForm.removeAttribute('data-editing-subtask-name');
-        }
-        setTimeout(setupEmployeeAutocomplete, 100);
-    }
-
-    document.querySelector('.modal-buttons').style.display = 'flex';
-    modalForm.setAttribute('data-type', type);
-    projectModal.setAttribute('aria-hidden', 'false');
-    projectModal.classList.add('active');
-}
-
-
-// Close modal
-function closeModal() {
-    projectModal.classList.remove('active');
-    projectModal.setAttribute('aria-hidden', 'true');
-}
-
-// Form submit handler (create project, task or subtask)
-modalForm.addEventListener('submit', (e) => {
-    e.preventDefault();
-    const type = modalForm.getAttribute('data-type');
-    const name = inputName.value.trim();
-    const description = inputDescription.value.trim();
-    const client = inputClient ? inputClient.value.trim() : "";
-    const startdate = inputStartDate.value;
-    const deadline = inputDeadline.value;
-
-    function projectExistsInList(list, name) {
-        return list.some(p => p.name.toLowerCase() === name.toLowerCase());
-    }
-
-    if (type === 'team') {
-        const teamName = inputTeamName.value.trim();
-        const teamDesc = inputTeamDesc.value.trim();
-        const leaderIdRaw = inputLeaderId.value.trim();
-        const isEditingTeam = modalForm.getAttribute('data-editing-team') === 'true';
-        const editingTeamName = modalForm.getAttribute('data-editing-team-name');
-        let leaderId = leaderIdRaw;
-        const match = leaderIdRaw.match(/\(([^)]+)\)$/);
-        if (match) {
-            leaderId = match[1];
-        }
-        if (!teamName) {
-            alert('Please enter a team name.');
-            inputTeamName.focus();
-            return;
-        }
-        if (!isEditingTeam && teams.some(t => t.name.toLowerCase() === teamName.toLowerCase())) {
-            alert('Team with this name already exists.');
-            inputTeamName.focus();
-            return;
-        }
-        if (
-            isEditingTeam &&
-            teamName.toLowerCase() !== editingTeamName.toLowerCase() &&
-            teams.some(t => t.name.toLowerCase() === teamName.toLowerCase())
-        ) {
-            alert('Team with this name already exists.');
-            inputTeamName.focus();
-            return;
-        }
-        if (isEditingTeam) {
-            // Find and update the team
-            const team = teams.find(t => t.name === editingTeamName);
-            if (team) {
-                team.name = teamName;
-                team.description = teamDesc;
-                team.leaderId = leaderId;
-            }
-            renderTeams();
-            closeModal();
-            return;
-        }
-        const newTeam = {
-            name: teamName,
-            description: teamDesc,
-            createdAt: new Date(),
-            projects: [],
-            leaderId: leaderId
-        };
-        teams.unshift(newTeam);
-        renderTeams();
-        closeModal();
-        return;
-    } else if (type === 'project') {
-        const isEditingProject = modalForm.getAttribute('data-editing-project') === 'true';
-        const editingProjectName = modalForm.getAttribute('data-editing-project-name');
-        if (!name) {
-            alert('Please enter a project name.');
-            inputName.focus();
-            return;
-        }
-        if (!client) {
-            alert('Please enter a client name.');
-            inputClient.focus();
-            return;
-        }
-        if (!startdate) {
-            alert('Please select a start date.');
-            inputStartDate.focus();
-            return;
-        }
-        if (!deadline) {
-            alert('Please select a deadline.');
-            inputDeadline.focus();
-            return;
-        }
-        if (!currentTeam) {
-            alert('No team selected for creating a project.');
-            closeModal();
-            return;
-        }
-        if (!isEditingProject && projectExistsInList(currentTeam.projects, name)) {
-            alert('Project with this name already exists.');
-            inputName.focus();
-            return;
-        }
-        if (
-            isEditingProject &&
-            name.toLowerCase() !== editingProjectName.toLowerCase() &&
-            projectExistsInList(currentTeam.projects, name)
-        ) {
-            alert('Project with this name already exists.');
-            inputName.focus();
-            return;
-        }
-        if (isEditingProject) {
-            // Find and update the project
-            const project = currentTeam.projects.find(p => p.name === editingProjectName);
-            if (project) {
-                project.name = name;
-                project.description = description;
-                project.client = client;
-                project.startdate = new Date(startdate);
-                project.deadline = new Date(deadline);
-                project.priority = inputPriority.value;
-            }
-            renderProjects();
-            closeModal();
-            return;
-        }
-        const newProject = {
-            name,
-            description,
-            client,
-            startdate: new Date(startdate),
-            deadline: new Date(deadline),
-            mentor: 'Unassigned',
-            createdAt: new Date(),
-            tasks: [],
-            status: 'active',
-            progress: 0,
-            priority: inputPriority.value
-        };
-        currentTeam.projects.unshift(newProject);
-        renderProjects();
-        closeModal();
-    } else if (type === 'task') {
-        const taskName = inputTaskName.value.trim();
-        const taskDesc = inputTaskDesc.value.trim();
-        const taskDeadline = inputTaskDeadline.value;
-        const taskPriority = inputTaskPriority.value;
-        let taskEmpidRaw = inputTaskEmpid.value.trim();
-        let taskEmpid = taskEmpidRaw;
-        const match = taskEmpidRaw.match(/\(([^)]+)\)$/);
-        if (match) {
-            taskEmpid = match[1];
-        }
-        const isEditingTask = modalForm.getAttribute('data-editing-task') === 'true';
-        const editingTaskName = modalForm.getAttribute('data-editing-task-name');
-        if (!taskName) {
-            alert('Please enter a task name.');
-            inputTaskName.focus();
-            return;
-        }
-        if (!taskDeadline) {
-            alert('Please select a task deadline.');
-            inputTaskDeadline.focus();
-            return;
-        }
-        if (!currentProject) {
-            alert('No project is open to add a task.');
-            closeModal();
-            return;
-        }
-        if (!isEditingTask && projectExistsInList(currentProject.tasks, taskName)) {
-            alert('Task with this name already exists in this project.');
-            inputTaskName.focus();
-            return;
-        }
-        if (
-            isEditingTask &&
-            taskName.toLowerCase() !== editingTaskName.toLowerCase() &&
-            projectExistsInList(currentProject.tasks, taskName)
-        ) {
-            alert('Task with this name already exists in this project.');
-            inputTaskName.focus();
-            return;
-        }
-        if (isEditingTask) {
-            // Find and update the task
-            const task = currentProject.tasks.find(t => t.name === editingTaskName);
-            if (task) {
-                task.name = taskName;
-                task.details = taskDesc;
-                task.empid = taskEmpid;
-                task.deadline = new Date(taskDeadline);
-                task.priority = taskPriority;
-            }
-            renderTasks();
-            closeModal();
-            return;
-        }
-        const newTask = {
-            name: taskName,
-            details: taskDesc,
-            empid: taskEmpid,
-            deadline: new Date(taskDeadline),
-            createdAt: new Date(),
-            subtasks: [],
-            status: 'active',
-            progress: 0,
-            priority: taskPriority
-        };
-        currentProject.tasks.unshift(newTask);
-        renderTasks();
-        closeModal();
-    } else if (type === 'subtask') {
-        const subtaskName = inputSubtaskName.value.trim();
-        const subtaskDesc = inputSubtaskDesc.value.trim();
-        // const subtaskEmpid = inputSubtaskEmpid.value.trim();
-        const subtaskDeadline = inputSubtaskDeadline.value;
-        const subtaskPriority = inputSubtaskPriority.value;
-        const subtaskEmpids = selectedEmployees.map(e => e.id);
-        const subtaskAttachment = inputSubtaskAttachment.files ? Array.from(inputSubtaskAttachment.files) : [];
-        if (!subtaskName) {
-            alert('Please enter a subtask name.');
-            inputSubtaskName.focus();
-            return;
-        }
-        if (!selectedEmployees.length) {
-            alert('Please select at least one employee.');
-            inputSubtaskEmpid.focus();
-            return;
-        }
-        if (!subtaskDeadline) {
-            alert('Please select a subtask deadline.');
-            inputSubtaskDeadline.focus();
-            return;
-        }
-        if (!currentTask) {
-            alert('No Task is open to add subtask.');
-            closeModal();
-            return;
-        }
-        const isEditing = modalForm.getAttribute('data-editing-subtask') === 'true';
-        const editingName = modalForm.getAttribute('data-editing-subtask-name');
-        if (!isEditing && projectExistsInList(currentTask.subtasks, subtaskName)) {
-            alert('Subtask with this name already exists in this task.');
-            inputSubtaskName.focus();
-            return;
-        }
-        // If editing, allow the same name as the one being edited
-        if (
-            isEditing &&
-            subtaskName.toLowerCase() !== editingName.toLowerCase() &&
-            projectExistsInList(currentTask.subtasks, subtaskName)
-        ) {
-            alert('Subtask with this name already exists in this task.');
-            inputSubtaskName.focus();
-            return;
-        }
-        if (isEditing) {
-            // Find and update the subtask
-            const subtask = currentTask.subtasks.find(st => st.name === editingName);
-            if (subtask) {
-                subtask.name = subtaskName;
-                subtask.details = subtaskDesc;
-                subtask.empids = subtaskEmpids;
-                subtask.deadline = new Date(subtaskDeadline);
-                subtask.priority = subtaskPriority;
-                // Optionally update attachments if new ones are uploaded
-                if (subtaskAttachment.length > 0) {
-                    subtask.attachments = subtaskAttachment;
-                }
-            }
-            renderSubtasks();
-            closeModal();
-            return;
-        } else {
-            const newSubtask = {
-                name: subtaskName,
-                details: subtaskDesc,
-                empids: subtaskEmpids,
-                deadline: new Date(subtaskDeadline),
-                createdAt: new Date(),
-                priority: subtaskPriority,
-                attachments: subtaskAttachment
-            };
-            currentTask.subtasks.unshift(newSubtask);
-            renderSubtasks();
-            closeModal();
-        }
-    }
-});
-
 // Close modal on cancel or X icon
 closeModalBtn.addEventListener('click', () => {
     closeModal();
@@ -1488,30 +955,6 @@ closeModalBtn.addEventListener('click', () => {
 modalCloseIcon.addEventListener('click', () => {
     closeModal();
 });
-
-// Open modal to create root level project
-createProjectBtn.addEventListener("click", () => {
-    showModal('project');
-});
-
-// Open modal to create team
-createTeamBtn.addEventListener("click", () => {
-    showModal('team');
-});
-
-// Open modal to create task
-createTaskBtn.addEventListener("click", () => {
-    if (!currentProject) {
-        alert('No project selected for creating a task.');
-        return;
-    }
-    showModal('task');
-});
-
-
-// Open modal to create subtask (when in subtasks view)
-// You may want to add a "create subtask" button in subtasks view and use:
-// showModal('subtask');
 
 // Back buttons event listeners
 backToTeamsBtn.addEventListener("click", () => {
@@ -1578,8 +1021,8 @@ function showProjectDetails(project) {
     // Calculate progress
     let progress = 0;
     if (project.tasks && project.tasks.length > 0) {
-        const completed = project.tasks.filter(t => t.completed).length;
-        progress = Math.round((completed / project.tasks.length) * 100);
+        const total = project.tasks.reduce((sum, t) => sum + (t.progress || 0), 0);
+        progress = Math.round(total / project.tasks.length);
     }
 
     // Status calculation
@@ -1639,9 +1082,6 @@ function showProjectDetails(project) {
                         <span style="color:#677483;">${project.tasks ? project.tasks.length : 0} Tasks</span>
                     </div>
                 </div>
-                <div style="margin-top:2rem;display:flex;justify-content:center;align-items:center;">
-                    <button id="update-project-btn" style="background:#7380ec;color:#fff;padding:0.5em 1.2em;border-radius:0.5em;border:none;font-size:1em;cursor:pointer;min-width:120px;">Update Project</button>
-                </div>
             `;
 
     modal.style.display = 'flex';
@@ -1654,22 +1094,6 @@ function showProjectDetails(project) {
     modal.onclick = (e) => {
         if (e.target === modal) modal.style.display = 'none';
     };
-
-    // Update button handler
-    content.querySelector('#update-project-btn').onclick = function () {
-        showModal('project', project);
-        setTimeout(() => {
-            inputName.value = project.name || '';
-            inputDescription.value = project.description || '';
-            inputClient.value = project.client || '';
-            inputStartDate.value = project.startdate ? toFlatpickrString(project.startdate) : '';
-            inputDeadline.value = project.deadline ? toFlatpickrString(project.deadline) : '';
-            inputPriority.value = project.priority || 'Medium';
-            modalTitle.textContent = 'Update Project';
-            document.getElementById('create-btn').textContent = 'Update';
-        }, 100);
-        modal.style.display = 'none';
-    };
 }
 
 // Function to show task details
@@ -1680,8 +1104,8 @@ function showTaskDetails(task) {
     // Calculate progress
     let progress = 0;
     if (task.subtasks && task.subtasks.length > 0) {
-        const completed = task.subtasks.filter(st => st.completed).length;
-        progress = Math.round((completed / task.subtasks.length) * 100);
+        const total = task.subtasks.reduce((sum, st) => sum + (st.progress || 0), 0);
+        progress = Math.round(total / task.subtasks.length);
     }
 
     // Status calculation
@@ -1745,9 +1169,6 @@ function showTaskDetails(task) {
                         <span style="color:#677483;">${task.subtasks ? task.subtasks.length : 0} Subtasks</span>
                     </div>
                 </div>
-                <div style="margin-top:2rem;display:flex;justify-content:center;align-items:center;">
-                    <button id="update-task-btn" style="background:#7380ec;color:#fff;padding:0.5em 1.2em;border-radius:0.5em;border:none;font-size:1em;cursor:pointer;min-width:120px;">Update Task</button>
-                </div>
             `;
 
     modal.style.display = 'flex';
@@ -1759,22 +1180,6 @@ function showTaskDetails(task) {
     // Close on outside click
     modal.onclick = (e) => {
         if (e.target === modal) modal.style.display = 'none';
-    };
-
-    // Update button handler
-    content.querySelector('#update-task-btn').onclick = function () {
-        showModal('task', task); // Pass the task object for update
-        setTimeout(() => {
-            inputTaskName.value = task.name || '';
-            inputTaskDesc.value = task.details || '';
-            inputTaskEmpid.value = task.empid || '';
-            inputTaskDeadline.value = task.deadline ? toFlatpickrString(task.deadline) : '';
-            inputTaskPriority.value = task.priority || 'Medium';
-            // Change heading and button
-            modalTitle.textContent = 'Update Task';
-            document.getElementById('create-btn').textContent = 'Update';
-        }, 100);
-        modal.style.display = 'none';
     };
 }
 
@@ -1832,45 +1237,61 @@ function showSubtaskDetails(subtask) {
                     </div>
                 </div>
 
-                ${subtask.attachments && subtask.attachments.length > 0 ? `
-                <div style="background:#f8f9fa;padding:1.5rem;border-radius:1rem;">
+                <div style="background:#f8f9fa;padding:1.5rem;border-radius:1rem;margin-bottom:1.5rem;">
+                    ${(subtask.attachments && subtask.attachments.length > 0) ? `
                     <h3 style="color:#363949;margin-bottom:0.8rem;">Attachments</h3>
-                    <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
+                    <div style="display:flex;gap:0.5rem;flex-wrap:wrap;margin-bottom:1.2rem;">
                         ${subtask.attachments.map(file => `
                             <a href="#" class="download-attachment" style="display:inline-flex;align-items:center;gap:0.5rem;padding:0.5rem 1rem;background:#7380ec;color:white;border-radius:0.5rem;text-decoration:none;">
                                 <span class="material-icons-sharp">attach_file</span>
                                 ${file instanceof File ? file.name : file.split('/').pop()}
                             </a>
                         `).join('')}
-                    </div>
                 </div>
                 ` : ''}
-
                 ${(subtask.uploadedTaskFiles && subtask.uploadedTaskFiles.length > 0) ? `
-                <div style="background:#f8f9fa;padding:1.5rem;border-radius:1rem;margin-bottom:1.2rem;">
                     <h3 style="color:#363949;margin-bottom:0.8rem;">Task Uploaded File(s)</h3>
-                    <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
+                    <div style="display:flex;gap:0.5rem;flex-wrap:wrap;margin-bottom:1.2rem;">
                         ${subtask.uploadedTaskFiles.map((file, idx) => `
                             <a href="#" class="download-task-file" data-file-idx="${idx}" style="display:inline-flex;align-items:center;gap:0.5rem;padding:0.5rem 1rem;background:#41f1b6;color:white;border-radius:0.5rem;text-decoration:none;">
                                 <span class="material-icons-sharp">file_present</span>
                                 ${file instanceof File ? file.name : (typeof file === 'string' ? file.split('/').pop() : 'file')}
                             </a>
                         `).join('')}
-                    </div>
                 </div>
                 ` : ''}
+                </div>
 
-                <div style="margin-top:2rem;">
-                    <label style="font-weight:600;margin-left:1.5rem;">Upload Task File:</label>
+                <div style="background:#f8f9fa;padding:1.5rem;border-radius:1rem;margin-bottom:0.5rem;">
+                    <div style="margin-bottom:1.5rem;">
+                        <label style="font-weight:600;">Upload Task File:</label>
                     <input type="file" id="upload-task-file" multiple />
-                    <div style="display:flex;justify-content:center;align-items:center;gap:1rem;margin-top:1rem;">
+                    </div>
+                    <div style="margin-bottom:1.5rem;">
+                        <label for="progress-input" style="font-weight:600;">Task Completion (%):</label>
+                        <input type="range" id="progress-input" min="0" max="100" value="${subtask.progress || 0}" style="width:100%;margin-top:0.5em;">
+                        <span id="progress-value" style="font-size:1.1em;margin-left:0.7em;vertical-align:middle;">${subtask.progress || 0}%</span>
+                    </div>
+                    <div>
+                        <label for="completion-details" style="font-weight:600;">What did you do in this task?</label>
+                        <textarea id="completion-details" rows="3" style="width:100%;resize:vertical;">${subtask.completionDetails || ''}</textarea>
+                    </div>
+                    <div style="display:flex;justify-content:center;align-items:center;gap:1rem;margin-top:1.5rem;">
                         <button id="submit-task-btn" style="background:#41f1b6;color:#fff;padding:0.4em 1em;border-radius:0.5em;border:none;font-size:0.98em;cursor:pointer;min-width:90px;">Submit</button>
-                        <button id="update-subtask-btn" style="background:#7380ec;color:#fff;padding:0.4em 1em;border-radius:0.5em;border:none;font-size:0.98em;cursor:pointer;min-width:90px;">Update</button>
                     </div>
                 </div>
             `;
 
     modal.style.display = 'flex';
+
+    // Progress bar value update
+    const progressInput = content.querySelector('#progress-input');
+    const progressValue = content.querySelector('#progress-value');
+    if (progressInput && progressValue) {
+        progressInput.addEventListener('input', function() {
+            progressValue.textContent = progressInput.value + '%';
+        });
+    }
 
     // Close button handler
     const closeBtn = document.getElementById('close-subtask-details');
@@ -1936,6 +1357,8 @@ function showSubtaskDetails(subtask) {
     // Submit button handler
     content.querySelector('#submit-task-btn').onclick = function () {
         const uploadInput = content.querySelector('#upload-task-file');
+        const progressInput = content.querySelector('#progress-input');
+        const completionDetails = content.querySelector('#completion-details');
         if (!uploadInput.files || uploadInput.files.length === 0) {
             alert('Please select at least one file to upload.');
             uploadInput.focus();
@@ -1946,6 +1369,9 @@ function showSubtaskDetails(subtask) {
         Array.from(uploadInput.files).forEach(file => {
             subtask.uploadedTaskFiles.push(file);
         });
+        // Save progress and completion details
+        if (progressInput) subtask.progress = parseInt(progressInput.value, 10);
+        if (completionDetails) subtask.completionDetails = completionDetails.value.trim();
         // Show a toast at bottom right
         let toast = document.createElement('div');
         toast.textContent = 'Submitted successfully!';
@@ -1966,22 +1392,6 @@ function showSubtaskDetails(subtask) {
         // Close the modal
         modal.style.display = 'none';
         renderSubtasks();
-    };
-
-    // Update subtask button handler
-    content.querySelector('#update-subtask-btn').onclick = function () {
-        showModal('subtask', subtask); // Pass the subtask object for update
-        setTimeout(() => {
-            inputSubtaskName.value = subtask.name || '';
-            inputSubtaskDesc.value = subtask.details || '';
-            inputSubtaskEmpid.value = (Array.isArray(subtask.empids) ? subtask.empids.join(', ') : subtask.empids || '');
-            inputSubtaskDeadline.value = subtask.deadline ? toFlatpickrString(subtask.deadline) : '';
-            inputSubtaskPriority.value = subtask.priority || 'Medium';
-            // Change heading and button
-            modalTitle.textContent = 'Update the Subtask';
-            document.getElementById('create-btn').textContent = 'Update';
-        }, 100);
-        modal.style.display = 'none';
     };
 }
 
