@@ -1,6 +1,56 @@
 // Admin Panel JavaScript
 
 document.addEventListener("DOMContentLoaded", () => {
+
+    function animateCountUp(el, target, duration = 500) {
+        let start = 0;
+        let startTime = null;
+
+        function update(timestamp) {
+            if (!startTime) startTime = timestamp;
+            const progress = Math.min((timestamp - startTime) / duration, 1);
+            const current = Math.floor(progress * target);
+            el.textContent = current.toLocaleString();
+            if (progress < 1) {
+                requestAnimationFrame(update);
+            }
+        }
+
+        requestAnimationFrame(update);
+    }
+
+    function animateCircularProgress(selector, percent, duration = 500) {
+        const container = document.querySelector(selector);
+        if (!container) return;
+
+        const circle = container.querySelector("circle");
+        const percentEl = container.querySelector(".number p");
+
+        const radius = circle.r.baseVal.value;
+        const circumference = 2 * Math.PI * radius;
+
+        circle.style.strokeDasharray = `${circumference}`;
+        circle.style.strokeDashoffset = `${circumference}`;
+
+        let startTime = null;
+
+        function animate(time) {
+            if (!startTime) startTime = time;
+            const progress = Math.min((time - startTime) / duration, 1);
+            const draw = percent * progress;
+
+            circle.style.strokeDashoffset = circumference - (draw / 100 * circumference);
+            percentEl.textContent = `${Math.floor(draw)}%`;
+
+            if (progress < 1) {
+                requestAnimationFrame(animate);
+            }
+        }
+
+        requestAnimationFrame(animate);
+    }
+
+
     // --- Admin Activities Table (old logic) ---
     const adminActivities = [
         {
@@ -163,10 +213,16 @@ document.addEventListener("DOMContentLoaded", () => {
         const totalTask = document.querySelector(".insights .sales h1");
         const totalProjects = document.querySelector(".insights .expenses h1");
         const completedTasks = document.querySelector(".insights .income h1");
-        if (totalTask) totalTask.textContent = "1000";
-        if (totalProjects) totalProjects.textContent = "450";
-        if (completedTasks) completedTasks.textContent = "700";
+
+        if (totalTask) animateCountUp(totalTask, 1000);
+        if (totalProjects) animateCountUp(totalProjects, 450);
+        if (completedTasks) animateCountUp(completedTasks, 700);
+
+        animateCircularProgress(".insights .sales", 81);
+        animateCircularProgress(".insights .expenses", 62);
+        animateCircularProgress(".insights .income", 44);
     }
+
     updateInsights();
 
     // Main Content: Action button click

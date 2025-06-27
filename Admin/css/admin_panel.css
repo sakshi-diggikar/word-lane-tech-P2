@@ -1,19 +1,464 @@
 /* Admin Panel Specific Styles */
+:root {
+  --salescard-bg: linear-gradient(135deg, #53b7f0 0%, #41468e 100%);
+  --incomecard-bg: linear-gradient(135deg, #91f689 0%, #19b457 100%);
+  --expensescard-bg: linear-gradient(135deg, #e2f766 0%, var(--color-warning) 100%);
+
+   --tablebg: var(--aside-bg);
+  /* Slight bluish tone, matches your sales theme */
+
+
+     --body-bg: linear-gradient(135deg, #fef9f9, #ecf0ff, #e6f7ff);
+  --containerBefore-bg: linear-gradient(135deg, #ffffff, #f0f5ff);
+  --mainAside-Before-bg: radial-gradient(circle at center, #9be2ff88, transparent 70%);
+  --aside-before-bg: radial-gradient(circle at center, #ffc9e488, transparent 70%);
+  --main-bg: rgba(255, 255, 255, 0.78);
+  --aside-bg: rgba(255, 255, 255, 0.55);
+  --aside-Active-text-colour: #0077b5;
+  /* Soft sales-theme blue */
+}
+
+.dark-theme-variables {
+  --color-background: #181a1e;
+  --color-white: #202528;
+  --color-dark-variant: #a3bdcc;
+  --color-light: rgba(0, 0, 0, 0.4);
+  --box-shadow: 0 2rem 3rem var(--color-light);
+
+    --tablebg: var(--aside-bg);
+  --color-dark: #f1f1f1;
+  /* Rich dark blue-gray, matches dark theme */
+  --table-header-bg: #2d3444;
+  --table-text: #e2e6f0;
+  --table-border-color: #3c445a;
+
+      --body-bg: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+  --containerBefore-bg: rgba(15, 23, 42, 0.6);
+  --mainAside-Before-bg: radial-gradient(circle at center, #00c3ff44, transparent 70%);
+  --aside-before-bg: radial-gradient(circle at center, #ff00ff33, transparent 70%);
+  --main-bg: rgba(255, 255, 255, 0.04);
+  --aside-bg: rgba(255, 255, 255, 0.02);
+}
+body {
+background: var(--body-bg);
+  color: var(--color-dark);
+}
+
+
+.container::before {
+  content: '';
+  position: fixed;
+  width: 150vw;
+  height: 150vh;
+  top: -10%;
+  left: -10%;
+  background: var(--containerBefore-bg);
+  z-index: -10;
+  opacity: 0.1;
+}
+
+main {
+  background: var(--main-bg);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-radius: 2rem;
+  box-shadow: var(--shadow-main);
+  padding: 2rem;
+  position: relative;
+  z-index: 1;
+}
+
+main::before {
+  content: '';
+  position: absolute;
+  width: 50vmax;
+  height: 50vmax;
+  top: -25vmax;
+  left: -25vmax;
+  background: var(--mainAside-Before-bg);
+  filter: blur(100px);
+  z-index: -1;
+  animation: floatBlobLight 30s ease-in-out infinite;
+  pointer-events: none;
+}
+
+aside {
+  background: var(--aside-bg);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-right: 2px solid var(--border-light);
+  position: relative;
+  z-index: 1;
+}
+
+aside::before {
+  content: '';
+  position: absolute;
+  width: 50vmax;
+  height: 50vmax;
+  bottom: -25vmax;
+  right: -25vmax;
+  background: var(--aside-before-bg);
+  filter: blur(100px);
+  z-index: -1;
+  animation: floatBlobLight 25s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes floatBlobLight {
+  0% {
+    transform: scale(1) translate(0, 0);
+  }
+
+  50% {
+    transform: scale(1.1) translate(30px, 30px);
+  }
+
+  100% {
+    transform: scale(1) translate(0, 0);
+  }
+}
+
+@keyframes floatBlobDark {
+  0% {
+    transform: scale(1) translate(0, 0);
+  }
+
+  50% {
+    transform: scale(1.2) translate(20px, 40px);
+  }
+
+  100% {
+    transform: scale(1) translate(0, 0);
+  }
+}
+
+aside .sidebar a:hover {
+  color: #0077b5;
+}
+
+aside .sidebar a {
+  color: var(--card-text-color);
+}
+
+aside .sidebar a:hover {
+  color: var(--card-text-color);
+}
+
+aside .sidebar a.active {
+  color: var(--aside-Active-text-colour);
+}
+
+aside .sidebar a.active:hover {
+  color: var(--aside-Active-text-colour);
+}
+
+aside .sidebar a.active span {
+  color: var(--aside-Active-text-colour);
+}
+
+aside .sidebar a:hover span {
+  color: var(--aside-Active-text-colour);
+}
+
+aside .sidebar a.active:before {
+  background: var(--aside-Active-text-colour);
+}
+
+aside .sidebar a.active:before:hover {
+  color: var(--aside-Active-text-colour);
+}
+
+main .theme-toggler span.active {
+  background: var(--aside-Active-text-colour);
+}
+
+.notification-count {
+  background-color: #0077b5;
+}
+
+aside .sidebar .message-count {
+  background: #0077b5;
+}
 
 /* Custom admin insights styling */
-.insights .sales {
-  background: linear-gradient(135deg, #787c8f 0%, #8b7c9a 100%);
+.sales {
+  background: var(--salescard-bg);
+  background-blend-mode: overlay; /* ✨ this blends gradient with video */
+  position: relative;
+  overflow: hidden;
+  z-index: 1;
+  border-radius: 16px;
 }
 
-.insights .expenses {
-  background: linear-gradient(135deg, #968498 0%, #97757a 100%);
+
+.sales .video-bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+  border-radius: inherit;
+  
 }
+
+.sales .video-bg video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 0;
+  opacity: 0.2;
+  pointer-events: none;
+ 
+  mix-blend-mode: overlay; /* ✅ THE FIX */
+}
+
+
+
+.sales > *:not(.video-bg) {
+  position: relative;
+  z-index: 2;
+}
+
+/* //EXPENSES// */
+.expenses {
+  background: var(--expensescard-bg);
+  background-blend-mode: overlay;
+  position: relative;
+  overflow: hidden;
+  z-index: 1;
+  border-radius: 16px;
+}
+
+.expenses .video-bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+  border-radius: inherit;
+}
+
+.expenses .video-bg video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 0;
+  opacity: 0.2;
+  pointer-events: none;
+  
+  mix-blend-mode: overlay; /* ✅ THE FIX */
+}
+
+.expenses > *:not(.video-bg) {
+  position: relative;
+  z-index: 2;
+}
+
+
+/* //INCOME// */
+.income {
+  background: var(--incomecard-bg);
+  background-blend-mode: overlay;
+  position: relative;
+  overflow: hidden;
+  z-index: 1;
+  border-radius: 16px;
+}
+
+.income .video-bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+  border-radius: inherit;
+}
+
+.income .video-bg video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.2;
+  z-index: 0;
+  pointer-events: none;
+
+  mix-blend-mode: overlay;
+}
+
+.income > *:not(.video-bg) {
+  position: relative;
+  z-index: 2;
+}
+
 
 .insights .income {
-  background: linear-gradient(135deg, #80868b 0%, #62797b 100%);
+  background: var(--incomecard-bg);
+}
+main .insights>div.sales{
+  background: var(--salescard-bg);
+}
+main .insights>div.expenses{
+  background: var(--expensescard-bg);
+}
+main .insights>div.income{
+  background: var(--incomecard-bg);
+}
+main .insights>div.sales span {
+  background-color: var(--color-white);
+  color: var(--color-dark);
+}
+
+main .insights>div.expenses span {
+  background-color: var(--color-white);
+  color: var(--color-dark);
+}
+
+main .insights>div.income span {
+  background-color: var(--color-white);
+  color: var(--color-dark);
+}
+
+
+
+
+
+/* Shared card hover effect */
+.insights>div {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  cursor: pointer;
+  border-radius: 12px;
+}
+
+/* Hover scaling and subtle glow */
+.insights>div:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+}
+
+/* Optional: make card backgrounds slightly brighter on hover */
+.insights .sales:hover {
+  background: linear-gradient(135deg, #63c0f5 0%, #5157a0 100%);
+}
+
+.insights .expenses:hover {
+  background: linear-gradient(135deg, #f1fa84 0%, var(--color-warning));
+}
+
+.insights .income:hover {
+  background: linear-gradient(135deg, #a3fba0 0%, #1dc15f 100%);
+}
+
+.sales .progress circle {
+  stroke: var(--color-white);
+}
+
+.expenses .progress circle {
+  stroke: var(--color-white);
+
+}
+
+.income .progress circle {
+  stroke: var(--color-white);
+}
+
+.number p {
+  color: var(--color-background);
+}
+
+.text-muted {
+  color: var(--color-dark);
 }
 
 /* Main Content Styles (from admin_main.css) */
+
+/* Modern table animation & design */
+
+/* Fancy action button styling */
+.action-btn {
+  background: transparent;
+  color: var(--color-dark);
+  border: none;
+  padding: 6px 14px;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.3s ease, transform 0.2s ease;
+}
+
+.action-btn:hover {
+  background: linear-gradient(135deg, #889af2 0%, #8960b4 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(118, 75, 162, 0.3);
+}
+
+/* Cool badge styles */
+.status-badge.active {
+  background:var(--salescard-bg);
+  color: white;
+}
+
+.status-badge.delayed {
+  background:linear-gradient(135deg, #ea0404 0%, #960909 100%);
+  color: white;
+}
+
+.status-badge.completed {
+  background: linear-gradient(135deg, #15f604 0%, #19b457 100%);
+  color: white;
+}
+
+/* Chatbot & other UI buttons */
+#chatbot-toggle-btn {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  border: none;
+  color: white;
+  font-size: 1.5rem;
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  bottom: 20px;
+  right: 20px;
+  position: fixed;
+  cursor: pointer;
+  box-shadow: 0 4px 20px rgba(118, 75, 162, 0.4);
+  transition: all 0.3s ease;
+}
+
+#chatbot-toggle-btn:hover {
+  transform: scale(1.1);
+}
+
+/* Apply to table */
+#recent-orders--table {
+  background: var(--tablebg);
+  border-radius: var(--border-radius-2);
+}
+
+
+#recent-orders--table tbody tr:hover {
+  background-color: rgba(83, 183, 240, 0.08);
+  /* Light interactive feel */
+}
+
+.top h1 {
+  margin-top: 1rem;
+}
+
 .recent-orders .orders-header {
   display: flex;
   justify-content: space-between;
@@ -107,7 +552,7 @@
 }
 
 #recent-orders--table th {
-  background: var(--color-light);
+
   font-weight: 600;
 }
 
@@ -181,16 +626,16 @@
     grid-template-columns: 1fr;
     gap: 1rem;
   }
-  
+
   .recent-orders .orders-header {
     flex-direction: column;
     gap: 0.5rem;
   }
-  
+
   #recent-orders--table th:nth-child(4),
   #recent-orders--table tbody td:nth-child(4),
   #recent-orders--table th:nth-child(6),
   #recent-orders--table tbody td:nth-child(6) {
     display: none;
   }
-} 
+}

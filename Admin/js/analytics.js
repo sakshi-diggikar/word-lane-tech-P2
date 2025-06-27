@@ -1,6 +1,6 @@
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     // Manually call the common event listeners setup
-    if(typeof setupCommonEventListeners === 'function') {
+    if (typeof setupCommonEventListeners === 'function') {
         setupCommonEventListeners();
     }
 
@@ -467,12 +467,12 @@ document.addEventListener('DOMContentLoaded', function() {
     // Render all cards
     function renderCards() {
         cardsView.innerHTML = '';
-        
+
         cardsData.forEach(card => {
             const cardElement = document.createElement('div');
             cardElement.className = 'card';
             cardElement.dataset.id = card.id;
-            
+
             cardElement.innerHTML = `
                 <div class="card-header">
                     <div class="card-icon">
@@ -485,21 +485,77 @@ document.addEventListener('DOMContentLoaded', function() {
                 </div>
                 <div class="card-content">
                     <div class="card-stats">
-                        <h2 class="card-value">${card.value}</h2>
-                        <span class="card-badge ${card.badge}">${card.badgeText}</span>
+                        <h2 class="card-value" data-final-value="${card.value}">0</h2>
+
+                        
                     </div>
                 </div>
             `;
-            
+
             cardsView.appendChild(cardElement);
+    
+
+            const valueEl = cardElement.querySelector('.card-value');
+            animateCountUp(valueEl, card.value);
+
+            createLoopingBadge(cardElement, card.badge, card.badgeText);
+
         });
     }
+
+
+    function createLoopingBadge(cardElement, badgeType, badgeText) {
+        cardElement.style.position = 'relative';
+
+        const loopBadge = () => {
+            const bubble = document.createElement('div');
+            bubble.className = `card-notify-circle ${badgeType}`;
+            bubble.textContent = badgeText;
+            bubble.style.opacity = '0';
+            cardElement.appendChild(bubble);
+
+            setTimeout(() => {
+                bubble.style.animation = 'none';
+                void bubble.offsetWidth;
+                bubble.style.animation = 'swipeIn 0.5s ease-out forwards';
+            }, 2000); // Delay before appearing
+
+            setTimeout(() => {
+                bubble.style.animation = 'swipeOut 0.5s ease forwards';
+                setTimeout(() => {
+                    bubble.remove();
+                    loopBadge(); // 🔁 Repeat
+                }, 5000);
+            }, 5000); // Total time before removing
+        };
+
+        loopBadge(); // First launch
+    }
+
+
+    function animateCountUp(el, endValue, duration = 500) {
+        const isPercent = typeof endValue === 'string' && endValue.trim().endsWith('%');
+        const target = parseFloat(endValue);
+        let start = 0;
+        let startTime = null;
+
+        function update(timestamp) {
+            if (!startTime) startTime = timestamp;
+            const progress = Math.min((timestamp - startTime) / duration, 1);
+            const value = Math.floor(progress * target);
+            el.textContent = isPercent ? `${value}%` : value;
+            if (progress < 1) requestAnimationFrame(update);
+        }
+
+        requestAnimationFrame(update);
+    }
+
 
     // Setup event listeners
     function setupEventListeners() {
         // Card click event
         document.querySelectorAll('.card').forEach(card => {
-            card.addEventListener('click', function() {
+            card.addEventListener('click', function () {
                 const cardId = this.dataset.id;
                 const cardData = cardsData.find(c => c.id === cardId);
                 showCardDetails(cardData);
@@ -507,10 +563,10 @@ document.addEventListener('DOMContentLoaded', function() {
         });
 
         // Back button event
-        backButton.addEventListener('click', function() {
+        backButton.addEventListener('click', function () {
             cardsView.style.display = 'grid';
             dynamicContent.style.display = 'none';
-            
+
             // Destroy charts to prevent memory leaks
             if (mainChart) {
                 mainChart.destroy();
@@ -523,10 +579,10 @@ document.addEventListener('DOMContentLoaded', function() {
         });
 
         // Search functionality
-        searchInput.addEventListener('input', function() {
+        searchInput.addEventListener('input', function () {
             const searchTerm = this.value.toLowerCase();
             const rows = document.querySelectorAll('#dataTable tbody tr');
-            
+
             rows.forEach(row => {
                 const rowText = row.textContent.toLowerCase();
                 row.style.display = rowText.includes(searchTerm) ? '' : 'none';
@@ -539,19 +595,19 @@ document.addEventListener('DOMContentLoaded', function() {
         // Hide cards and show details
         cardsView.style.display = 'none';
         dynamicContent.style.display = 'block';
-        
+
         // Set section title
         sectionTitle.textContent = cardData.title;
-        
+
         // Render filters
         renderFilters(cardData);
-        
+
         // Render table
         renderTable(cardData);
-        
+
         // Render charts
         renderCharts(cardData);
-        
+
         // Scroll to top of dynamic content
         dynamicContent.scrollTo(0, 0);
     }
@@ -559,39 +615,39 @@ document.addEventListener('DOMContentLoaded', function() {
     // Render filters based on card type
     function renderFilters(cardData) {
         tableFilters.innerHTML = '';
-        
+
         // Common filters
         const monthFilter = createSelectFilter('month', 'Select Month', [
-            'All Months', 'January', 'February', 'March', 'April', 
-            'May', 'June', 'July', 'August', 'September', 
+            'All Months', 'January', 'February', 'March', 'April',
+            'May', 'June', 'July', 'August', 'September',
             'October', 'November', 'December'
         ]);
-        
+
         tableFilters.appendChild(monthFilter);
-        
+
         // Card-specific filters
-        switch(cardData.id) {
+        switch (cardData.id) {
             case 'team-analytics':
                 const teamFilter = createSelectFilter('team', 'Select Team', [
                     'All Teams', 'Frontend', 'Backend', 'Design', 'QA', 'DevOps'
                 ]);
                 tableFilters.appendChild(teamFilter);
                 break;
-                
+
             case 'leave-analytics':
                 const leaveTypeFilter = createSelectFilter('leaveType', 'Leave Type', [
                     'All Types', 'Sick Leave', 'Vacation', 'Personal', 'Maternity'
                 ]);
                 tableFilters.appendChild(leaveTypeFilter);
                 break;
-                
+
             case 'project-analytics':
                 const statusFilter = createSelectFilter('status', 'Select Status', [
                     'All Statuses', 'Completed', 'Ongoing', 'Delayed'
                 ]);
                 tableFilters.appendChild(statusFilter);
                 break;
-                
+
             case 'employee-analytics':
                 const deptFilter = createSelectFilter('department', 'Select Department', [
                     'All Departments', 'Development', 'Design', 'QA', 'HR', 'Marketing', 'Sales'
@@ -606,21 +662,21 @@ document.addEventListener('DOMContentLoaded', function() {
         const select = document.createElement('select');
         select.name = name;
         select.id = name;
-        
+
         const placeholderOption = document.createElement('option');
         placeholderOption.value = '';
         placeholderOption.textContent = placeholder;
         placeholderOption.selected = true;
         placeholderOption.disabled = true;
         select.appendChild(placeholderOption);
-        
+
         options.forEach(option => {
             const opt = document.createElement('option');
             opt.value = option.toLowerCase().replace(' ', '-');
             opt.textContent = option;
             select.appendChild(opt);
         });
-        
+
         return select;
     }
 
@@ -628,11 +684,11 @@ document.addEventListener('DOMContentLoaded', function() {
     function renderTable(cardData) {
         // Clear existing table
         dataTable.innerHTML = '';
-        
+
         // Create table header
         const thead = document.createElement('thead');
         const headerRow = document.createElement('tr');
-        
+
         cardData.tableHeaders.forEach(header => {
             const th = document.createElement('th');
             th.textContent = header;
@@ -641,38 +697,38 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             headerRow.appendChild(th);
         });
-        
+
         thead.appendChild(headerRow);
         dataTable.appendChild(thead);
-        
+
         // Create table body
         const tbody = document.createElement('tbody');
-        
+
         // Only show first 20 entries initially
         const initialData = cardData.tableData.slice(0, 20);
-        
+
         initialData.forEach(rowData => {
             const row = document.createElement('tr');
-            
+
             rowData.forEach(cellData => {
                 const td = document.createElement('td');
                 td.textContent = cellData;
                 row.appendChild(td);
             });
-            
+
             tbody.appendChild(row);
         });
-        
+
         dataTable.appendChild(tbody);
-        
+
         // Add pagination controls if needed
         if (cardData.tableData.length > 20) {
             addPaginationControls(cardData.tableData.length);
         }
-        
+
         // Add sorting functionality for employee name
         if (document.querySelector('.sort-btn')) {
-            document.querySelector('.sort-btn').addEventListener('click', function() {
+            document.querySelector('.sort-btn').addEventListener('click', function () {
                 sortTable(cardData, this.dataset.sort);
             });
         }
@@ -682,13 +738,13 @@ document.addEventListener('DOMContentLoaded', function() {
             setTimeout(() => {
                 document.querySelectorAll('#dataTable tbody td:first-child').forEach(cell => {
                     // Single click for message popup
-                    cell.addEventListener('click', function(e) {
+                    cell.addEventListener('click', function (e) {
                         if (e.target.closest('.message-box')) return;
                         showMessageBox(this.textContent.trim(), this);
                     });
-                    
+
                     // Double click for inline message
-                    cell.addEventListener('dblclick', function() {
+                    cell.addEventListener('dblclick', function () {
                         toggleInlineMessageBox(this);
                     });
                 });
@@ -699,7 +755,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function showMessageBox(employeeName, cellElement) {
         // Remove any existing message boxes
         document.querySelectorAll('.message-box').forEach(box => box.remove());
-        
+
         const messageBox = document.createElement('div');
         messageBox.className = 'message-box';
         messageBox.innerHTML = `
@@ -713,24 +769,24 @@ document.addEventListener('DOMContentLoaded', function() {
                 <button class="send-btn">Send</button>
             </div>
         `;
-        
+
         // Position the message box near the clicked cell
         const rect = cellElement.getBoundingClientRect();
         messageBox.style.position = 'absolute';
         messageBox.style.left = `${rect.left}px`;
         messageBox.style.top = `${rect.bottom + 5}px`;
-        
+
         document.body.appendChild(messageBox);
-        
+
         // Event listeners for the message box
         messageBox.querySelector('.close-btn').addEventListener('click', () => {
             messageBox.remove();
         });
-        
+
         messageBox.querySelector('.cancel-btn').addEventListener('click', () => {
             messageBox.remove();
         });
-        
+
         messageBox.querySelector('.send-btn').addEventListener('click', () => {
             const message = messageBox.querySelector('textarea').value;
             if (message.trim()) {
@@ -738,7 +794,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 messageBox.remove();
             }
         });
-        
+
         // Close when clicking outside
         setTimeout(() => {
             const clickHandler = (e) => {
@@ -754,12 +810,12 @@ document.addEventListener('DOMContentLoaded', function() {
     function toggleInlineMessageBox(cellElement) {
         const row = cellElement.closest('tr');
         const existingBox = row.querySelector('.inline-message-box');
-        
+
         if (existingBox) {
             existingBox.remove();
             return;
         }
-        
+
         const messageBox = document.createElement('div');
         messageBox.className = 'inline-message-box';
         messageBox.innerHTML = `
@@ -769,15 +825,15 @@ document.addEventListener('DOMContentLoaded', function() {
                 <button class="inline-send-btn">Send</button>
             </div>
         `;
-        
+
         // Insert after the row
         row.parentNode.insertBefore(messageBox, row.nextSibling);
-        
+
         // Event listeners
         messageBox.querySelector('.inline-cancel-btn').addEventListener('click', () => {
             messageBox.remove();
         });
-        
+
         messageBox.querySelector('.inline-send-btn').addEventListener('click', () => {
             const message = messageBox.querySelector('textarea').value;
             if (message.trim()) {
@@ -790,13 +846,13 @@ document.addEventListener('DOMContentLoaded', function() {
     function sendMessageToEmployee(employeeName, message) {
         // In a real app, this would send to your backend
         console.log(`Message sent to ${employeeName}: ${message}`);
-        
+
         // Show confirmation
         const notification = document.createElement('div');
         notification.className = 'message-notification';
         notification.textContent = `Message sent to ${employeeName}`;
         document.body.appendChild(notification);
-        
+
         setTimeout(() => {
             notification.remove();
         }, 3000);
@@ -804,15 +860,15 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function addPaginationControls(totalItems) {
         const tableContainer = dataTable.closest('.table-wrapper');
-        
+
         // Remove existing pagination if any
         const existingPagination = tableContainer.querySelector('.table-pagination');
         if (existingPagination) existingPagination.remove();
-        
+
         const totalPages = Math.ceil(totalItems / 20);
         const pagination = document.createElement('div');
         pagination.className = 'table-pagination';
-        
+
         pagination.innerHTML = `
             <div class="pagination-info">Showing 1-20 of ${totalItems}</div>
             <div class="pagination-controls">
@@ -825,16 +881,16 @@ document.addEventListener('DOMContentLoaded', function() {
                 </button>
             </div>
         `;
-        
+
         tableContainer.appendChild(pagination);
-        
+
         // Add event listeners for pagination
         let currentPage = 1;
         const prevBtn = pagination.querySelector('.prev-btn');
         const nextBtn = pagination.querySelector('.next-btn');
         const pageIndicator = pagination.querySelector('.page-indicator');
         const paginationInfo = pagination.querySelector('.pagination-info');
-        
+
         prevBtn.addEventListener('click', () => {
             if (currentPage > 1) {
                 currentPage--;
@@ -842,7 +898,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 updatePaginationControls();
             }
         });
-        
+
         nextBtn.addEventListener('click', () => {
             if (currentPage < totalPages) {
                 currentPage++;
@@ -850,15 +906,15 @@ document.addEventListener('DOMContentLoaded', function() {
                 updatePaginationControls();
             }
         });
-        
+
         function updateTablePage(page) {
             const start = (page - 1) * 20;
             const end = start + 20;
             const pageData = cardData.tableData.slice(start, end);
-            
+
             const tbody = dataTable.querySelector('tbody');
             tbody.innerHTML = '';
-            
+
             pageData.forEach(rowData => {
                 const row = document.createElement('tr');
                 rowData.forEach(cellData => {
@@ -868,11 +924,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
                 tbody.appendChild(row);
             });
-            
-            paginationInfo.textContent = `Showing ${start+1}-${Math.min(end, totalItems)} of ${totalItems}`;
+
+            paginationInfo.textContent = `Showing ${start + 1}-${Math.min(end, totalItems)} of ${totalItems}`;
             pageIndicator.textContent = `${page}/${totalPages}`;
         }
-        
+
         function updatePaginationControls() {
             prevBtn.disabled = currentPage === 1;
             nextBtn.disabled = currentPage === totalPages;
@@ -883,22 +939,22 @@ document.addEventListener('DOMContentLoaded', function() {
         const tbody = dataTable.querySelector('tbody');
         const rows = Array.from(tbody.querySelectorAll('tr'));
         const sortIcon = document.querySelector('.sort-btn');
-        
+
         // Toggle sort direction
         const isAscending = !sortIcon.classList.contains('asc');
         sortIcon.classList.toggle('asc', isAscending);
         sortIcon.classList.toggle('desc', !isAscending);
-        
+
         // Sort rows based on employee name (first column)
         rows.sort((a, b) => {
             const nameA = a.cells[0].textContent.toLowerCase();
             const nameB = b.cells[0].textContent.toLowerCase();
-            
-            return isAscending 
+
+            return isAscending
                 ? nameA.localeCompare(nameB)
                 : nameB.localeCompare(nameA);
         });
-        
+
         // Re-append sorted rows
         rows.forEach(row => tbody.appendChild(row));
     }
@@ -912,7 +968,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (secondaryChart) {
             secondaryChart.destroy();
         }
-        
+
         // Create new charts
         mainChart = new Chart(mainChartCtx, cardData.mainChart);
         secondaryChart = new Chart(secondaryChartCtx, cardData.secondaryChart);
@@ -921,7 +977,38 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize the application
     init();
 
+    
+
     // Define a CSS variable for primary color to be used in JS
     const var_color_primary = getComputedStyle(document.documentElement).getPropertyValue('--color-primary');
+
+    const themeToggler = document.querySelector('.theme-toggler');
+    const lightIcon = themeToggler?.querySelector('span:nth-child(1)');
+    const darkIcon = themeToggler?.querySelector('span:nth-child(2)');
+
+    // Toggle theme on click
+    if (themeToggler) {
+        themeToggler.addEventListener('click', () => {
+            document.body.classList.toggle('dark');
+
+            // Toggle icon styles
+            lightIcon?.classList.toggle('active');
+            darkIcon?.classList.toggle('active');
+
+            // Save preference
+            const isDark = document.body.classList.contains('dark');
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+        });
+    }
+    // Apply saved theme on load
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'dark') {
+        document.body.classList.add('dark');
+        darkIcon?.classList.add('active');
+        lightIcon?.classList.remove('active');
+    } else {
+        lightIcon?.classList.add('active');
+        darkIcon?.classList.remove('active');
+    }
+
 });
-  

@@ -45,6 +45,54 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     ];
 
+
+     function animateCountUp(el, target, duration = 500) {
+        let start = 0;
+        let startTime = null;
+
+        function update(timestamp) {
+            if (!startTime) startTime = timestamp;
+            const progress = Math.min((timestamp - startTime) / duration, 1);
+            const current = Math.floor(progress * target);
+            el.textContent = current.toLocaleString();
+            if (progress < 1) {
+                requestAnimationFrame(update);
+            }
+        }
+
+        requestAnimationFrame(update);
+    }
+
+    function animateCircularProgress(selector, percent, duration = 500) {
+        const container = document.querySelector(selector);
+        if (!container) return;
+
+        const circle = container.querySelector("circle");
+        const percentEl = container.querySelector(".number p");
+
+        const radius = circle.r.baseVal.value;
+        const circumference = 2 * Math.PI * radius;
+
+        circle.style.strokeDasharray = `${circumference}`;
+        circle.style.strokeDashoffset = `${circumference}`;
+
+        let startTime = null;
+
+        function animate(time) {
+            if (!startTime) startTime = time;
+            const progress = Math.min((time - startTime) / duration, 1);
+            const draw = percent * progress;
+
+            circle.style.strokeDashoffset = circumference - (draw / 100 * circumference);
+            percentEl.textContent = `${Math.floor(draw)}%`;
+
+            if (progress < 1) {
+                requestAnimationFrame(animate);
+            }
+        }
+
+        requestAnimationFrame(animate);
+    }
     // Function to populate the table
     function populateTable(data) {
         const tbody = document.querySelector("#recent-orders--table tbody");
@@ -66,6 +114,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 
             `;
             tbody.appendChild(row);
+
+            
         });
 
         // ✨ Add click event to each "Details" cell
@@ -136,6 +186,14 @@ document.addEventListener("DOMContentLoaded", () => {
         const workHours = document.querySelector(".insights .expenses h1");
         const performance = document.querySelector(".insights .income h1");
 
+         if (myTasks) animateCountUp(myTasks, 15);
+        if (workHours) animateCountUp(workHours, 42);
+        if (performance) animateCountUp(performance, 92);
+
+        animateCircularProgress(".insights .sales", 73);
+        animateCircularProgress(".insights .expenses", 84);
+        animateCircularProgress(".insights .income", 92);
+
         if (myTasks) myTasks.textContent = "15";
         if (workHours) workHours.textContent = "42";
         if (performance) performance.textContent = "92%";
@@ -196,4 +254,34 @@ document.addEventListener("DOMContentLoaded", () => {
             alert("Please enter a comment.");
         }
     });
+
+    const toggler = document.querySelector(".theme-toggler");
+  const lightIcon = toggler.querySelector("span:nth-child(1)");
+  const darkIcon = toggler.querySelector("span:nth-child(2)");
+
+  // Apply saved theme on load
+  const savedTheme = localStorage.getItem("theme");
+  if (savedTheme === "dark") {
+    document.body.classList.add("dark-theme");
+    lightIcon.classList.remove("active");
+    darkIcon.classList.add("active");
+  } else {
+    document.body.classList.remove("dark-theme");
+    darkIcon.classList.remove("active");
+    lightIcon.classList.add("active");
+  }
+
+  // Toggle theme on click
+  toggler.addEventListener("click", () => {
+    const isDark = document.body.classList.toggle("dark-theme");
+    if (isDark) {
+      localStorage.setItem("theme", "dark");
+      lightIcon.classList.remove("active");
+      darkIcon.classList.add("active");
+    } else {
+      localStorage.setItem("theme", "light");
+      darkIcon.classList.remove("active");
+      lightIcon.classList.add("active");
+    }
+  });
 }); 

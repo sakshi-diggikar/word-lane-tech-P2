@@ -1,43 +1,357 @@
 /* Employee Panel Specific Styles */
 :root {
-  --card-bg-taskss: background: linear-gradient(135deg, #e0c3fc, #8ec5fc);
 
-  --card-bg-hours: linear-gradient(135deg, #c6ffdd, #fbd786);
-  --card-bg-performance: linear-gradient(135deg, #d4fc79, #96e6a1);
-  --icon-bg-1:#3c3c3c;
-  --icon-bg-tasks: #f8b500;
-  --icon-bg-hours: #fbd786;
-  --icon-bg-performance: #96e6a1;
-  --progress-tasks:#ffffff;
-  --progress-text:black;
-  --card-text-color: #333;
+  --salesbg: linear-gradient(135deg, #e0c3fc, #8ec5fc);
+  --expensesbg: linear-gradient(135deg, #89f7fe, #66a6ff);
+  --incomebg: linear-gradient(135deg, #d4fc79, #96e6a1);
+  --progress-tasks: #f7f7f7;
 }
 
 .dark-theme {
   --card-bg-taskss: linear-gradient(135deg, #e0c3fc, #8ec5fc);
-;
   --card-bg-hours: linear-gradient(135deg, #2c3e50, #4ca1af);
   --card-bg-performance: linear-gradient(135deg, #0f2027, #2c5364);
 
   --icon-bg-tasks: #641e16;
   --icon-bg-hours: #4ca1af;
   --icon-bg-performance: #2c5364;
- --icon-bg-1:#f7f7f7;
+  --icon-bg-1: #f7f7f7;
   --card-text-color: #f5f5f5;
-}
-
-/* Custom employee insights styling */
-.insights .sales {
-  background: linear-gradient(135deg, #e0c3fc, #8ec5fc);
-}
-
-.insights .expenses {
-  background: linear-gradient(135deg, #89f7fe, #66a6ff);
+  --progress-tasks: #333333;
 
 }
 
-.insights .income {
-  background: linear-gradient(135deg, #d4fc79, #96e6a1);
+/* ================================ */
+/* 🌈 ADVANCED LIGHT THEME VIBE */
+/* ================================ */
+:root {
+  --body-bg: linear-gradient(135deg, #fef9f9, #ecf0ff, #e6f7ff);
+  --containerBefore-bg: linear-gradient(135deg, #ffffff, #f0f5ff);
+  --mainAside-Before-bg: radial-gradient(circle at center, #9be2ff88, transparent 70%);
+  --aside-before-bg: radial-gradient(circle at center, #ffc9e488, transparent 70%);
+  --main-bg: rgba(255, 255, 255, 0.78);
+  --aside-bg: rgba(255, 255, 255, 0.55);
+  --aside-Active-text-colour: #0077b5;
+  --shadow-light: 0 12px 48px rgba(0, 0, 0, 0.08);
+  --shadow-main: 0 12px 36px rgba(0, 0, 0, 0.06);
+  --text-primary: #1e1e1e;
+  --color-dark: #333333;
+  --text-muted: #4f4f4f;
+  --border-light: rgba(0, 0, 0, 0.05);
+  --tablebg: var(--aside-bg);
+}
+
+.dark-theme {
+  --body-bg: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+  --containerBefore-bg: rgba(15, 23, 42, 0.6);
+  --mainAside-Before-bg: radial-gradient(circle at center, #00c3ff44, transparent 70%);
+  --aside-before-bg: radial-gradient(circle at center, #ff00ff33, transparent 70%);
+  --main-bg: rgba(255, 255, 255, 0.04);
+  --aside-bg: rgba(255, 255, 255, 0.02);
+  --tablebg: var(--aside-bg);
+  --color-dark: #f1f1f1;
+
+  --shadow-light: 0 10px 50px rgba(0, 0, 0, 0.4);
+  --shadow-main: 0 10px 60px rgba(255, 255, 255, 0.04);
+}
+
+body {
+  background: var(--body-bg);
+  color: var(--color-dark);
+}
+
+.container::before {
+  content: '';
+  position: fixed;
+  width: 150vw;
+  height: 150vh;
+  top: -10%;
+  left: -10%;
+  background: var(--containerBefore-bg);
+  z-index: -10;
+  opacity: 0.1;
+}
+
+main {
+  background: var(--main-bg);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-radius: 2rem;
+  box-shadow: var(--shadow-main);
+  padding: 2rem;
+  position: relative;
+  z-index: 1;
+}
+
+main::before {
+  content: '';
+  position: absolute;
+  width: 50vmax;
+  height: 50vmax;
+  top: -25vmax;
+  left: -25vmax;
+  background: var(--mainAside-Before-bg);
+  filter: blur(100px);
+  z-index: -1;
+  animation: floatBlobLight 30s ease-in-out infinite;
+  pointer-events: none;
+}
+
+aside {
+  background: var(--aside-bg);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-right: 2px solid var(--border-light);
+  position: relative;
+  z-index: 1;
+}
+
+aside::before {
+  content: '';
+  position: absolute;
+  width: 50vmax;
+  height: 50vmax;
+  bottom: -25vmax;
+  right: -25vmax;
+  background: var(--aside-before-bg);
+  filter: blur(100px);
+  z-index: -1;
+  animation: floatBlobLight 25s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes floatBlobLight {
+  0% {
+    transform: scale(1) translate(0, 0);
+  }
+
+  50% {
+    transform: scale(1.1) translate(30px, 30px);
+  }
+
+  100% {
+    transform: scale(1) translate(0, 0);
+  }
+}
+
+@keyframes floatBlobDark {
+  0% {
+    transform: scale(1) translate(0, 0);
+  }
+
+  50% {
+    transform: scale(1.2) translate(20px, 40px);
+  }
+
+  100% {
+    transform: scale(1) translate(0, 0);
+  }
+}
+
+aside .sidebar a:hover {
+  color: #0077b5;
+}
+
+aside .sidebar a {
+  color: var(--card-text-color);
+}
+
+aside .sidebar a:hover {
+  color: var(--card-text-color);
+}
+
+aside .sidebar a.active {
+  color: var(--aside-Active-text-colour);
+}
+
+aside .sidebar a.active:hover {
+  color: var(--aside-Active-text-colour);
+}
+
+aside .sidebar a.active span {
+  color: var(--aside-Active-text-colour);
+}
+
+aside .sidebar a:hover span {
+  color: var(--aside-Active-text-colour);
+}
+
+aside .sidebar a.active:before {
+  background: var(--aside-Active-text-colour);
+}
+
+aside .sidebar a.active:before:hover {
+  color: var(--aside-Active-text-colour);
+}
+
+main .theme-toggler span.active {
+  background: var(--aside-Active-text-colour);
+}
+
+.notification-count {
+  background-color: #0077b5;
+}
+
+aside .sidebar .message-count {
+  background: #0077b5;
+}
+
+.sales {
+  background: var(--salesbg);
+  background-blend-mode: overlay;
+  /* ✨ this blends gradient with video */
+  position: relative;
+  overflow: hidden;
+  z-index: 1;
+  border-radius: 16px;
+}
+
+
+.sales .video-bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+  border-radius: inherit;
+
+}
+
+.sales .video-bg video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 0;
+  opacity: 0.2;
+  pointer-events: none;
+
+  mix-blend-mode: overlay;
+  /* ✅ THE FIX */
+}
+
+
+
+.sales>*:not(.video-bg) {
+  position: relative;
+  z-index: 2;
+}
+
+/* //EXPENSES// */
+.expenses {
+  background: var(--expensesbg);
+  background-blend-mode: overlay;
+  position: relative;
+  overflow: hidden;
+  z-index: 1;
+  border-radius: 16px;
+}
+
+.expenses .video-bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+  border-radius: inherit;
+}
+
+.expenses .video-bg video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 0;
+  opacity: 0.2;
+  pointer-events: none;
+
+  mix-blend-mode: overlay;
+  /* ✅ THE FIX */
+}
+
+.expenses>*:not(.video-bg) {
+  position: relative;
+  z-index: 2;
+}
+
+
+/* //INCOME// */
+.income {
+  background: var(--incomebg);
+  background-blend-mode: overlay;
+  position: relative;
+  overflow: hidden;
+  z-index: 1;
+  border-radius: 16px;
+}
+
+.income .video-bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+  border-radius: inherit;
+}
+
+.income .video-bg video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.2;
+  z-index: 0;
+  pointer-events: none;
+
+  mix-blend-mode: overlay;
+}
+
+.income>*:not(.video-bg) {
+  position: relative;
+  z-index: 2;
+}
+
+main .insights>div.sales {
+  background: var(--salesbg);
+
+  &:hover {
+    background: linear-gradient(135deg, #c07dff, #6eb6fe);
+    transform: scale3d(1.1, 1.1, 1.1);
+  }
+}
+
+main .insights>div.expenses {
+  background: var(--expensesbg);
+  transition: all 300ms ease;
+
+  &:hover {
+    background: linear-gradient(135deg, #41f2fb, #3f8cf9);
+    transform: scale3d(1.1, 1.1, 1.1);
+  }
+}
+
+main .insights>div.income {
+  background: var(--incomebg);
+
+  &:hover {
+    background: linear-gradient(135deg, #c7ff43, #56f16a);
+    transform: scale3d(1.1, 1.1, 1.1);
+  }
+}
+
+#recent-orders--table {
+  background: var(--tablebg);
+  border-radius: var(--border-radius-2);
 }
 
 /* Employee specific table styling */
@@ -86,43 +400,90 @@
 }
 
 .priority-badge.high {
-  background: var(--color-danger);
-  color: var(--color-white);
+  background: rgb(255, 47, 47);
+  color: var(--color-dark);
+  padding: 0.3rem 1.8rem;
+  border-radius: 20px;
+  &:hover{
+    border :  1px solid  rgb(255, 47, 47);
+    background-color: transparent;
+  }
 }
 
 .priority-badge.medium {
   background: var(--color-warning);
-  color: var(--color-white);
+  color: var(--color-dark);
+  border-radius: 20px;
+  padding: 0.3rem 0.5rem;
+  &:hover{
+    border :  1px solid  var(--color-warning);
+    background-color: transparent;
+  }
 }
 
 .priority-badge.low {
-  background: var(--color-success);
-  color: var(--color-white);
+  background: rgb(27, 129, 27);
+  border-radius: 20px;
+  color: var(--color-dark);
+  padding: 0.3rem 1rem;
+  &:hover{
+    border :  1px solid  rgb(27, 129, 27);
+    background-color: transparent;
+  }
 }
-
+.search-bar input{
+  background: var(--mainAside-Before-bg);
+}
 /* Employee chatbot customization */
 #chatbot-panel header {
   background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
 }
 
+.status-badge {
+  color: var(--color-dark);
+}
+
+.status-badge.completed,
+.status-badge.approved {
+  border: 1px solid rgb(0, 255, 0);
+  background: transparent;
+
+  &:hover {
+    background: rgb(0, 255, 0);
+    color: var(--color-white);
+  }
+}
+
 /* Employee specific status badges */
 .status-badge.pending {
-  background: var(--color-warning);
-  color: var(--color-white);
-  padding: 0.3rem 0.8rem;
-  border-radius: var(--border-radius-1);
+  background: transparent;
+
+  padding: 0.3rem 1.5rem;
+  border-radius: 20px;
   font-size: 0.7rem;
   font-weight: 500;
+  border: 1px solid rgb(255, 221, 0);
+
+  &:hover {
+    background: rgb(255, 221, 0);
+    color: var(--color-white);
+  }
 }
 
 .status-badge.in-progress {
-  background: var(--color-primary);
-  color: var(--color-white);
-  padding: 0.3rem 0.8rem;
-  border-radius: var(--border-radius-1);
+  background: transparent;
+  padding: 0.3rem 0.9rem;
+  border-radius: 20px;
   font-size: 0.7rem;
   font-weight: 500;
+  border: 1px solid orange;
+
+  &:hover {
+    background: orange;
+    color: var(--color-white);
+  }
 }
+
 .sales .progress circle {
   stroke: var(--progress-tasks);
 }
@@ -134,36 +495,44 @@
 .income .progress circle {
   stroke: var(--progress-tasks);
 }
-.number p{
+
+.number p {
   color: rgb(58, 58, 58);
 }
-main .insights>div.sales span{
+
+main .insights>div.sales span {
   background-color: var(--card-bg-hours);
   border: 1px solid var(--color-white);
   color: var(--color-white);
 }
-main .insights>div.expenses span{
+
+main .insights>div.expenses span {
   background-color: var(--card-bg-hours);
   border: 1px solid var(--color-white);
   color: var(--color-white);
 }
-main .insights>div.income span{
+
+main .insights>div.income span {
   background-color: var(--card-bg-hours);
   border: 1px solid var(--color-white);
   color: var(--color-white);
 }
-.menu-btn{
+
+.menu-btn {
   color: var(--color-dark);
   background: transparent;
 }
-.text-muted{
+
+.text-muted {
   color: var(--color-dark);
 }
+
 /* Modal Styles */
 
 /* ===== Modal Overlay ===== */
 .modal {
-  display: none; /* Hidden by default */
+  display: none;
+  /* Hidden by default */
   position: fixed;
   z-index: 9999;
   top: 0;
@@ -181,7 +550,8 @@ main .insights>div.income span{
 
 /* ===== Modal Container ===== */
 .modal-content {
-  background-color: var(--color-white); /* change if you're using dark mode vars */
+  background-color: var(--color-white);
+  /* change if you're using dark mode vars */
   border-radius: var(--border-radius-2);
   padding: 2rem;
   width: 100%;
@@ -242,7 +612,7 @@ main .insights>div.income span{
   border-radius: var(--border-radius-2);
   background: var(--color-background);
   color: var(--color-dark);
-  box-shadow: inset 0 2px 5px rgba(0,0,0,0.05);
+  box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.05);
 }
 
 /* ===== Modal Footer Buttons ===== */
@@ -272,6 +642,7 @@ main .insights>div.income span{
   background-color: var(--color-primary);
   color: white;
 }
+
 .toast {
   position: fixed;
   bottom: 2rem;
@@ -300,11 +671,11 @@ main .insights>div.income span{
     grid-template-columns: 1fr;
     gap: 1rem;
   }
-  
+
   #recent-orders--table th:nth-child(3),
   #recent-orders--table tbody td:nth-child(3),
   #recent-orders--table th:nth-child(6),
   #recent-orders--table tbody td:nth-child(6) {
     display: none;
   }
-} 
+}
