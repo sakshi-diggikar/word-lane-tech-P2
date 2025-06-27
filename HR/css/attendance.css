@@ -1,254 +1,3 @@
-@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap");
-
-:root {
-    --color-primary: #7380ec;
-    --color-danger: #363dc5;
-    --color-success: #41f1b6;
-    --color-warning: #ffbb55;
-    --color-white: #fff;
-    --color-info-dark: #7d8da1;
-    --color-info-light: #dce1eb;
-    --color-dark: #363949;
-    --color-light: rgba(132, 139, 200, 0.18);
-    --color-primary-variant: #111e88;
-    --color-dark-variant: #677483;
-    --color-background: #f6f6f9;
-
-    --card-border-radius: 2rem;
-    --border-radius-1: 0.4rem;
-    --border-radius-2: 0.8rem;
-    --border-radius-3: 1.2rem;
-
-    --card-padding: 1.8rem;
-    --padding-1: 1.2rem;
-
-    --box-shadow: 0 2rem 3rem var(--color-light);
-}
-
-.dark-theme-variables {
-    --color-background: #181a1e;
-    --color-white: #202528;
-    --color-dark: #edeffd;
-    --color-dark-variant: #a3bdcc;
-    --color-light: rgba(0, 0, 0, 0.4);
-    --box-shadow: 0 2rem 3rem var(--color-light);
-}
-
-* {
-    margin: 0;
-    padding: 0;
-    outline: 0;
-    appearance: none;
-    border: 0;
-    text-decoration: none;
-    list-style: none;
-    box-sizing: border-box;
-}
-
-html {
-    font-size: 14px;
-}
-
-body {
-    width: 100vw;
-    height: 100vh;
-    font-family: poppins, sans-serif;
-    font-size: 0.88rem;
-    background: var(--color-background);
-    user-select: none;
-    overflow-x: hidden;
-    color: var(--color-dark);
-}
-
-.container {
-    display: grid;
-    width: 96%;
-    margin: 0 auto;
-    gap: 1.8rem;
-    grid-template-columns: 14rem auto 23rem;
-    transition: grid-template-columns 0.3s ease;
-    /* Added for smooth layout transition */
-}
-
-/* New: Adjust grid for form open state */
-.container.form-open {
-    grid-template-columns: 14rem 1fr 28rem;
-    /* Main content shrinks, right section expands */
-}
-
-
-a {
-    color: var(--color-dark);
-}
-
-img {
-    display: block;
-    width: 100%;
-}
-
-h1 {
-    font-weight: 800;
-    font-size: 1.8rem;
-}
-
-h2 {
-    font-size: 1.4rem;
-}
-
-h3 {
-    font-size: 0.87rem;
-}
-
-h4 {
-    font-size: 0.8rem;
-}
-
-h5 {
-    font-family: 0.77rem;
-}
-
-small {
-    font-size: 0.75rem;
-}
-
-.profile-photo {
-    width: 2.8rem;
-    height: 2.8rem;
-    border-radius: 50%;
-    overflow: hidden;
-}
-
-.text-muted {
-    color: var(--color-info-dark);
-}
-
-p {
-    color: var(--color-dark-variant);
-}
-
-b {
-    color: var(--color-dark);
-}
-
-.primary {
-    color: var(--color-primary);
-}
-
-.danger {
-    color: var(--color-danger);
-}
-
-.success {
-    color: var(--color-success);
-}
-
-.warning {
-    color: var(--color-warning);
-}
-
-/* START ASIDE */
-aside {
-    height: 100vh;
-}
-
-aside .top {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-top: 1.4rem;
-}
-
-aside .logo {
-    display: flex;
-    gap: 0.8rem;
-}
-
-aside .logo img {
-    width: 4rem;
-    height: 4rem;
-}
-
-aside .close {
-    display: none;
-}
-
-/* START SIDEBAR */
-aside .sidebar {
-    display: flex;
-    flex-direction: column;
-    height: 86vh;
-    position: relative;
-    top: 3rem;
-}
-
-aside h3 {
-    font-weight: 500;
-}
-
-aside .sidebar a {
-    display: flex;
-    color: var(--color-info-dark);
-    margin-left: 2rem;
-    gap: 1rem;
-    align-items: center;
-    position: relative;
-    height: 3.7rem;
-    transition: all 300ms ease;
-}
-
-aside .sidebar a span {
-    font-size: 1.6rem;
-    transition: all 300ms ease;
-}
-
-aside .sidebar a:last-child {
-    position: absolute;
-    bottom: 2rem;
-    width: 100%;
-}
-
-aside .sidebar a.active {
-    background: var(--color-light);
-    color: var(--color-primary);
-    margin-left: 0;
-}
-
-aside .sidebar a.active:before {
-    content: "";
-    width: 6px;
-    height: 100%;
-    background: var(--color-primary);
-}
-
-aside .sidebar a.active span {
-    color: var(--color-primary);
-    margin-left: calc(1rem - 6px);
-}
-
-aside .sidebar a:hover {
-    color: var(--color-primary);
-}
-
-aside .sidebar a:hover span {
-    margin-left: 1rem;
-}
-
-aside .sidebar .message-count {
-    background: var(--color-danger);
-    color: var(--color-white);
-    padding: 2px 10px;
-    font-size: 11px;
-    border-radius: var(--border-radius-1);
-}
-
-/* END SIDEBAR */
-/* END ASIDE */
-
-/* START MAIN */
-main {
-    margin-top: 1.4rem;
-}
-
 /* Attendance Main Content */
 
 .attendance-header {
@@ -383,9 +132,9 @@ table.attendance-table tbody td {
     color: var(--color-dark);
 }
 
-.onleave {
-    background-color: var(--color-primary);
-    box-shadow: 0 0 8px var(--color-primary);
+.leave {
+    background-color: #ffcc80;
+    box-shadow: 0 0 8px #ffcc80;
 }
 
 .half-day {
@@ -560,57 +309,8 @@ table.attendance-table tbody td {
     /* A lighter purple/blue for selection */
     color: var(--color-dark);
     border: 2px solid var(--color-primary);
-}
-
+}   
 /* END CALENDAR */
-
-
-/* START RIGHT SECTION */
-.right {
-    margin-top: 1.4rem;
-}
-
-.right .top {
-    display: flex;
-    justify-content: end;
-    gap: 2rem;
-}
-
-.right .top button {
-    display: none;
-}
-
-.right .theme-toggler {
-    background: var(--color-light);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    height: 1.6rem;
-    width: 4.2rem;
-    cursor: pointer;
-    border-radius: var(--border-radius-1);
-}
-
-.right .theme-toggler span {
-    font-size: 1.2rem;
-    width: 50%;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.right .theme-toggler span.active {
-    background: var(--color-primary);
-    color: white;
-    border-radius: var(--border-radius-1);
-}
-
-.right .top .profile {
-    display: flex;
-    gap: 2rem;
-    text-align: right;
-}
 
 /* Leave Application Form Styles */
 .leave-form-container {
@@ -860,4 +560,213 @@ table.attendance-table tbody td {
         font-size: 2rem;
     }
 
+}
+
+/* --- Sidebar, Top Right Toggler, and Notification CSS commented out as handled in style.css --- */
+/*
+@media screen and (max-width: 1200px) {
+    aside .logo h2 {
+        display: none;
+    }
+    aside .sidebar h3 {
+        display: none;
+    }
+    aside .sidebar a {
+        width: 5.6rem;
+    }
+    aside .sidebar a:last-child {
+        position: relative;
+        margin-top: 1.8rem;
+    }
+}
+
+@media screen and (max-width: 768px) {
+    aside {
+        position: fixed;
+        left: -100%;
+        background: var(--color-white);
+        width: 18rem;
+        z-index: 3;
+        box-shadow: 1rem 3rem 4rem var(--color-light);
+        height: 100vh;
+        padding-right: var(--card-padding);
+        display: none;
+        animation: showMenu 400ms ease forwards;
+    }
+    @keyframes showMenu {
+        to {
+            left: 0;
+        }
+    }
+    aside .logo {
+        margin-left: 1rem;
+    }
+    aside .logo h2 {
+        display: inline;
+    }
+    aside .sidebar h3 {
+        display: inline;
+    }
+    aside .sidebar a {
+        width: 100%;
+        height: 3.4rem;
+    }
+    aside .sidebar a:last-child {
+        position: absolute;
+        bottom: 5rem;
+    }
+    aside .close {
+        display: inline-block;
+        cursor: pointer;
+    }
+    .right .top {
+        position: fixed;
+        top: 0;
+        left: 0;
+        align-items: center;
+        padding: 0 0.8rem;
+        height: 4.6rem;
+        background: var(--color-white);
+        width: 100%;
+        margin: 0;
+        z-index: 2;
+        box-shadow: 0 1rem 1rem var(--color-light);
+    }
+    .right .top .theme-toggler {
+        width: 4.4rem;
+        position: absolute;
+        left: 66%;
+    }
+    .right .top .profile .info {
+        display: none;
+    }
+    .right .top button {
+        display: inline-block;
+        background: transparent;
+        cursor: pointer;
+        color: var(--color-dark);
+        position: absolute;
+        left: 1rem;
+    }
+    .right .top button span {
+        font-size: 2rem;
+    }
+}
+*/
+
+/* Right Drawer for Leave Application */
+.leave-drawer {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 0;
+    height: 100vh;
+    background: rgba(0,0,0,0.08);
+    z-index: 1002;
+    overflow: hidden;
+    transition: width 0.3s cubic-bezier(.4,0,.2,1);
+    pointer-events: none;
+}
+
+.leave-drawer.open {
+    width: 420px; /* Adjust as needed for your form */
+    pointer-events: auto;
+}
+
+.leave-drawer-content {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 420px;
+    max-width: 100vw;
+    height: 100%;
+    background: var(--color-white);
+    box-shadow: -2px 0 16px rgba(0,0,0,0.08);
+    padding: 2rem 1.5rem 1.5rem 1.5rem;
+    overflow-y: auto;
+    transition: right 0.3s;
+}
+
+.leave-drawer-close {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: none;
+    border: none;
+    font-size: 2rem;
+    color: var(--color-dark-variant);
+    cursor: pointer;
+    z-index: 10;
+}
+
+@media (max-width: 600px) {
+    .leave-drawer,
+    .leave-drawer-content {
+        width: 100vw !important;
+        max-width: 100vw !important;
+    }
+}
+
+.container.leave-drawer-open main {
+    margin-right: 420px; /* Same as drawer width */
+    transition: margin-right 0.3s cubic-bezier(.4,0,.2,1);
+}
+
+@media (max-width: 600px) {
+    .container.leave-drawer-open main {
+        margin-right: 0;
+    }
+}
+
+/* Custom Mark Attendance Button Style */
+#mark-attendance-btn {
+    background: linear-gradient(45deg, var(--color-success), #38a169);
+    color: var(--color-white);
+    padding: 12px 24px;
+    border: none;
+    border-radius: var(--border-radius-3);
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    letter-spacing: 0.5px;
+}
+
+#mark-attendance-btn:hover {
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+    transform: translateY(-2px);
+}
+
+#mark-attendance-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+/* Custom Status Notification Style */
+.status-notification {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background-color: var(--color-success);
+    color: var(--color-white);
+    padding: 1rem 1.5rem;
+    border-radius: var(--border-radius-2);
+    box-shadow: var(--box-shadow);
+    z-index: 1050;
+    transform: translateY(150%);
+    opacity: 0;
+    transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1), opacity 0.4s ease;
+    pointer-events: none;
+}
+
+.status-notification p {
+    margin: 0;
+    font-weight: 500;
+}
+
+.status-notification.show {
+    transform: translateY(0);
+    opacity: 1;
+    pointer-events: auto;
 }

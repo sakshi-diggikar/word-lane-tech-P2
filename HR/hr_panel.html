@@ -10,7 +10,7 @@
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Sharp" rel="stylesheet" />
     <link rel="stylesheet" href="css/hr_panel.css" />
     <link rel="stylesheet" href="../css/style.css" />
-    <link rel="stylesheet" href="../css/notification.css"/>
+    <link rel="stylesheet" href="../css/notification.css" />
 </head>
 
 <body>
@@ -19,17 +19,18 @@
             <div class="top">
                 <div class="logo">
                     <img src="../assets/images/logo.png" alt="Logo" />
-                    <h2>Word<span class="danger"> Lane Tech</span></h2>    </div>
+                    <h2>Word<span class="danger"> Lane Tech</span></h2>
+                </div>
                 <div class="close" id="close-btn">
                     <span class="material-icons-sharp"> close </span>
                 </div>
             </div>
             <div class="sidebar">
-                <a href="hr_panel.html " class="active">
+                <a href="#" class="active">
                     <span class="material-icons-sharp"> dashboard </span>
                     <h3>Dashboard</h3>
                 </a>
-                <a href="HR_management.html" >
+                <a href="HR_management.html">
                     <span class="material-icons-sharp"> people </span>
                     <h3>Management</h3>
                 </a>
@@ -50,25 +51,26 @@
                     <h3>Logout</h3>
                 </a>
             </div>
-            </aside>
+        </aside>
 
-            <main>
-                <div class="top">
-                    <h1>HR Dashboard</h1>
-                    <div class="top-right">
-                        <button id="menu-btn">
-                            <span class="material-icons-sharp"> menu </span>
-                        </button>
-                        <div class="theme-toggler">
-                            <span class="material-icons-sharp active"> light_mode </span>
-                            <span class="material-icons-sharp"> dark_mode </span>
-                        </div>
-                        <!-- Notification Bell -->
-                        <div class="notification-bell">
-                            <span class="material-icons-sharp" id="notification-bell-icon"> notifications </span>
-                            <span class="notification-count" id="notification-count">0</span>
-                        </div>
-                    </div>    </div>
+        <main>
+            <div class="top">
+                <h1>HR Dashboard</h1>
+                <div class="top-right">
+                    <button id="menu-btn">
+                        <span class="material-icons-sharp"> menu </span>
+                    </button>
+                    <div class="theme-toggler">
+                        <span class="material-icons-sharp active"> light_mode </span>
+                        <span class="material-icons-sharp"> dark_mode </span>
+                    </div>
+                    <!-- Notification Bell -->
+                    <div class="notification-bell">
+                        <span class="material-icons-sharp" id="notification-bell-icon"> notifications </span>
+                        <span class="notification-count" id="notification-count">0</span>
+                    </div>
+                </div>
+            </div>
 
             <div class="dashboard-cards">
                 <div class="card card-info">
@@ -149,73 +151,73 @@
                 </div>
             </div>
         </div>
-        </div>
-        
-        <script src="../js/common.js"></script>
-        <script src="../js/notification.js"></script>
-        <script src="../js/chatbot.js"></script>
+    </div>
 
-        <!-- Task Details Modal -->
-        <div id="taskDetailsModal" class="modal">
-            <div class="modal-content">
-                <span class="close-btn" id="closeTaskModal">&times;</span>
-                <h2 style="margin-bottom: 1.5rem; color: var(--color-primary);">Task Details</h2>
+    <script src="../js/common.js"></script>
+    <script src="../js/notification.js"></script>
+    <script src="../js/chatbot.js"></script>
 
-                <div class="detail-list">
-                    <div class="detail-row">
-                        <span class="material-icons-sharp icon">confirmation_number</span>
-                        <div><strong>Project ID:</strong><br /><span id="modal-project-id"></span></div>
-                    </div>
+    <!-- Task Details Modal -->
+    <div id="taskDetailsModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" id="closeTaskModal">&times;</span>
+            <h2 style="margin-bottom: 1.5rem; color: var(--color-primary);">Task Details</h2>
 
-                    <div class="detail-row">
-                        <span class="material-icons-sharp icon">folder</span>
-                        <div><strong>Project Name:</strong><br /><span id="modal-project-name"></span></div>
-                    </div>
-
-                    <div class="detail-row">
-                        <span class="material-icons-sharp icon">assignment</span>
-                        <div><strong>Task Name:</strong><br /><span id="modal-task-name"></span></div>
-                    </div>
-
-                    <div class="detail-row">
-                        <span class="material-icons-sharp icon">event</span>
-                        <div><strong>Due On:</strong><br /><span id="modal-due-on"></span></div>
-                    </div>
-
-                    <div class="detail-row">
-                        <span class="material-icons-sharp icon">info</span>
-                        <div><strong>Status:</strong><br /><span id="modal-status"></span></div>
-                    </div>
-
-                    <div class="detail-row">
-                        <span class="material-icons-sharp icon">person</span>
-                        <div><strong>Employee:</strong><br /><span id="modal-employee-name"></span></div>
-                    </div>
-
-                    <div class="detail-row input-row">
-                        <span class="material-icons-sharp icon">edit</span>
-                        <div class="textarea-wrapper">
-                            <label for="task-comment"><strong>Add Notes / Comments:</strong></label>
-                            <textarea id="task-comment" placeholder="Write something..."></textarea>
-                        </div>
-                    </div>
+            <div class="detail-list">
+                <div class="detail-row">
+                    <span class="material-icons-sharp icon">confirmation_number</span>
+                    <div><strong>Project ID:</strong><br /><span id="modal-project-id"></span></div>
                 </div>
 
-                <div class="modal-buttons">
-                    <button class="btn btn-cancel" id="closeTaskModalBtn">Cancel</button>
-                    <button class="btn btn-send">Send</button>
+                <div class="detail-row">
+                    <span class="material-icons-sharp icon">folder</span>
+                    <div><strong>Project Name:</strong><br /><span id="modal-project-name"></span></div>
+                </div>
+
+                <div class="detail-row">
+                    <span class="material-icons-sharp icon">assignment</span>
+                    <div><strong>Task Name:</strong><br /><span id="modal-task-name"></span></div>
+                </div>
+
+                <div class="detail-row">
+                    <span class="material-icons-sharp icon">event</span>
+                    <div><strong>Due On:</strong><br /><span id="modal-due-on"></span></div>
+                </div>
+
+                <div class="detail-row">
+                    <span class="material-icons-sharp icon">info</span>
+                    <div><strong>Status:</strong><br /><span id="modal-status"></span></div>
+                </div>
+
+                <div class="detail-row">
+                    <span class="material-icons-sharp icon">person</span>
+                    <div><strong>Employee:</strong><br /><span id="modal-employee-name"></span></div>
+                </div>
+
+                <div class="detail-row input-row">
+                    <span class="material-icons-sharp icon">edit</span>
+                    <div class="textarea-wrapper">
+                        <label for="task-comment"><strong>Add Notes / Comments:</strong></label>
+                        <textarea id="task-comment" placeholder="Write something..."></textarea>
+                    </div>
                 </div>
             </div>
-        </div>
 
-        <div id="toast" class="toast">Message Sent!</div>
+            <div class="modal-buttons">
+                <button class="btn btn-cancel" id="closeTaskModalBtn">Cancel</button>
+                <button class="btn btn-send">Send</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast" class="toast">Message Sent!</div>
 
 
     </div>
 
     <!-- Chatbot Toggle Button -->
     <button id="chatbot-toggle-btn">💬</button>
-    
+
     <!-- Chatbot Panel -->
     <div id="chatbot-panel">
         <header>

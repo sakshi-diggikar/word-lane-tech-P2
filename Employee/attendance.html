@@ -5,7 +5,7 @@
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Admin Dashboard - Attendance</title>
+    <title>Attendance</title>
 
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Sharp" rel="stylesheet" />
     <link rel="stylesheet" href="../css/style.css" />
@@ -47,7 +47,6 @@
                     <h3>Messages</h3>
                     <span class="message-count">12</span>
                 </a>
-
                 <a href="#">
                     <span class="material-icons-sharp"> logout </span>
                     <h3>Logout</h3>
@@ -74,51 +73,23 @@
                 </div>
             </div>
 
-            <!-- Mark Your Attendance Button (New Placement) -->
+            <!-- Custom Status Notification -->
+            <div id="status-notification" class="status-notification">
+                <p id="status-notification-message"></p>
+            </div>
+
+            <!-- Mark Your Attendance Button -->
             <div style="text-align: right; margin: 15px 0;">
                 <button id="mark-attendance-btn" style="padding: 8px 16px; font-size: 1rem; cursor: pointer;">Mark Your
                     Attendance</button>
             </div>
 
-            <!-- Calendar Button -->
-            <div style="text-align: right; margin: 15px 0;">
-                <button onclick="toggleCalendar()"
-                    style="padding: 8px 16px; font-size: 1rem; cursor: pointer;">Calendar</button>
-            </div>
-
-            <!-- Calendar Container (Hidden by default) -->
-            <div id="calendar" class="calendar-container" style="display: none;">
+            <!-- Calendar Container (Always Visible) -->
+            <div id="calendar" class="calendar-container" style="display: block;">
                 <!-- Calendar header and grid will be rendered here by JS -->
                 <!-- Leave Application Buttons will also be inserted here by JS -->
             </div>
 
-            <!-- Employee Specific Attendance Table -->
-            <h2 style="margin-top: 2rem; margin-bottom: 1rem; color: var(--color-primary);">My Attendance Records</h2>
-            <div class="table-responsive"> <!-- Added wrapper for responsiveness -->
-                <table class="attendance-table" aria-describedby="my-attendance-description" role="table">
-                    <caption id="my-attendance-description"
-                        style="text-align:left; font-size:0.9rem; padding-bottom:1rem; color: var(--color-dark-variant);">
-                        Your personal attendance records.
-                    </caption>
-                    <thead>
-                        <tr>
-                            <th scope="col">Date</th>
-                            <th scope="col">Status</th>
-                            <th scope="col">Time In</th>
-                            <th scope="col">Time Out</th>
-                        </tr>
-                    </thead>
-                    <tbody id="my-attendance-tbody">
-                        <!-- JS inserts employee's attendance rows -->
-                    </tbody>
-                </table>
-            </div>
-            <!-- Pagination Controls -->
-            <div id="pagination-controls" class="pagination-controls" style="text-align: center; margin-top: 1rem;">
-                <button id="prev-week-btn" class="pagination-btn">Previous Week</button>
-                <span id="current-week-range" class="week-range-display"></span>
-                <button id="next-week-btn" class="pagination-btn">Next Week</button>
-            </div>
         </main>
 
         <div class="right">
@@ -131,47 +102,49 @@
             </div>
         </div>
 
-        <!-- Leave Application Form (Hidden by default) -->
-        <div id="leave-application-form" class="leave-form-container" style="display: none;">
-            <h2>Leave Application</h2>
-            <form>
-                <div class="form-group">
-                    <label for="emp-id">Employee ID:</label>
-                    <input type="text" id="emp-id" name="emp-id" readonly>
-                </div>
-                <div class="form-group">
-                    <label for="employee-name">Employee Name:</label>
-                    <input type="text" id="employee-name" name="employee-name" readonly>
-                </div>
-                <div class="form-group">
-                    <label for="sender-name">Sender Name:</label>
-                    <input type="text" id="sender-name" name="sender-name" value="Bruno" readonly>
-                </div>
-                <div class="form-group">
-                    <label for="leave-subject">Subject:</label>
-                    <input type="text" id="leave-subject" name="leave-subject" placeholder="e.g., Annual Leave Request"
-                        required>
-                </div>
-                <div class="form-group">
-                    <label for="leave-description">Description:</label>
-                    <textarea id="leave-description" name="leave-description" rows="5"
-                        placeholder="Reason for leave and any other details" required></textarea>
-                </div>
-                <div class="form-group">
-                    <label for="start-date">Start Date:</label>
-                    <input type="text" id="start-date" name="start-date" readonly>
-                </div>
-                <div class="form-group">
-                    <label for="end-date">End Date:</label>
-                    <input type="text" id="end-date" name="end-date" readonly>
-                </div>
-                <div class="form-actions">
-                    <button type="submit" class="send-btn">Send</button>
-                    <button type="button" class="cancel-btn" onclick="hideLeaveForm()">Cancel</button>
-                </div>
-            </form>
+        <!-- Leave Application Drawer (Hidden by default) -->
+        <div id="leave-drawer" class="leave-drawer">
+            <div class="leave-drawer-content">
+                <button class="leave-drawer-close" onclick="hideLeaveDrawer()">&times;</button>
+                <h2>Leave Application</h2>
+                <form id="leave-application-form" class="leave-form-container">
+                    <div class="form-group">
+                        <label for="emp-id">Employee ID:</label>
+                        <input type="text" id="emp-id" name="emp-id" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label for="employee-name">Employee Name:</label>
+                        <input type="text" id="employee-name" name="employee-name" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label for="receiver-name">Receiver Name</label>
+                        <input type="text" id="receiver-name" name="receiver-name" value="Bruno" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label for="leave-subject">Subject:</label>
+                        <input type="text" id="leave-subject" name="leave-subject"
+                            placeholder="e.g., Annual Leave Request" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="leave-description">Description:</label>
+                        <textarea id="leave-description" name="leave-description" rows="5"
+                            placeholder="Reason for leave and any other details" required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="start-date">Start Date:</label>
+                        <input type="text" id="start-date" name="start-date" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label for="end-date">End Date:</label>
+                        <input type="text" id="end-date" name="end-date" readonly>
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="send-btn">Send</button>
+                        <button type="button" class="cancel-btn" onclick="hideLeaveDrawer()">Cancel</button>
+                    </div>
+                </form>
+            </div>
         </div>
-    </div>
     </div>
 
     <script src="../js/common.js"></script>

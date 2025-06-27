@@ -5,9 +5,11 @@
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Admin Dashboard - Attendance</title>
+    <title>Attendance</title>
 
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Sharp" rel="stylesheet" />
+    <link rel="stylesheet" href="../css/style.css" />
+    <link rel="stylesheet" href="../css/notification.css" />
     <link rel="stylesheet" href="css/attendance.css">
 </head>
 
@@ -18,33 +20,31 @@
                 <div class="logo">
                     <img src="../assets/images/logo.png" alt="Logo" />
                     <h2>Word<span class="danger"> Lane Tech</span></h2>
-                  </div>
+                </div>
                 <div class="close" id="close-btn">
                     <span class="material-icons-sharp"> close </span>
                 </div>
             </div>
             <div class="sidebar">
-                <a href="employee_panel.html">
+                <a href="hr_panel.html">
                     <span class="material-icons-sharp"> dashboard </span>
                     <h3>Dashboard</h3>
                 </a>
-                <a href="messages.html">
-                    <span class="material-icons-sharp"> mail_outline </span>
-                    <h3>Messages</h3>
-                    <span class="message-count">26</span>
+                <a href="HR_management.html">
+                    <span class="material-icons-sharp"> people </span>
+                    <h3>Management</h3>
                 </a>
-                <a href="attachment.html">
-                    <span class="material-icons-sharp"> attach_file </span>
-                    <h3>Attachment</h3>
+                <a href="leave_applications.html">
+                    <span class="material-icons-sharp"> event_busy </span>
+                    <h3>Leave Applications</h3>
+                </a>
+                <a href="analytics.html">
+                    <span class="material-icons-sharp"> insights </span>
+                    <h3>Analytics</h3>
                 </a>
                 <a href="#" class="active">
                     <span class="material-icons-sharp"> event_note </span>
                     <h3>Attendance</h3>
-                </a>
-                <a href="../messages.html">
-                    <span class="material-icons-sharp"> mail_outline </span>
-                    <h3>Messages</h3>
-                    <span class="message-count">12</span>
                 </a>
                 <a href="#">
                     <span class="material-icons-sharp"> logout </span>
@@ -53,95 +53,60 @@
             </div>
         </aside>
 
-        <main id="main-content">
-            <div class="attendance-header">
-                <h1>Employee Attendance</h1>
-                <div class="attendance-filter">
-                    <label for="filter-date">Filter by Date:</label>
-                    <input type="date" id="filter-date" name="filter-date" />
-                    <label for="filter-status">Status:</label>
-                    <select id="filter-status" name="filter-status" aria-label="Filter attendance status">
-                        <option value="all" selected>All</option>
-                        <option value="present">Present</option>
-                        <option value="absent">Absent</option>
-                        <option value="late">Late</option>
-                        <option value="onleave">On Leave</option>
-                    </select>
+        <main>
+            <div class="top">
+                <h1>Attendance</h1>
+                <div class="top-right">
+                    <button id="menu-btn">
+                        <span class="material-icons-sharp"> menu </span>
+                    </button>
+                    <div class="theme-toggler">
+                        <span class="material-icons-sharp active"> light_mode </span>
+                        <span class="material-icons-sharp"> dark_mode </span>
+                    </div>
+                    <!-- Notification Bell -->
+                    <div class="notification-bell">
+                        <span class="material-icons-sharp" id="notification-bell-icon"> notifications </span>
+                        <span class="notification-count" id="notification-count">0</span>
+                    </div>
                 </div>
             </div>
 
-            <!-- Mark Your Attendance Button (New Placement) -->
+            <!-- Custom Status Notification -->
+            <div id="status-notification" class="status-notification">
+                <p id="status-notification-message"></p>
+            </div>
+
+            <!-- Mark Your Attendance Button -->
             <div style="text-align: right; margin: 15px 0;">
                 <button id="mark-attendance-btn" style="padding: 8px 16px; font-size: 1rem; cursor: pointer;">Mark Your
                     Attendance</button>
             </div>
 
-            <!-- Calendar Button -->
-            <div style="text-align: right; margin: 15px 0;">
-                <button onclick="toggleCalendar()"
-                    style="padding: 8px 16px; font-size: 1rem; cursor: pointer;">Calendar</button>
-            </div>
-
-            <!-- Calendar Container (Hidden by default) -->
-            <div id="calendar" class="calendar-container" style="display: none;">
+            <!-- Calendar Container (Always Visible) -->
+            <div id="calendar" class="calendar-container" style="display: block;">
                 <!-- Calendar header and grid will be rendered here by JS -->
                 <!-- Leave Application Buttons will also be inserted here by JS -->
             </div>
 
-            <!-- Employee Specific Attendance Table -->
-            <h2 style="margin-top: 2rem; margin-bottom: 1rem; color: var(--color-primary);">My Attendance Records</h2>
-            <div class="table-responsive"> <!-- Added wrapper for responsiveness -->
-                <table class="attendance-table" aria-describedby="my-attendance-description" role="table">
-                    <caption id="my-attendance-description"
-                        style="text-align:left; font-size:0.9rem; padding-bottom:1rem; color: var(--color-dark-variant);">
-                        Your personal attendance records.
-                    </caption>
-                    <thead>
-                        <tr>
-                            <th scope="col">Date</th>
-                            <th scope="col">Status</th>
-                            <th scope="col">Time In</th>
-                            <th scope="col">Time Out</th>
-                        </tr>
-                    </thead>
-                    <tbody id="my-attendance-tbody">
-                        <!-- JS inserts employee's attendance rows -->
-                    </tbody>
-                </table>
-            </div>
-            <!-- Pagination Controls -->
-            <div id="pagination-controls" class="pagination-controls" style="text-align: center; margin-top: 1rem;">
-                <button id="prev-week-btn" class="pagination-btn">Previous Week</button>
-                <span id="current-week-range" class="week-range-display"></span>
-                <button id="next-week-btn" class="pagination-btn">Next Week</button>
-            </div>
         </main>
 
-        <div class="right" id="right-section">
-            <div class="top">
-                <button id="menu-btn">
-                    <span class="material-icons-sharp"> menu </span>
-                </button>
-                <div class="theme-toggler">
-                    <span class="material-icons-sharp active"> light_mode </span>
-                    <span class="material-icons-sharp"> dark_mode </span>
-                </div>
-                <div class="profile">
-                    <div class="info">
-                        <p>Hey, <b>Bruno</b></p>
-                        <small class="text-muted">Admin</small>
-                    </div>
-                    <div class="profile-photo">
-                        <img src="https://storage.googleapis.com/workspace-0f70711f-8b4e-4d94-86f1-2a93ccde5887/image/dd13d8fa-3d7d-48b6-a051-9b85f6c1cf79.png"
-                            alt="Profile picture of user Bruno, round shape" />
-                    </div>
+        <div class="right">
+            <!-- Notification Drawer -->
+            <div class="notification-drawer" id="notification-drawer">
+                <h2>Notifications</h2>
+                <div class="notifications-list" id="notifications-list">
+                    <p class="no-notifications">No new notifications</p>
                 </div>
             </div>
+        </div>
 
-            <!-- Leave Application Form (Hidden by default) -->
-            <div id="leave-application-form" class="leave-form-container" style="display: none;">
+        <!-- Leave Application Drawer (Hidden by default) -->
+        <div id="leave-drawer" class="leave-drawer">
+            <div class="leave-drawer-content">
+                <button class="leave-drawer-close" onclick="hideLeaveDrawer()">&times;</button>
                 <h2>Leave Application</h2>
-                <form>
+                <form id="leave-application-form" class="leave-form-container">
                     <div class="form-group">
                         <label for="emp-id">Employee ID:</label>
                         <input type="text" id="emp-id" name="emp-id" readonly>
@@ -151,8 +116,8 @@
                         <input type="text" id="employee-name" name="employee-name" readonly>
                     </div>
                     <div class="form-group">
-                        <label for="sender-name">Sender Name:</label>
-                        <input type="text" id="sender-name" name="sender-name" value="Bruno" readonly>
+                        <label for="receiver-name">Receiver Name</label>
+                        <input type="text" id="receiver-name" name="receiver-name" value="Bruno" readonly>
                     </div>
                     <div class="form-group">
                         <label for="leave-subject">Subject:</label>
@@ -174,14 +139,33 @@
                     </div>
                     <div class="form-actions">
                         <button type="submit" class="send-btn">Send</button>
-                        <button type="button" class="cancel-btn" onclick="hideLeaveForm()">Cancel</button>
+                        <button type="button" class="cancel-btn" onclick="hideLeaveDrawer()">Cancel</button>
                     </div>
                 </form>
             </div>
         </div>
     </div>
 
+    <script src="../js/common.js"></script>
+    <script src="../js/notification.js"></script>
+    <script src="../js/chatbot.js"></script>
     <script src="js/attendance.js"></script>
+
+    <!-- Chatbot Toggle Button -->
+    <button id="chatbot-toggle-btn">💬</button>
+
+    <!-- Chatbot Panel -->
+    <div id="chatbot-panel">
+        <header>
+            Employee Assistant
+            <button id="close-btn">&times;</button>
+        </header>
+        <div id="messages"></div>
+        <form id="input-area">
+            <input type="text" id="user-input" placeholder="Type a message..." autocomplete="off" />
+            <button type="submit" id="send-button">Send</button>
+        </form>
+    </div>
 </body>
 
 </html>
