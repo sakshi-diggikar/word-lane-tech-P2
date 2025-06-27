@@ -1,297 +1,196 @@
+// HR/js/hr_management.js
 
-        document.addEventListener('DOMContentLoaded', function () {
-            const addEmployeeBtn = document.getElementById('addEmployeeBtn');
-            const employeeModal = document.getElementById('employeeModal');
-            const modalTitle = document.getElementById('modalTitle');
-            const employeeForm = document.getElementById('employeeForm');
-            const closeModalBtns = document.querySelectorAll('.close-modal, .cancel-btn');
-            const selectAllCheckbox = document.getElementById('selectAll');
-            const rowCheckboxes = document.querySelectorAll('.row-checkbox');
-            const editBtns = document.querySelectorAll('.edit-btn');
-            const deleteBtns = document.querySelectorAll('.delete-btn');
-            const reportTitle = document.getElementById('reportTitle');
-            const detailedReportTitle = document.getElementById('detailedReportTitle');
-            const totalEmployees = document.getElementById('totalEmployees');
-            const totalHRs = document.getElementById('totalHRs');
-            const totalAdmins = document.getElementById('totalAdmins');
-            fetchEmployees();
+// Global flags for edit mode
+let isEditMode = false;
+let currentUserId = null;
 
-            // Sample data counts
-            let employeeCount = 2; // Update this based on actual data
-            let hrCount = 1; // Update this based on actual data
-            let adminCount = 1; // Update this based on actual data
+document.addEventListener('DOMContentLoaded', () => {
+    const employeeForm = document.getElementById('employeeForm');
+    const employeeModal = document.getElementById('employeeModal');
+    const modalTitle = document.getElementById('modalTitle');
+    const addEmployeeBtn = document.getElementById('addEmployeeBtn');
+    const closeModalBtn = document.querySelector('.close-modal');
+    const cancelBtn = document.querySelector('.cancel-btn');
 
-            // Update counts on load
-            totalEmployees.textContent = employeeCount;
-            totalHRs.textContent = hrCount;
-            totalAdmins.textContent = adminCount;
+    // Map user_id prefix → role ID
+    function getRoleId(userId) {
+        if (userId.startsWith("AD")) return 1;
+        if (userId.startsWith("HR")) return 2;
+        if (userId.startsWith("EMP")) return 3;
+        if (userId.startsWith("MGR")) return 4;
+        return 3;
+    }
 
-            // Show modal for adding new employee
-            addEmployeeBtn.addEventListener('click', function () {
-                modalTitle.textContent = 'Add New Employee';
-                document.getElementById('empId').value = 'EMP' + Math.floor(1000 + Math.random() * 9000);
-                employeeForm.reset();
+    // Fetch & render all employees
+    async function fetchEmployees() {
+        const tbody = document.querySelector('#employeeTable tbody');
+        tbody.innerHTML = '';
+        try {
+            const res = await fetch('/api/hr/employees');
+            const employees = await res.json();
+            employees.forEach(emp => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+          <td><input type="checkbox" class="row-checkbox" /></td>
+          <td>${emp.user_id}</td>
+          <td>${emp.first_name}</td>
+          <td>${emp.last_name}</td>
+          <td>${emp.e_mail}</td>
+          <td>${emp.phone}</td>
+          <td>${emp.gender == 1 ? 'Male' : 'Female'}</td>
+          <td>${emp.dob}</td>
+          <td>${emp.joining_date}</td>
+          <td>${emp.address}</td>
+          <td>
+            <span class="material-icons-sharp edit-btn">edit</span>
+            <span class="material-icons-sharp delete-btn">delete</span>
+          </td>`;
+                tbody.appendChild(row);
+            });
+            document.getElementById('totalEmployees').textContent = employees.length;
+            attachRowEventListeners();
+        } catch (err) {
+            console.error('Failed to fetch employees:', err);
+            alert('Error loading employee list');
+        }
+    }
+
+    // Wire up each row’s edit & delete buttons
+    function attachRowEventListeners() {
+        document.querySelectorAll('.edit-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const row = btn.closest('tr');
+                currentUserId = row.cells[1].textContent;
+                isEditMode = true;
+                modalTitle.textContent = 'Edit Employee';
+
+                // Populate form from the table row
+                ['empId', 'firstName', 'lastName', 'empEmail', 'empPhone', 'gender', 'dob', 'joiningDate', 'address']
+                    .forEach((fieldId, i) => {
+                        document.getElementById(fieldId).value = row.cells[i + 1].textContent;
+                    });
+                // Clear password fields
+                document.getElementById('password').value = '';
+                document.getElementById('confirmPassword').value = '';
                 employeeModal.style.display = 'block';
             });
+        });
 
-            // Edit button handler
-            editBtns.forEach(btn => {
-                btn.addEventListener('click', function () {
-                    const row = this.closest('tr');
-                    modalTitle.textContent = 'Edit Employee';
-                    document.getElementById('empId').value = row.cells[1].textContent;
-                    document.getElementById('firstName').value = row.cells[2].textContent;
-                    document.getElementById('lastName').value = row.cells[3].textContent;
-                    document.getElementById('empEmail').value = row.cells[4].textContent;
-                    document.getElementById('empPhone').value = row.cells[5].textContent;
-                    document.getElementById('gender').value = row.cells[6].textContent === 'Male' ? '1' : '2';
-                    document.getElementById('dob').value = row.cells[7].textContent;
-                    document.getElementById('joiningDate').value = row.cells[8].textContent;
-                    document.getElementById('address').value = row.cells[9].textContent;
-                    employeeModal.style.display = 'block';
-                });
-            });
-
-            // Delete button handler
-            deleteBtns.forEach(btn => {
-                btn.addEventListener('click', function () {
-                    if (confirm('Are you sure you want to delete this employee?')) {
-                        this.closest('tr').remove();
-                        employeeCount--; // Decrease count on delete
-                        totalEmployees.textContent = employeeCount; // Update displayed count
-                    }
-                });
-            });
-
-            // Select all checkbox handler
-            selectAllCheckbox.addEventListener('change', function () {
-                rowCheckboxes.forEach(checkbox => {
-                    checkbox.checked = this.checked;
-                });
-            });
-
-            // Close modal handler
-            closeModalBtns.forEach(btn => {
-                btn.addEventListener('click', function () {
-                    employeeModal.style.display = 'none';
-                });
-            });
-
-            employeeForm.addEventListener('submit', async function (e) {
-                e.preventDefault();
-
-                const data = {
-                    user_id: document.getElementById('empId').value,
-                    first_name: document.getElementById('firstName').value,
-                    last_name: document.getElementById('lastName').value,
-                    e_mail: document.getElementById('empEmail').value,
-                    phone: document.getElementById('empPhone').value,
-                    gender: document.getElementById('gender').value,
-                    dob: document.getElementById('dob').value,
-                    joining_date: document.getElementById('joiningDate').value,
-                    address: document.getElementById('address').value
-                };
+        document.querySelectorAll('.delete-btn').forEach(btn => {
+            btn.addEventListener('click', async () => {
+                const row = btn.closest('tr');
+                const userId = row.cells[1].textContent;
+                if (!confirm(`Delete employee ${userId}?`)) return;
 
                 try {
-                    let response;
-                    if (isEditMode && currentUserId) {
-                        // 🔄 Edit existing employee
-                        response = await fetch(`http://localhost:3000/api/hr/update-employee/${currentUserId}`, {
-                            method: 'PUT',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify(data)
-                        });
-                    } else {
-                        // ➕ Add new employee
-                        response = await fetch('http://localhost:3000/api/hr/add-employee', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify(data)
-                        });
-                    }
-
-                    const result = await response.json();
-                    if (result.success) {
-                        alert(isEditMode ? 'Employee updated!' : 'Employee added!');
-                        employeeModal.style.display = 'none';
-                        fetchEmployees();
-                    } else {
-                        alert(result.error || 'Operation failed');
-                    }
-
+                    const res = await fetch(`/api/hr/employees/delete-employee/${userId}`, { method: 'DELETE' });
+                    const result = await res.json();
+                    if (!result.success) throw new Error(result.message || 'Delete failed');
+                    alert('Deleted successfully');
+                    fetchEmployees();
                 } catch (err) {
-                    alert('Something went wrong');
                     console.error(err);
-                } finally {
-                    isEditMode = false;
-                    currentUserId = null;
-                    employeeForm.reset();
+                    alert('Error deleting employee');
                 }
             });
-
-
-            // Close modal when clicking outside
-            window.addEventListener('click', function (e) {
-                if (e.target === employeeModal) {
-                    employeeModal.style.display = 'none';
-                }
-            });
-
-            // Card click handler to change report title and table
-            document.querySelectorAll('.report-card').forEach(card => {
-                card.addEventListener('click', function () {
-                    const category = this.dataset.category;
-                    reportTitle.textContent = `${category.charAt(0).toUpperCase() + category.slice(1)} Reports`;
-                    detailedReportTitle.textContent = `Detailed ${category.charAt(0).toUpperCase() + category.slice(1)} Reports`;
-
-                    // Logic to load the respective table data can be added here
-                    // For example, you can filter the table based on the selected category
-                    updateTable(category);
-                });
-            });
-
-            function updateTable(category) {
-                const tbody = document.querySelector('#employeeTable tbody');
-                tbody.innerHTML = ''; // Clear existing rows
-
-                // Sample data for demonstration
-                const data = {
-                    employee: [
-                        { id: 'EMP001', firstName: 'Rajesh', lastName: 'Sharma', email: 'rajesh.sharma@example.com', phone: '+91 9876543210', gender: 'Male', dob: '1990-01-01', joiningDate: '2020-01-10', address: '123 Main St, City' },
-                        { id: 'EMP002', firstName: 'Priya', lastName: 'Patel', email: 'priya.patel@example.com', phone: '+91 8765432109', gender: 'Female', dob: '1992-02-02', joiningDate: '2021-02-15', address: '456 Elm St, City' }
-                    ],
-                    hr: [
-                        { id: 'HR001', firstName: 'Anita', lastName: 'Kumar', email: 'anita.kumar@example.com', phone: '+91 9988776655', gender: 'Female', dob: '1988-05-15', joiningDate: '2019-03-20', address: '789 Oak St, City' }
-                    ],
-                    admin: [
-                        { id: 'ADM001', firstName: 'Suresh', lastName: 'Verma', email: 'suresh.verma@example.com', phone: '+91 1234567890', gender: 'Male', dob: '1985-07-30', joiningDate: '2018-01-05', address: '321 Pine St, City' }
-                    ]
-                };
-
-                // Populate table based on selected category
-                const selectedData = data[category] || [];
-                selectedData.forEach(item => {
-                    const row = document.createElement('tr');
-                    row.innerHTML = `
-                                            <td><input type="checkbox" class="row-checkbox"></td>
-                                            <td>${item.id}</td>
-                                            <td>${item.firstName}</td>
-                                            <td>${item.lastName}</td>
-                                            <td>${item.email}</td>
-                                            <td>${item.phone}</td>
-                                            <td>${item.gender}</td>
-                                            <td>${item.dob}</td>
-                                            <td>${item.joiningDate}</td>
-                                            <td>${item.address}</td>
-                                            <td>
-                                                <span class="material-icons-sharp edit-btn">edit</span>
-                                                <span class="material-icons-sharp delete-btn">delete</span>
-                                            </td>
-                                        `;
-                    tbody.appendChild(row);
-                });
-            }
         });
-        async function fetchEmployees() {
-            const tbody = document.querySelector('#employeeTable tbody');
-            tbody.innerHTML = '';
+    }
 
-            try {
-                const res = await fetch('http://localhost:3000/api/hr/employees');
-                const employees = await res.json();
-                employees.forEach(emp => {
-                    const row = document.createElement('tr');
-                    row.innerHTML = `
-                <td><input type="checkbox" class="row-checkbox"></td>
-                <td>${emp.user_id}</td>
-                <td>${emp.first_name}</td>
-                <td>${emp.last_name}</td>
-                <td>${emp.e_mail}</td>
-                <td>${emp.phone}</td>
-                <td>${emp.gender == 1 ? 'Male' : 'Female'}</td>
-                <td>${emp.dob}</td>
-                <td>${emp.joining_date}</td>
-                <td>${emp.address}</td>
-                <td>
-                    <span class="material-icons-sharp edit-btn">edit</span>
-                    <span class="material-icons-sharp delete-btn">delete</span>
-                </td>
-            `;
-                    tbody.appendChild(row);
-                });
+    // Handle Add / Update form submit
+    employeeForm.addEventListener('submit', async e => {
+        e.preventDefault();
 
-                document.getElementById('totalEmployees').textContent = employees.length;
-            } catch (err) {
-                console.error('Failed to fetch employees:', err);
-            }
+        const user_id = document.getElementById('empId').value.trim();
+        const first_name = document.getElementById('firstName').value.trim();
+        const last_name = document.getElementById('lastName').value.trim();
+        const e_mail = document.getElementById('empEmail').value.trim();
+        const phone = document.getElementById('empPhone').value.trim();
+        const gender = document.getElementById('gender').value;
+        const dob = document.getElementById('dob').value;
+        const joining_date = document.getElementById('joiningDate').value;
+        const address = document.getElementById('address').value.trim();
+        const password = document.getElementById('password').value;
+        const confirmPass = document.getElementById('confirmPassword').value;
+
+        if (!password || password !== confirmPass) {
+            return alert('Passwords must match and not be empty.');
         }
-        function attachRowEventListeners() {
-                document.querySelectorAll('.edit-btn').forEach(btn => {
-                    btn.addEventListener('click', function () {
-                        const row = this.closest('tr');
-                        isEditMode = true;
-                        currentUserId = row.cells[1].textContent;
-                        modalTitle.textContent = 'Edit Employee';
-                        document.getElementById('empId').value = currentUserId;
-                        document.getElementById('firstName').value = row.cells[2].textContent;
-                        document.getElementById('lastName').value = row.cells[3].textContent;
-                        document.getElementById('empEmail').value = row.cells[4].textContent;
-                        document.getElementById('empPhone').value = row.cells[5].textContent;
-                        document.getElementById('gender').value = row.cells[6].textContent === 'Male' ? '1' : '2';
-                        document.getElementById('dob').value = row.cells[7].textContent;
-                        document.getElementById('joiningDate').value = row.cells[8].textContent;
-                        document.getElementById('address').value = row.cells[9].textContent;
-                        employeeModal.style.display = 'block';
-                    });
-                });
 
-                document.querySelectorAll('.delete-btn').forEach(btn => {
-                    btn.addEventListener('click', async function () {
-                        const row = this.closest('tr');
-                        const userId = row.cells[1].textContent;
-                        if (confirm(`Are you sure you want to delete employee ${userId}?`)) {
-                            try {
-                                const res = await fetch(`http://localhost:3000/api/hr/delete-employee/${userId}`, {
-                                    method: 'DELETE'
-                                });
-                                const result = await res.json();
-                                if (result.success) {
-                                    alert('Deleted successfully');
-                                    fetchEmployees();
-                                } else {
-                                    alert('Failed to delete');
-                                }
-                            } catch (err) {
-                                console.error('Delete error:', err);
-                            }
-                        }
-                    });
+        const payload = {
+            user_id,
+            first_name,
+            last_name,
+            e_mail,
+            phone,
+            gender,
+            dob,
+            joining_date,
+            address,
+            password,
+            emp_role_id: getRoleId(user_id)
+        };
+
+        try {
+            let res, result;
+            if (isEditMode && currentUserId) {
+                // UPDATE
+                res = await fetch(`/api/hr/employees/update-employee/${currentUserId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+            } else {
+                // CREATE
+                res = await fetch('/api/hr/employees/add-employee', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
                 });
             }
+            result = await res.json();
+            if (!result.success) throw new Error(result.message || 'Request failed');
 
-        // Add global editMode flag
-            let isEditMode = false;
-            let currentUserId = null;
+            alert(isEditMode ? 'Employee updated!' : 'Employee added!');
+            employeeForm.reset();
+            isEditMode = false;
+            currentUserId = null;
+            employeeModal.style.display = 'none';
+            fetchEmployees();
+        } catch (err) {
+            console.error(err);
+            alert('Something went wrong:\n' + err.message);
+        }
+    });
 
-            editBtns.forEach(btn => {
-                btn.addEventListener('click', function () {
-                    const row = this.closest('tr');
-                    modalTitle.textContent = 'Edit Employee';
-                    isEditMode = true;
-                    currentUserId = row.cells[1].textContent;
-                    document.getElementById('empId').value = currentUserId;
-                    document.getElementById('firstName').value = row.cells[2].textContent;
-                    document.getElementById('lastName').value = row.cells[3].textContent;
-                    document.getElementById('empEmail').value = row.cells[4].textContent;
-                    document.getElementById('empPhone').value = row.cells[5].textContent;
-                    document.getElementById('gender').value = row.cells[6].textContent === 'Male' ? '1' : '2';
-                    document.getElementById('dob').value = row.cells[7].textContent;
-                    document.getElementById('joiningDate').value = row.cells[8].textContent;
-                    document.getElementById('address').value = row.cells[9].textContent;
-                    employeeModal.style.display = 'block';
-                });
-            });
+    // “Add Employee” button opens empty form
+    addEmployeeBtn.addEventListener('click', () => {
+        isEditMode = false;
+        currentUserId = null;
+        modalTitle.textContent = 'Add New Employee';
+        employeeForm.reset();
+        employeeModal.style.display = 'block';
+    });
 
-            attachRowEventListeners();
+    // Close modal on “X” or Cancel
+    [closeModalBtn, cancelBtn].forEach(btn =>
+        btn.addEventListener('click', () => {
+            employeeForm.reset();
+            isEditMode = false;
+            currentUserId = null;
+            employeeModal.style.display = 'none';
+        })
+    );
 
-    
+    // Clicking outside the modal closes it
+    window.addEventListener('click', e => {
+        if (e.target === employeeModal) {
+            employeeForm.reset();
+            isEditMode = false;
+            currentUserId = null;
+            employeeModal.style.display = 'none';
+        }
+    });
+
+    // Initial table load
+    fetchEmployees();
+});

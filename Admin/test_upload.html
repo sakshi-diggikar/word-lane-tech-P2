@@ -1,0 +1,28 @@
+<!-- test_upload.html -->
+<form id="uploadForm" enctype="multipart/form-data">
+    <input type="file" name="file" required />
+    <input type="text" name="emp_user_id" placeholder="admin001" required />
+    <input type="text" name="team" placeholder="TeamA" required />
+    <input type="text" name="project" placeholder="ERP" required />
+    <input type="text" name="task" placeholder="SetupDB" required />
+    <button type="submit">Upload</button>
+</form>
+
+<script>
+    document.getElementById("uploadForm").addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        const form = e.target;
+        const formData = new FormData(form);
+
+        const response = await fetch("/api/projects/upload-task-file", {
+            method: "POST",
+            body: formData,
+        });
+
+        const result = await response.json();
+        console.log(result);
+        alert(JSON.stringify(result, null, 2));
+    });
+</script>
+  

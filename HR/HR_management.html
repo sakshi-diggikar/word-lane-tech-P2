@@ -9,7 +9,7 @@
 
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Sharp" rel="stylesheet" />
     <link rel="stylesheet" href="../css/style.css" />
-    <link rel="stylesheet" href="../css/notification.css"/>
+    <link rel="stylesheet" href="../css/notification.css" />
     <link rel="stylesheet" href="css//hr_management.css" />
 </head>
 
@@ -25,9 +25,9 @@
                     <span class="material-icons-sharp"> close </span>
                 </div>
             </div>
-        
+
             <div class="sidebar">
-                <a href="hr_panel.html" >
+                <a href="hr_panel.html">
                     <span class="material-icons-sharp"> dashboard </span>
                     <h3>Dashboard</h3>
                 </a>
@@ -51,7 +51,8 @@
                     <span class="material-icons-sharp"> logout </span>
                     <h3>Logout</h3>
                 </a>
-            </div></aside>
+            </div>
+        </aside>
 
 
 
@@ -71,7 +72,8 @@
                         <span class="material-icons-sharp" id="notification-bell-icon"> notifications </span>
                         <span class="notification-count" id="notification-count">0</span>
                     </div>
-                </div></div>
+                </div>
+            </div>
             <!-- HR Management Content Starts Here -->
             <div class="reports-container">
                 <div class="reports-header">
@@ -243,30 +245,30 @@
                                 <input type="text" id="lastName" name="lastName" required>
                             </div>
                             <div class="form-group">
-                                <label for="email">Email ID</label>
-                                <input type="email" id="email" name="email" required>
+                                <label for="empEmail">Email ID</label>
+                                <input type="email" id="empEmail" name="empEmail" required>
                             </div>
                         </div>
 
                         <div class="form-row">
                             <div class="form-group">
-                                <label for="phone">Phone Number</label>
+                                <label for="empPhone">Phone Number</label>
                                 <div class="phone-input">
                                     <select id="countryCode" name="countryCode">
                                         <option value="+91" selected>+91 (IND)</option>
                                         <option value="+1">+1 (USA)</option>
                                         <option value="+44">+44 (UK)</option>
                                     </select>
-                                    <input type="tel" id="phone" name="phone" required>
+                                    <input type="tel" id="empPhone" name="empPhone" required>
                                 </div>
                             </div>
                             <div class="form-group">
                                 <label for="gender">Gender</label>
                                 <select id="gender" name="gender" required>
                                     <option value="">Select Gender</option>
-                                    <option value="Male">Male</option>
-                                    <option value="Female">Female</option>
-                                    <option value="Other">Other</option>
+                                    <option value="1">Male</option>
+                                    <option value="2">Female</option>
+                                    <option value="3">Other</option>
                                 </select>
                             </div>
                         </div>
@@ -274,13 +276,11 @@
                         <div class="form-row">
                             <div class="form-group">
                                 <label for="dob">Date of Birth</label>
-                                <input type="date" id="dob" name="dob" class="datepicker" placeholder="Select date"
-                                    required>
+                                <input type="date" id="dob" name="dob" required>
                             </div>
                             <div class="form-group">
                                 <label for="joiningDate">Joining Date</label>
-                                <input type="date" id="joiningDate" name="joiningDate" class="datepicker"
-                                    placeholder="Select date" required>
+                                <input type="date" id="joiningDate" name="joiningDate" required>
                             </div>
                         </div>
 
@@ -309,6 +309,7 @@
                     </form>
                 </div>
             </div>
+
     </div>
     </main>
     <div class="right">
@@ -329,10 +330,10 @@
     <script src="../js/common.js"></script>
     <script src="../js/notification.js"></script>
     <script src="../js/chatbot.js"></script>
-    <script src="/js/hr_management.js"></script>
+    <script src="js/hr_management.js"></script>
     <!-- Chatbot Toggle Button -->
     <button id="chatbot-toggle-btn">💬</button>
-    
+
     <!-- Chatbot Panel -->
     <div id="chatbot-panel">
         <header>
