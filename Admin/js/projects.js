@@ -275,6 +275,14 @@ function createTeamCard(team, onOpen) {
         descShort += '...';
     }
     
+    // Calculate team progress based on projects
+    let teamProgress = 0;
+    if (team.projects && team.projects.length > 0) {
+        const totalProjects = team.projects.length;
+        const completedProjects = team.projects.filter(p => p.proj_status === 2).length;
+        teamProgress = Math.round((completedProjects / totalProjects) * 100);
+    }
+    
     card.innerHTML = `
     <div class="project-header">
         <h3 style="font-size:1.25rem;">${team.team_name}</h3>
@@ -294,9 +302,15 @@ function createTeamCard(team, onOpen) {
         <div></div>
         <div class="avatar-stack" style="display:flex;align-items:center;">
             <span style="margin-left:8px;font-weight:600;color:#7380ec;font-size:1.1em;">
-                ${team.project_count || 0}
+                ${team.project_count || 0} Projects
             </span>
         </div>
+    </div>
+    <div style="display:flex;flex-direction:column;align-items:flex-start;margin-top:0.3em;">
+        <div class="progress-bar" style="background:#eee;border-radius:8px;height:10px;width:100%;margin:0.3rem 0 0.3rem 0;">
+            <div style="width:${teamProgress}%;background:${teamProgress === 100 ? '#28a745' : '#7380ec'};height:100%;border-radius:8px;transition:width 0.3s;"></div>
+        </div>
+        <span style="font-size:0.9em;color:#7d8da1;margin-top:0.2em;">${teamProgress}% Complete</span>
     </div>
     <div style="display:flex;flex-direction:column;align-items:flex-end;margin-top:0.4em;position:relative;">
         <span style="font-size:0.97em;color:#7d8da1;margin-bottom:0.1em;">${team.team_created_at ? formatDateTime(new Date(team.team_created_at)) : 'N/A'}</span>
@@ -395,6 +409,14 @@ function createProjectCard(project, onOpen) {
     let endDate = project.proj_deadline ? formatDateTime(project.proj_deadline) : 'N/A';
     let createdAt = project.proj_created_at ? formatDateTime(project.proj_created_at) : '';
 
+    // Calculate project progress based on tasks
+    let projectProgress = 0;
+    if (project.tasks && project.tasks.length > 0) {
+        const totalTasks = project.tasks.length;
+        const completedTasks = project.tasks.filter(t => t.task_status === 2).length;
+        projectProgress = Math.round((completedTasks / totalTasks) * 100);
+    }
+
     card.innerHTML = `
         <div class="project-header">
             <h3 style="font-size:1.25rem;">${project.proj_name}</h3>
@@ -415,6 +437,20 @@ function createProjectCard(project, onOpen) {
         <div class="project-dates" style="display:flex;flex-direction:column;align-items:flex-start;">
             <span title="Start date" style="font-size:0.97em;color:#7d8da1;"><b>Start:</b> ${startDate}</span>
             <span title="Due date" style="font-size:0.97em;color:#7d8da1;margin-top:0.3em;"><b>Due:</b> ${endDate}</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-top:0.3em;">
+            <div></div>
+            <div class="task-count" style="display:flex;align-items:center;">
+                <span style="font-weight:600;color:#7380ec;font-size:1.1em;">
+                    ${project.tasks ? project.tasks.length : 0} Tasks
+                </span>
+            </div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-start;margin-top:0.3em;">
+            <div class="progress-bar" style="background:#eee;border-radius:8px;height:10px;width:100%;margin:0.3rem 0 0.3rem 0;">
+                <div style="width:${projectProgress}%;background:${projectProgress === 100 ? '#28a745' : '#7380ec'};height:100%;border-radius:8px;transition:width 0.3s;"></div>
+            </div>
+            <span style="font-size:0.9em;color:#7d8da1;margin-top:0.2em;">${projectProgress}% Complete</span>
         </div>
         <div style="font-size:0.97em;color:#7d8da1;margin-bottom:0.3em;">
             <b>Status:</b> ${status}
@@ -512,13 +548,13 @@ function createTaskCard(task, onOpen) {
         if (now > new Date(task.task_deadline)) status = 'Delayed';
     }
 
-    // Progress bar (subtasks completed / total) - placeholder for now
+    // Progress bar (subtasks completed / total) - improved calculation
     let progress = 0;
     if (task.subtasks && task.subtasks.length > 0) {
-        const completed = task.subtasks.filter(st => st.completed).length;
+        const completed = task.subtasks.filter(st => st.subtask_status === 2).length;
         progress = Math.round((completed / task.subtasks.length) * 100);
     } else {
-        progress = task.progress || 0;
+        progress = task.task_progress || 0;
     }
 
     // Employee name from database
@@ -542,32 +578,19 @@ function createTaskCard(task, onOpen) {
                     <span style="font-size:0.97em;color:#7d8da1;"><b>Employee:</b> ${empName}</span>
                     <span title="Deadline" style="font-size:0.97em;color:#7d8da1;"><b>Deadline:</b> ${task.task_deadline ? formatDateTime(task.task_deadline) : 'N/A'}</span>
                 </div>
-                <div style="display:flex;justify-content:space-between;align-items:flex-end;">
+                <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-top:0.3em;">
                     <div></div>
-                    <div class="subtask-avatars" style="display:flex;align-items:center;gap:0.3em;">
-                        <div class="avatar-stack" style="display:flex;align-items:center;">
-                            ${(task.subtasks || []).slice(0, 3).map((st, i) => `
-                                <span class="avatar-dot" style="
-                                    display:inline-block;
-                                    width:26px;height:26px;
-                                    border-radius:50%;
-                                    background:${['#7380ec', '#41f1b6', '#ffbb55'][i % 3]};
-                                    border:2px solid #fff;
-                                    margin-left:-10px;
-                                    z-index:${10 - i};
-                                    box-shadow:0 1px 4px rgba(0,0,0,0.07);
-                                " title="${st.name}"></span>
-                            `).join('')}
-                        </div>
-                        <span style="margin-left:8px;font-weight:600;color:#7380ec;font-size:1.1em;">
-                            ${task.subtasks ? task.subtasks.length : 0}
+                    <div class="subtask-count" style="display:flex;align-items:center;">
+                        <span style="font-weight:600;color:#7380ec;font-size:1.1em;">
+                            ${task.subtasks ? task.subtasks.length : 0} Subtasks
                         </span>
                     </div>
                 </div>
-                <div style="display:flex;flex-direction:column;align-items:flex-start;">
+                <div style="display:flex;flex-direction:column;align-items:flex-start;margin-top:0.3em;">
                     <div class="progress-bar" style="background:#eee;border-radius:8px;height:10px;width:100%;margin:0.3rem 0 0.3rem 0;">
-                        <div style="width:${progress}%;background:#7380ec;height:100%;border-radius:8px;transition:width 0.3s;"></div>
+                        <div style="width:${progress}%;background:${progress === 100 ? '#28a745' : '#7380ec'};height:100%;border-radius:8px;transition:width 0.3s;"></div>
                     </div>
+                    <span style="font-size:0.9em;color:#7d8da1;margin-top:0.2em;">${progress}% Complete</span>
                 </div>
                 <div style="display:flex;justify-content:space-between;align-items:center;margin-top:0.3em;">
                     <span class="status-label" style="padding:2px 12px;border-radius:8px;font-size:1em;background:${status === 'Completed' ? '#28a745' : status === 'Delayed' ? '#dc3545' : '#f0ad4e'};color:white;">
@@ -673,8 +696,8 @@ async function createSubtaskCard(subtask) {
         if (now > new Date(subtask.subtask_deadline)) status = 'Delayed';
     }
 
-    // Progress bar (optional)
-    let progress = subtask.progress || 0;
+    // Progress bar - show 100% if completed, otherwise use subtask progress
+    let progress = subtask.subtask_status === 2 ? 100 : (subtask.subtask_progress || 0);
 
     // Employee assignments
     let assignedEmployees = subtask.assigned_employees || 'Not assigned';
@@ -721,7 +744,7 @@ async function createSubtaskCard(subtask) {
                 ${attachmentLinks ? `<div style="font-size:0.97em;color:#7d8da1;margin-bottom:0.3em;"><b>Attachment(s):</b> ${attachmentLinks}</div>` : ''}
                 <div style="display:flex;flex-direction:column;align-items:flex-start;">
                     <div class="progress-bar" style="background:#eee;border-radius:8px;height:10px;width:100%;margin:0.3rem 0 0.3rem 0;">
-                        <div style="width:${progress}%;background:#7380ec;height:100%;border-radius:8px;transition:width 0.3s;"></div>
+                        <div style="width:${progress}%;background:${progress === 100 ? '#28a745' : '#7380ec'};height:100%;border-radius:8px;transition:width 0.3s;"></div>
                     </div>
                 </div>
                 <div style="display:flex;justify-content:space-between;align-items:center;margin-top:0.3em;">
@@ -868,6 +891,22 @@ async function renderTasks() {
 
     // Load tasks from backend
     const tasks = await loadTasksByProject(currentProject.proj_id);
+    
+    // Load subtasks for each task to enable progress calculations
+    for (let task of tasks) {
+        try {
+            const subtasksResponse = await fetch(`/api/projects/subtasks/${task.task_id}`);
+            if (subtasksResponse.ok) {
+                task.subtasks = await subtasksResponse.json();
+            } else {
+                task.subtasks = [];
+            }
+        } catch (error) {
+            console.error(`❌ Error loading subtasks for task ${task.task_id}:`, error);
+            task.subtasks = [];
+        }
+    }
+    
     currentProject.tasks = tasks;
 
     // Show tasks for current project
@@ -1665,6 +1704,21 @@ async function loadProjectsByTeam(teamId) {
         
         const projects = await res.json();
         console.log('🔍 Projects received:', projects);
+        
+        // Load tasks for each project to enable progress calculations
+        for (let project of projects) {
+            try {
+                const tasksResponse = await fetch(`/api/projects/tasks/${project.proj_id}`);
+                if (tasksResponse.ok) {
+                    project.tasks = await tasksResponse.json();
+                } else {
+                    project.tasks = [];
+                }
+            } catch (error) {
+                console.error(`❌ Error loading tasks for project ${project.proj_id}:`, error);
+                project.tasks = [];
+            }
+        }
         
         currentTeam.projects = projects;
         renderProjects();

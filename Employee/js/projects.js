@@ -643,8 +643,8 @@ function createTaskCard(task, onOpen) {
     return card;
 }
 
-// Create subtask card element
-async function createSubtaskCard(subtask) {
+// Create subtask card element - optimized version
+async function createSubtaskCard(subtask, attachments = null) {
     const card = document.createElement("div");
     card.classList.add("task-card");
     card.setAttribute("role", "listitem");
@@ -672,29 +672,34 @@ async function createSubtaskCard(subtask) {
         if (now > new Date(subtask.subtask_deadline)) status = 'Delayed';
     }
 
-    // Progress bar (optional)
-    let progress = subtask.progress || 0;
+    // Progress bar - show 100% if completed, otherwise use subtask progress
+    let progress = subtask.subtask_status === 2 ? 100 : (subtask.subtask_progress || 0);
 
     // Employee assignments
     let assignedEmployees = subtask.assigned_employees || 'Not assigned';
 
-    // Load attachments for this subtask
-    let attachments = [];
-    try {
-        console.log('🔍 Loading attachments for subtask card:', subtask.subtask_id);
-        const response = await fetch(`/api/projects/subtask-attachments/${subtask.subtask_id}`);
-        if (response.ok) {
-            attachments = await response.json();
-            console.log('🔍 Attachments for subtask card:', attachments.length, 'files');
+    // Use provided attachments or fetch if not provided
+    let subtaskAttachments = attachments;
+    if (!subtaskAttachments) {
+        try {
+            console.log('🔍 Loading attachments for subtask card:', subtask.subtask_id);
+            const response = await fetch(`/api/projects/subtask-attachments/${subtask.subtask_id}`);
+            if (response.ok) {
+                subtaskAttachments = await response.json();
+                console.log('🔍 Attachments for subtask card:', subtaskAttachments.length, 'files');
+            } else {
+                subtaskAttachments = [];
+            }
+        } catch (error) {
+            console.error('❌ Error loading attachments for subtask card:', error);
+            subtaskAttachments = [];
         }
-    } catch (error) {
-        console.error('❌ Error loading attachments for subtask card:', error);
     }
 
     // Attachments display
     let attachmentLinks = '';
-    if (attachments.length > 0) {
-        attachmentLinks = `<a href="#" class="download-all-attachments" style="font-size:1.1em;color:#7380ec;text-decoration:underline;cursor:pointer;" title="Download all attachments">${attachments.length} file${attachments.length > 1 ? 's' : ''} attached <span class="material-icons-sharp" style="font-size:1em;vertical-align:middle;">download</span></a>`;
+    if (subtaskAttachments && subtaskAttachments.length > 0) {
+        attachmentLinks = `<a href="#" class="download-all-attachments" style="font-size:1.1em;color:#7380ec;text-decoration:underline;cursor:pointer;" title="Download all attachments">${subtaskAttachments.length} file${subtaskAttachments.length > 1 ? 's' : ''} attached <span class="material-icons-sharp" style="font-size:1em;vertical-align:middle;">download</span></a>`;
     }
 
     card.innerHTML = `
@@ -720,7 +725,7 @@ async function createSubtaskCard(subtask) {
                 ${attachmentLinks ? `<div style="font-size:0.97em;color:#7d8da1;margin-bottom:0.3em;"><b>Admin Attachments:</b> ${attachmentLinks}</div>` : ''}
                 <div style="display:flex;flex-direction:column;align-items:flex-start;">
                     <div class="progress-bar" style="background:#eee;border-radius:8px;height:10px;width:100%;margin:0.3rem 0 0.3rem 0;">
-                        <div style="width:${progress}%;background:#7380ec;height:100%;border-radius:8px;transition:width 0.3s;"></div>
+                        <div style="width:${progress}%;background:${progress === 100 ? '#28a745' : '#7380ec'};height:100%;border-radius:8px;transition:width 0.3s;"></div>
                     </div>
                 </div>
                 <div style="display:flex;justify-content:space-between;align-items:center;margin-top:0.3em;">
@@ -733,9 +738,6 @@ async function createSubtaskCard(subtask) {
                 </div>
                 ${status !== 'Completed' ? `
                 <div style="margin-top:0.8rem;display:flex;gap:0.5rem;flex-wrap:wrap;">
-                    <button class="upload-work-btn" style="background:#7380ec;color:white;border:none;padding:0.4rem 0.8rem;border-radius:0.3rem;font-size:0.9em;cursor:pointer;">
-                        <span class="material-icons-sharp" style="font-size:1em;vertical-align:middle;">upload</span> Upload Work
-                    </button>
                     <button class="submit-subtask-btn" style="background:#28a745;color:white;border:none;padding:0.4rem 0.8rem;border-radius:0.3rem;font-size:0.9em;cursor:pointer;">
                         <span class="material-icons-sharp" style="font-size:1em;vertical-align:middle;">check</span> Submit Complete
                     </button>
@@ -757,12 +759,7 @@ async function createSubtaskCard(subtask) {
         });
     }
 
-    // Remove this from inside the function:
-    // document.addEventListener("click", () => {
-    //     dropdown.classList.remove("show");
-    // });
-
-    // Instead, add this ONCE after all card functions, outside any function:
+    // Global dropdown handler (only add once)
     if (!window._dropdownGlobalHandlerAdded) {
         document.addEventListener("click", function (e) {
             document.querySelectorAll(".dropdown-menu").forEach(menu => {
@@ -784,13 +781,13 @@ async function createSubtaskCard(subtask) {
     }
 
     // Download all attachments handler (works for 1 or more files)
-    if (attachments.length > 0) {
+    if (subtaskAttachments && subtaskAttachments.length > 0) {
         const downloadLink = card.querySelector('.download-all-attachments');
         if (downloadLink) {
             downloadLink.addEventListener('click', function (e) {
                 e.preventDefault();
                 e.stopPropagation();
-                attachments.forEach(attachment => {
+                subtaskAttachments.forEach(attachment => {
                     const a = document.createElement('a');
                     a.href = attachment.subatt_file_path;
                     a.download = attachment.subatt_file_name;
@@ -801,16 +798,6 @@ async function createSubtaskCard(subtask) {
                 });
             });
         }
-    }
-
-    // Upload work button handler
-    const uploadWorkBtn = card.querySelector('.upload-work-btn');
-    if (uploadWorkBtn) {
-        uploadWorkBtn.addEventListener('click', function (e) {
-            e.preventDefault();
-            e.stopPropagation();
-            showSubtaskUploadModal(subtask);
-        });
     }
 
     // Submit subtask button handler
@@ -925,6 +912,8 @@ async function loadTasksForCurrentProject() {
 // Load subtasks for current task
 async function loadSubtasksForCurrentTask() {
     if (currentTask) {
+        // Clear cache when reloading to ensure fresh data
+        clearSubtaskAttachmentsCache();
         await renderSubtasks();
     }
 }
@@ -949,7 +938,10 @@ async function loadSubtasksByTask(taskId) {
     }
 }
 
-// Render subtasks list view
+// Cache for subtask attachments to prevent redundant API calls
+const subtaskAttachmentsCache = new Map();
+
+// Render subtasks list view - optimized version with caching
 async function renderSubtasks() {
     sectionTitle.textContent = "Subtasks";
     projectsView.hidden = true;
@@ -957,7 +949,6 @@ async function renderSubtasks() {
     subtasksView.hidden = false;
     breadcrumb.hidden = false;
     createSubtaskBtn.hidden = true; // Employees can't create subtasks
-    // createSubtaskBtn.onclick = () => showModal('subtask');
 
     // Breadcrumb
     breadcrumbProject.textContent = currentProject.proj_name;
@@ -983,10 +974,50 @@ async function renderSubtasks() {
     const subtasks = await loadSubtasksByTask(currentTask.task_id);
     currentTask.subtasks = subtasks;
 
+    // Batch load attachments for all subtasks to avoid redundant API calls
+    const attachmentsMap = new Map();
+    if (subtasks && subtasks.length > 0) {
+        console.log('🔍 Batch loading attachments for', subtasks.length, 'subtasks');
+        
+        // Load attachments for all subtasks in parallel, using cache when available
+        const attachmentPromises = subtasks.map(async (subtask) => {
+            const cacheKey = `${subtask.subtask_id}`;
+            
+            // Check cache first
+            if (subtaskAttachmentsCache.has(cacheKey)) {
+                console.log('🔍 Using cached attachments for subtask:', subtask.subtask_id);
+                return { subtaskId: subtask.subtask_id, attachments: subtaskAttachmentsCache.get(cacheKey) };
+            }
+            
+            try {
+                const response = await fetch(`/api/projects/subtask-attachments/${subtask.subtask_id}`);
+                if (response.ok) {
+                    const attachments = await response.json();
+                    // Cache the result
+                    subtaskAttachmentsCache.set(cacheKey, attachments);
+                    return { subtaskId: subtask.subtask_id, attachments };
+                }
+            } catch (error) {
+                console.error('❌ Error loading attachments for subtask:', subtask.subtask_id, error);
+            }
+            return { subtaskId: subtask.subtask_id, attachments: [] };
+        });
+
+        const attachmentResults = await Promise.all(attachmentPromises);
+        
+        // Create a map for quick lookup
+        attachmentResults.forEach(result => {
+            attachmentsMap.set(result.subtaskId, result.attachments);
+        });
+        
+        console.log('🔍 Batch loaded attachments for', attachmentResults.length, 'subtasks');
+    }
+
     // Show subtasks for current task
     subtaskCardsContainer.innerHTML = "";
     for (const subtask of (currentTask.subtasks || [])) {
-        const card = await createSubtaskCard(subtask);
+        const attachments = attachmentsMap.get(subtask.subtask_id) || [];
+        const card = await createSubtaskCard(subtask, attachments);
         subtaskCardsContainer.appendChild(card);
     }
 }
@@ -3005,5 +3036,18 @@ function showSubtaskSubmissionModal(subtask) {
             showNotification('Failed to submit subtask. Please try again.', 'error');
         }
     };
+}
+
+// Function to clear subtask attachments cache
+function clearSubtaskAttachmentsCache(subtaskId = null) {
+    if (subtaskId) {
+        // Clear cache for specific subtask
+        subtaskAttachmentsCache.delete(`${subtaskId}`);
+        console.log('🔍 Cleared cache for subtask:', subtaskId);
+    } else {
+        // Clear entire cache
+        subtaskAttachmentsCache.clear();
+        console.log('🔍 Cleared entire subtask attachments cache');
+    }
 }
 

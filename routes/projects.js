@@ -109,6 +109,85 @@ async function updateProjectsTable() {
     }
 }
 
+// Fix foreign key constraints for existing tables
+async function fixForeignKeyConstraints() {
+    try {
+        // 1. Find and drop wrong constraint for subtask_assignment
+        const [subtaskAssignmentConstraints] = await db.query(`
+            SELECT CONSTRAINT_NAME 
+            FROM information_schema.KEY_COLUMN_USAGE 
+            WHERE TABLE_SCHEMA = DATABASE() 
+              AND TABLE_NAME = 'subtask_assignment' 
+              AND COLUMN_NAME = 'employee_id' 
+              AND REFERENCED_COLUMN_NAME = 'emp_id'
+        `);
+        for (const row of subtaskAssignmentConstraints) {
+            try {
+                await db.query(`ALTER TABLE subtask_assignment DROP FOREIGN KEY ${row.CONSTRAINT_NAME}`);
+                console.log(`Dropped constraint: ${row.CONSTRAINT_NAME}`);
+            } catch (dropError) {
+                console.log(`Could not drop constraint ${row.CONSTRAINT_NAME}:`, dropError.message);
+            }
+        }
+        
+        // 2. Add correct constraint for subtask_assignment (if not exists)
+        const [existingAssignment] = await db.query(`
+            SELECT * FROM information_schema.KEY_COLUMN_USAGE 
+            WHERE TABLE_SCHEMA = DATABASE() 
+              AND TABLE_NAME = 'subtask_assignment' 
+              AND COLUMN_NAME = 'employee_id' 
+              AND REFERENCED_COLUMN_NAME = 'emp_user_id'
+        `);
+        if (existingAssignment.length === 0) {
+            try {
+                await db.query(`ALTER TABLE subtask_assignment ADD CONSTRAINT subtask_assignment_employee_fk FOREIGN KEY (employee_id) REFERENCES employees(emp_user_id) ON DELETE CASCADE`);
+                console.log("Added subtask_assignment employee foreign key constraint");
+            } catch (addError) {
+                console.log("Could not add subtask_assignment employee foreign key constraint:", addError.message);
+            }
+        }
+        
+        // 3. Find and drop wrong constraint for subtask_attachment
+        const [subtaskAttachmentConstraints] = await db.query(`
+            SELECT CONSTRAINT_NAME 
+            FROM information_schema.KEY_COLUMN_USAGE 
+            WHERE TABLE_SCHEMA = DATABASE() 
+              AND TABLE_NAME = 'subtask_attachment' 
+              AND COLUMN_NAME = 'subatt_uploaded_by' 
+              AND REFERENCED_COLUMN_NAME = 'emp_id'
+        `);
+        for (const row of subtaskAttachmentConstraints) {
+            try {
+                await db.query(`ALTER TABLE subtask_attachment DROP FOREIGN KEY ${row.CONSTRAINT_NAME}`);
+                console.log(`Dropped constraint: ${row.CONSTRAINT_NAME}`);
+            } catch (dropError) {
+                console.log(`Could not drop constraint ${row.CONSTRAINT_NAME}:`, dropError.message);
+            }
+        }
+        
+        // 4. Add correct constraint for subtask_attachment (if not exists)
+        const [existingAttachment] = await db.query(`
+            SELECT * FROM information_schema.KEY_COLUMN_USAGE 
+            WHERE TABLE_SCHEMA = DATABASE() 
+              AND TABLE_NAME = 'subtask_attachment' 
+              AND COLUMN_NAME = 'subatt_uploaded_by' 
+              AND REFERENCED_COLUMN_NAME = 'emp_user_id'
+        `);
+        if (existingAttachment.length === 0) {
+            try {
+                await db.query(`ALTER TABLE subtask_attachment ADD CONSTRAINT fk_subatt_employee FOREIGN KEY (subatt_uploaded_by) REFERENCES employees(emp_user_id) ON DELETE SET NULL`);
+                console.log("Added subtask_attachment employee foreign key constraint");
+            } catch (addError) {
+                console.log("Could not add subtask_attachment employee foreign key constraint:", addError.message);
+            }
+        }
+        
+        console.log("Foreign key constraints fixed");
+    } catch (err) {
+        console.error("Error fixing foreign key constraints:", err);
+    }
+}
+
 // Create subtask_assignment table if it doesn't exist
 async function createSubtaskAssignmentTable() {
     try {
@@ -119,10 +198,22 @@ async function createSubtaskAssignmentTable() {
                 employee_id VARCHAR(50),
                 subass_assigned_at DATETIME DEFAULT CURRENT_TIMESTAMP,
                 subass_updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-                FOREIGN KEY (subtask_id) REFERENCES subtasks(subtask_id) ON DELETE CASCADE,
-                FOREIGN KEY (employee_id) REFERENCES employees(emp_user_id) ON DELETE CASCADE
+                FOREIGN KEY (subtask_id) REFERENCES subtasks(subtask_id) ON DELETE CASCADE
             )
         `);
+        
+        // Add foreign key constraint separately to avoid data type issues
+        try {
+            await db.query(`
+                ALTER TABLE subtask_assignment 
+                ADD CONSTRAINT subtask_assignment_employee_fk 
+                FOREIGN KEY (employee_id) REFERENCES employees(emp_user_id) ON DELETE CASCADE
+            `);
+        } catch (fkError) {
+            // If constraint already exists or fails, ignore
+            console.log("Foreign key constraint for employee_id already exists or failed to add");
+        }
+        
         console.log("Subtask assignment table ready");
     } catch (error) {
         console.error("Error creating subtask_assignment table:", error);
@@ -142,10 +233,22 @@ async function createSubtaskAttachmentTable() {
                 subatt_uploaded_by VARCHAR(50),
                 subatt_created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
                 subatt_updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-                FOREIGN KEY (subatt_subtask_id) REFERENCES subtasks(subtask_id) ON DELETE CASCADE,
-                FOREIGN KEY (subatt_uploaded_by) REFERENCES employees(emp_user_id) ON DELETE SET NULL
+                FOREIGN KEY (subatt_subtask_id) REFERENCES subtasks(subtask_id) ON DELETE CASCADE
             )
         `);
+        
+        // Add foreign key constraint separately to avoid data type issues
+        try {
+            await db.query(`
+                ALTER TABLE subtask_attachment 
+                ADD CONSTRAINT fk_subatt_employee 
+                FOREIGN KEY (subatt_uploaded_by) REFERENCES employees(emp_user_id) ON DELETE SET NULL
+            `);
+        } catch (fkError) {
+            // If constraint already exists or fails, ignore
+            console.log("Foreign key constraint for subatt_uploaded_by already exists or failed to add");
+        }
+        
         console.log("Subtask attachment table ready");
     } catch (error) {
         console.error("Error creating subtask_attachment table:", error);
@@ -347,6 +450,10 @@ async function initializeTables() {
         
         await createSubtaskAttachmentTable();
         console.log("Subtask attachment table ready");
+        
+        // Fix foreign key constraints for existing tables
+        await fixForeignKeyConstraints();
+        console.log("Foreign key constraints fixed");
         
         console.log("All tables initialized successfully");
     } catch (error) {
@@ -695,6 +802,13 @@ router.post("/create-task", async (req, res) => {
 
         const taskId = result.insertId;
 
+        // After task is created, notify the assigned employee
+        await addNotification({
+            user_id: employee.emp_user_id,
+            type: 'task_assigned',
+            message: `New Task assigned: ${task_name}. Tap to view.`,
+            link: `/Employee/projects.html?task_id=${taskId}`
+        });
         // Fetch the created task with employee details
         const [taskRows] = await db.query(
             `SELECT t.*, 
@@ -882,13 +996,26 @@ router.post("/create-subtask", upload.array('attachments'), async (req, res) => 
             }
         }
 
+        // After subtask is created, notify all assigned employees
+        for (const empId of employeeIdsArray) {
+            // Get emp_user_id for notification
+            const [empRows] = await db.query("SELECT emp_user_id FROM employees WHERE emp_user_id = ?", [empId]);
+            if (empRows.length > 0) {
+                await addNotification({
+                    user_id: empRows[0].emp_user_id,
+                    type: 'subtask_assigned',
+                    message: `New Subtask assigned: ${subtask_name}. Tap to view.`,
+                    link: `/Employee/projects.html?subtask_id=${subtask_id}`
+                });
+            }
+        }
         // Fetch the created subtask with employee details
         const [subtaskRows] = await db.query(
             `SELECT s.*, 
                     GROUP_CONCAT(CONCAT(e.emp_first_name, ' ', e.emp_last_name, ' (', e.emp_user_id, ')') SEPARATOR ', ') as assigned_employees
              FROM subtasks s 
              LEFT JOIN subtask_assignment sa ON s.subtask_id = sa.subtask_id
-             LEFT JOIN employees e ON sa.employee_id = e.emp_id
+             LEFT JOIN employees e ON sa.employee_id = e.emp_user_id
              WHERE s.subtask_id = ?
              GROUP BY s.subtask_id`,
             [subtask_id]
@@ -927,7 +1054,7 @@ router.get("/subtasks/:task_id", async (req, res) => {
                     GROUP_CONCAT(CONCAT(e.emp_first_name, ' ', e.emp_last_name, ' (', e.emp_user_id, ')') SEPARATOR ', ') as assigned_employees
              FROM subtasks s 
              LEFT JOIN subtask_assignment sa ON s.subtask_id = sa.subtask_id
-             LEFT JOIN employees e ON (sa.employee_id = e.emp_id OR s.employee_id = e.emp_id)
+             LEFT JOIN employees e ON (sa.employee_id = e.emp_user_id OR s.employee_id = e.emp_user_id)
              WHERE s.task_id = ?
              GROUP BY s.subtask_id
              ORDER BY s.subtask_created_at DESC`,
@@ -1415,6 +1542,17 @@ router.delete("/delete-subtask/:subtask_id", express.json(), async (req, res) =>
         // Delete subtask from database
         await db.query("DELETE FROM subtasks WHERE subtask_id = ?", [subtask_id]);
 
+        // After marking subtask as complete, notify the admin/manager
+        // Get admin_user_id (team_created_by) and employee name
+        const adminUserId = subtask.team_created_by;
+        const employeeName = `${adminRows[0].emp_first_name} ${adminRows[0].emp_last_name}`;
+        await addNotification({
+            user_id: adminUserId,
+            type: 'subtask_completed',
+            message: `${employeeName} completed the subtask: ${subtask.subtask_name}. Tap to view.`,
+            link: `/Admin/projects.html?subtask_id=${subtask_id}`
+        });
+
         res.json({ success: true, message: "Subtask and all associated data deleted successfully" });
     } catch (error) {
         console.error("Subtask deletion error:", error);
@@ -1704,46 +1842,6 @@ router.post("/employee/upload-attachment/:subtask_id", upload.array('attachments
     }
 });
 
-/**
- * ✅ GET /api/projects/employee/notifications/:employee_id
- * Get notifications for employee (new tasks, etc.)
- */
-router.get("/employee/notifications/:employee_id", async (req, res) => {
-    const { employee_id } = req.params;
-    
-    try {
-        // Get employee details
-        const [empRows] = await db.query(
-            "SELECT emp_id, emp_user_id FROM employees WHERE emp_user_id = ?",
-            [employee_id]
-        );
-        
-        if (empRows.length === 0) {
-            return res.status(404).json({ error: "Employee not found" });
-        }
-        
-        const employee = empRows[0];
-        
-        // Get recent subtask assignments (last 7 days)
-        const [notifications] = await db.query(
-            `SELECT sa.*, s.subtask_name, s.subtask_description, t.task_name, p.proj_name, tm.team_name
-             FROM subtask_assignment sa
-             JOIN subtasks s ON sa.subtask_id = s.subtask_id
-             JOIN tasks t ON s.task_id = t.task_id
-             JOIN projects p ON t.task_project_id = p.proj_id
-             JOIN teams tm ON p.team_id = tm.team_id
-             WHERE sa.employee_id = ? AND sa.subass_assigned_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)
-             ORDER BY sa.subass_assigned_at DESC`,
-            [employee.emp_id]
-        );
-        
-        res.json(notifications);
-    } catch (error) {
-        console.error("Employee notifications error:", error);
-        res.status(500).json({ error: "Failed to fetch notifications" });
-    }
-});
-
 // Helper function to update task progress
 async function updateTaskProgress(taskId) {
     try {
@@ -1822,6 +1920,99 @@ router.get("/test-tables", async (req, res) => {
         });
     } catch (error) {
         res.status(500).json({ error: "Failed to check tables", details: error.message });
+    }
+});
+
+// --- Notification helpers ---
+const dbPool = require('../db');
+
+async function addNotification({ user_id, type, message, link }) {
+    await dbPool.query(
+        `INSERT INTO notifications (user_id, type, message, link) VALUES (?, ?, ?, ?)`,
+        [user_id, type, message, link]
+    );
+}
+
+// --- Notification endpoints ---
+router.get('/notifications/:user_id', async (req, res) => {
+    const { user_id } = req.params;
+    try {
+        const [rows] = await dbPool.query(
+            `SELECT * FROM notifications WHERE user_id = ? ORDER BY created_at DESC`,
+            [user_id]
+        );
+        res.json(rows);
+    } catch (error) {
+        console.error('Notification fetch error:', error);
+        res.status(500).json({ error: 'Failed to fetch notifications' });
+    }
+});
+
+router.post('/notifications/mark-read/:notification_id', async (req, res) => {
+    const { notification_id } = req.params;
+    try {
+        await dbPool.query(
+            `UPDATE notifications SET is_read = TRUE WHERE id = ?`,
+            [notification_id]
+        );
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Notification mark-read error:', error);
+        res.status(500).json({ error: 'Failed to mark notification as read' });
+    }
+});
+
+// --- Employee submits a task ---
+router.post('/submit-task', async (req, res) => {
+    const { task_id, completion_feedback, employee_id } = req.body;
+    try {
+        // Validate employee
+        const [empRows] = await db.query(
+            "SELECT emp_id, emp_user_id, emp_first_name, emp_last_name FROM employees WHERE emp_user_id = ?",
+            [employee_id]
+        );
+        if (empRows.length === 0) {
+            return res.status(404).json({ success: false, error: "Employee not found" });
+        }
+        const employee = empRows[0];
+
+        // Validate task and get project/team info
+        const [taskRows] = await db.query(
+            `SELECT t.*, p.proj_name, p.team_id, tm.team_name, tm.team_created_by 
+             FROM tasks t 
+             JOIN projects p ON t.task_project_id = p.proj_id 
+             JOIN teams tm ON p.team_id = tm.team_id 
+             WHERE t.task_id = ?`,
+            [task_id]
+        );
+        if (taskRows.length === 0) {
+            return res.status(404).json({ success: false, error: "Task not found" });
+        }
+        const task = taskRows[0];
+
+        // Mark task as completed
+        await db.query(
+            `UPDATE tasks SET task_status = 2, task_progress = 100, task_completion_feedback = ?, task_completed_at = NOW(), task_updated_at = NOW() WHERE task_id = ?`,
+            [completion_feedback, task_id]
+        );
+
+        // Update project progress
+        await updateTaskProgress(task_id);
+
+        // Notify admin/manager
+        const adminUserId = task.team_created_by;
+        const employeeName = `${employee.emp_first_name} ${employee.emp_last_name}`;
+        await addNotification({
+            user_id: adminUserId,
+            type: 'task_completed',
+            message: `${employeeName} completed the task: ${task.task_name}. Tap to view.`,
+            link: `/Admin/projects.html?task_id=${task_id}`
+        });
+
+        res.json({ success: true, message: "Task submitted and marked as complete." });
+    } catch (error) {
+        console.error("Task submission error:", error);
+        res.status(500).json({ success: false, error: "Internal server error" });
     }
 });
 
