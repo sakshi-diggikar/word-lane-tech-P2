@@ -116,8 +116,15 @@
             <!-- Subtask list view container - initially hidden -->
             <section hidden="" id="subtasks-view">
                 <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                    <button aria-label="Back to sub-projects list" hidden="" id="back-subproject-btn"
+                        title="Back to Sub-Projects">
+                        <span class="material-icons-sharp"> arrow_back </span> Back to Sub Projects
+                    </button>
                     <button aria-label="Back to tasks list" id="back-tasks-btn" title="Back to Tasks">
                         <span class="material-icons-sharp"> arrow_back </span> Back to Tasks
+                    </button>
+                    <button id="create-subtask-btn" style="background:#7380ec;color:white;border:none;padding:0.5rem 1rem;border-radius:0.3rem;cursor:pointer;">
+                        <span class="material-icons-sharp">add</span> Create Subtask
                     </button>
                     <h2 id="subtask-project-title" style="margin: 0; user-select: text;">Subtasks</h2>
                 </div>

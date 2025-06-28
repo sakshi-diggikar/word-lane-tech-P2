@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Session Check</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .status { padding: 10px; margin: 10px 0; border-radius: 5px; }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .info { background: #d1ecf1; color: #0c5460; }
+    </style>
+</head>
+<body>
+    <h1>Session Storage Check</h1>
+    <div id="status"></div>
+    
+    <script>
+        function checkSession() {
+            const emp_user_id = sessionStorage.getItem("emp_user_id");
+            const statusDiv = document.getElementById('status');
+            
+            if (emp_user_id) {
+                statusDiv.innerHTML = `
+                    <div class="status success">
+                        ✅ Session found! Employee ID: ${emp_user_id}
+                    </div>
+                    <div class="status info">
+                        You can now access the projects page: 
+                        <a href="/Employee/projects.html">Employee Projects</a>
+                    </div>
+                `;
+            } else {
+                statusDiv.innerHTML = `
+                    <div class="status error">
+                        ❌ No session found! Please login first.
+                    </div>
+                    <div class="status info">
+                        <a href="/login.html">Go to Login Page</a>
+                    </div>
+                `;
+            }
+        }
+        
+        // Check on page load
+        checkSession();
+        
+        // Also log to console
+        console.log('Session storage check:', {
+            emp_user_id: sessionStorage.getItem("emp_user_id"),
+            allKeys: Object.keys(sessionStorage)
+        });
+    </script>
+</body>
+</html> 

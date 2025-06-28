@@ -35,7 +35,6 @@ async function createProgressLevelsTable() {
                 )
             `);
         }
-        
         // Insert default progress levels if they don't exist
         const [existingLevels] = await db.query("SELECT COUNT(*) as count FROM progress_levels");
         if (existingLevels[0].count === 0) {
@@ -55,7 +54,6 @@ async function createProgressLevelsTable() {
         console.error("Error creating progress_levels table:", error);
     }
 }
-
 // Create teams table if it doesn't exist
 async function createTeamsTable() {
     try {
@@ -80,19 +78,34 @@ async function createTeamsTable() {
 
 // Update projects table to include team_id if it doesn't exist
 async function updateProjectsTable() {
-    try {
-        // Check if team_id column exists
-        const [columns] = await db.query("SHOW COLUMNS FROM projects LIKE 'team_id'");
-        if (columns.length === 0) {
-            await db.query(`
-                ALTER TABLE projects 
-                ADD COLUMN team_id INT,
-                ADD FOREIGN KEY (team_id) REFERENCES teams(team_id) ON DELETE SET NULL
-            `);
-            console.log("Projects table updated with team_id");
+    const maxRetries = 3;
+    let retryCount = 0;
+    
+    while (retryCount < maxRetries) {
+        try {
+            // Check if team_id column exists
+            const [columns] = await db.query("SHOW COLUMNS FROM projects LIKE 'team_id'");
+            if (columns.length === 0) {
+                await db.query(`
+                    ALTER TABLE projects 
+                    ADD COLUMN team_id INT,
+                    ADD FOREIGN KEY (team_id) REFERENCES teams(team_id) ON DELETE SET NULL
+                `);
+                console.log("Projects table updated with team_id");
+            }
+            break; // Success, exit retry loop
+        } catch (error) {
+            retryCount++;
+            if (error.code === 'ER_LOCK_DEADLOCK' && retryCount < maxRetries) {
+                console.log(`Deadlock detected on projects table update, retrying (${retryCount}/${maxRetries})...`);
+                // Wait before retrying (exponential backoff)
+                await new Promise(resolve => setTimeout(resolve, 1000 * retryCount));
+                continue;
+            } else {
+                console.error("Error updating projects table:", error);
+                break;
+            }
         }
-    } catch (error) {
-        console.error("Error updating projects table:", error);
     }
 }
 
@@ -103,11 +116,11 @@ async function createSubtaskAssignmentTable() {
             CREATE TABLE IF NOT EXISTS subtask_assignment (
                 subass_id INT AUTO_INCREMENT PRIMARY KEY,
                 subtask_id INT,
-                employee_id INT,
+                employee_id VARCHAR(50),
                 subass_assigned_at DATETIME DEFAULT CURRENT_TIMESTAMP,
                 subass_updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
                 FOREIGN KEY (subtask_id) REFERENCES subtasks(subtask_id) ON DELETE CASCADE,
-                FOREIGN KEY (employee_id) REFERENCES employees(emp_id) ON DELETE CASCADE
+                FOREIGN KEY (employee_id) REFERENCES employees(emp_user_id) ON DELETE CASCADE
             )
         `);
         console.log("Subtask assignment table ready");
@@ -126,11 +139,11 @@ async function createSubtaskAttachmentTable() {
                 subatt_file_name VARCHAR(255),
                 subatt_file_type VARCHAR(100),
                 subatt_file_path TEXT,
-                subatt_uploaded_by INT,
+                subatt_uploaded_by VARCHAR(50),
                 subatt_created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
                 subatt_updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
                 FOREIGN KEY (subatt_subtask_id) REFERENCES subtasks(subtask_id) ON DELETE CASCADE,
-                FOREIGN KEY (subatt_uploaded_by) REFERENCES employees(emp_id) ON DELETE SET NULL
+                FOREIGN KEY (subatt_uploaded_by) REFERENCES employees(emp_user_id) ON DELETE SET NULL
             )
         `);
         console.log("Subtask attachment table ready");
@@ -148,14 +161,14 @@ async function createSubtasksTable() {
                 subtask_name VARCHAR(50),
                 subtask_description VARCHAR(255),
                 task_id INT,
-                employee_id INT,
+                employee_id VARCHAR(50),
                 subtask_status INT DEFAULT 1,
                 subtask_priority VARCHAR(20) DEFAULT 'Medium',
                 subtask_deadline DATETIME,
                 subtask_created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
                 subtask_updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
                 FOREIGN KEY (task_id) REFERENCES tasks(task_id) ON DELETE CASCADE,
-                FOREIGN KEY (employee_id) REFERENCES employees(emp_id) ON DELETE SET NULL,
+                FOREIGN KEY (employee_id) REFERENCES employees(emp_user_id) ON DELETE SET NULL,
                 FOREIGN KEY (subtask_status) REFERENCES progress_levels(progress_id) ON DELETE SET NULL
             )
         `);
@@ -167,39 +180,182 @@ async function createSubtasksTable() {
 
 // Update subtasks table to include priority and deadline if they don't exist
 async function updateSubtasksTable() {
-    try {
-        // Check if subtask_priority column exists
-        const [priorityColumns] = await db.query("SHOW COLUMNS FROM subtasks LIKE 'subtask_priority'");
-        if (priorityColumns.length === 0) {
-            await db.query(`
-                ALTER TABLE subtasks 
-                ADD COLUMN subtask_priority VARCHAR(20) DEFAULT 'Medium'
-            `);
-            console.log("Subtasks table updated with subtask_priority column");
+    const maxRetries = 3;
+    let retryCount = 0;
+    
+    while (retryCount < maxRetries) {
+        try {
+            // Check if subtask_priority column exists
+            const [priorityColumns] = await db.query("SHOW COLUMNS FROM subtasks LIKE 'subtask_priority'");
+            if (priorityColumns.length === 0) {
+                await db.query(`
+                    ALTER TABLE subtasks 
+                    ADD COLUMN subtask_priority VARCHAR(20) DEFAULT 'Medium'
+                `);
+                console.log("Subtasks table updated with subtask_priority column");
+            }
+            
+            // Check if subtask_deadline column exists
+            const [deadlineColumns] = await db.query("SHOW COLUMNS FROM subtasks LIKE 'subtask_deadline'");
+            if (deadlineColumns.length === 0) {
+                await db.query(`
+                    ALTER TABLE subtasks 
+                    ADD COLUMN subtask_deadline DATETIME
+                `);
+                console.log("Subtasks table updated with subtask_deadline column");
+            }
+
+            // Check if subtask_progress column exists
+            const [progressColumns] = await db.query("SHOW COLUMNS FROM subtasks LIKE 'subtask_progress'");
+            if (progressColumns.length === 0) {
+                await db.query(`
+                    ALTER TABLE subtasks 
+                    ADD COLUMN subtask_progress INT DEFAULT 0
+                `);
+                console.log("Subtasks table updated with subtask_progress column");
+            }
+
+            // Check if subtask_completion_feedback column exists
+            const [feedbackColumns] = await db.query("SHOW COLUMNS FROM subtasks LIKE 'subtask_completion_feedback'");
+            if (feedbackColumns.length === 0) {
+                await db.query(`
+                    ALTER TABLE subtasks 
+                    ADD COLUMN subtask_completion_feedback TEXT
+                `);
+                console.log("Subtasks table updated with subtask_completion_feedback column");
+            }
+
+            // Check if subtask_completed_at column exists
+            const [completedAtColumns] = await db.query("SHOW COLUMNS FROM subtasks LIKE 'subtask_completed_at'");
+            if (completedAtColumns.length === 0) {
+                await db.query(`
+                    ALTER TABLE subtasks 
+                    ADD COLUMN subtask_completed_at DATETIME
+                `);
+                console.log("Subtasks table updated with subtask_completed_at column");
+            }
+            
+            break; // Success, exit retry loop
+        } catch (error) {
+            retryCount++;
+            if (error.code === 'ER_LOCK_DEADLOCK' && retryCount < maxRetries) {
+                console.log(`Deadlock detected on subtasks table update, retrying (${retryCount}/${maxRetries})...`);
+                // Wait before retrying (exponential backoff)
+                await new Promise(resolve => setTimeout(resolve, 1000 * retryCount));
+                continue;
+            } else {
+                console.error("Error updating subtasks table:", error);
+                break;
+            }
         }
-        
-        // Check if subtask_deadline column exists
-        const [deadlineColumns] = await db.query("SHOW COLUMNS FROM subtasks LIKE 'subtask_deadline'");
-        if (deadlineColumns.length === 0) {
-            await db.query(`
-                ALTER TABLE subtasks 
-                ADD COLUMN subtask_deadline DATETIME
-            `);
-            console.log("Subtasks table updated with subtask_deadline column");
-        }
-    } catch (error) {
-        console.error("Error updating subtasks table:", error);
     }
 }
 
-// Initialize tables
-createProgressLevelsTable();
-createTeamsTable();
-updateProjectsTable();
-createSubtasksTable();
-updateSubtasksTable();
-createSubtaskAssignmentTable();
-createSubtaskAttachmentTable();
+// Update tasks table to include progress column if it doesn't exist
+async function updateTasksTable() {
+    const maxRetries = 3;
+    let retryCount = 0;
+    
+    while (retryCount < maxRetries) {
+        try {
+            // Check if task_progress column exists
+            const [progressColumns] = await db.query("SHOW COLUMNS FROM tasks LIKE 'task_progress'");
+            if (progressColumns.length === 0) {
+                await db.query(`
+                    ALTER TABLE tasks 
+                    ADD COLUMN task_progress INT DEFAULT 0
+                `);
+                console.log("Tasks table updated with task_progress column");
+            }
+            break; // Success, exit retry loop
+        } catch (error) {
+            retryCount++;
+            if (error.code === 'ER_LOCK_DEADLOCK' && retryCount < maxRetries) {
+                console.log(`Deadlock detected on tasks table update, retrying (${retryCount}/${maxRetries})...`);
+                // Wait before retrying (exponential backoff)
+                await new Promise(resolve => setTimeout(resolve, 1000 * retryCount));
+                continue;
+            } else {
+                console.error("Error updating tasks table:", error);
+                break;
+            }
+        }
+    }
+}
+
+// Update projects table to include progress column if it doesn't exist
+async function updateProjectsTableProgress() {
+    const maxRetries = 3;
+    let retryCount = 0;
+    
+    while (retryCount < maxRetries) {
+        try {
+            // Check if proj_progress column exists
+            const [progressColumns] = await db.query("SHOW COLUMNS FROM projects LIKE 'proj_progress'");
+            if (progressColumns.length === 0) {
+                await db.query(`
+                    ALTER TABLE projects 
+                    ADD COLUMN proj_progress INT DEFAULT 0
+                `);
+                console.log("Projects table updated with proj_progress column");
+            }
+            break; // Success, exit retry loop
+        } catch (error) {
+            retryCount++;
+            if (error.code === 'ER_LOCK_DEADLOCK' && retryCount < maxRetries) {
+                console.log(`Deadlock detected on projects table update, retrying (${retryCount}/${maxRetries})...`);
+                // Wait before retrying (exponential backoff)
+                await new Promise(resolve => setTimeout(resolve, 1000 * retryCount));
+                continue;
+            } else {
+                console.error("Error updating projects table:", error);
+                break;
+            }
+        }
+    }
+}
+
+// Sequential table initialization to avoid deadlocks
+async function initializeTables() {
+    console.log("Starting table initialization...");
+    
+    try {
+        // Initialize tables in sequence to avoid deadlocks
+        await createProgressLevelsTable();
+        console.log("Progress levels table ready");
+        
+        await createTeamsTable();
+        console.log("Teams table ready");
+        
+        await updateProjectsTable();
+        console.log("Projects table ready");
+        
+        await updateProjectsTableProgress();
+        console.log("Projects progress column ready");
+        
+        await createSubtasksTable();
+        console.log("Subtasks table ready");
+        
+        await updateSubtasksTable();
+        console.log("Subtasks columns updated");
+        
+        await updateTasksTable();
+        console.log("Tasks table ready");
+        
+        await createSubtaskAssignmentTable();
+        console.log("Subtask assignment table ready");
+        
+        await createSubtaskAttachmentTable();
+        console.log("Subtask attachment table ready");
+        
+        console.log("All tables initialized successfully");
+    } catch (error) {
+        console.error("Error during table initialization:", error);
+    }
+}
+
+// Initialize tables sequentially
+initializeTables();
 
 /**
  * ✅ POST /api/projects/create
@@ -545,7 +701,7 @@ router.post("/create-task", async (req, res) => {
                     CONCAT(e.emp_first_name, ' ', e.emp_last_name) as employee_name,
                     e.emp_user_id as employee_user_id
              FROM tasks t 
-             LEFT JOIN employees e ON t.task_employee_id = e.emp_id 
+             LEFT JOIN employees e ON t.task_employee_id = e.emp_user_id 
              WHERE t.task_id = ?`,
             [taskId]
         );
@@ -575,7 +731,7 @@ router.get("/tasks/:project_id", async (req, res) => {
                     CONCAT(e.emp_first_name, ' ', e.emp_last_name) as employee_name,
                     e.emp_user_id as employee_user_id
              FROM tasks t 
-             LEFT JOIN employees e ON t.task_employee_id = e.emp_id 
+             LEFT JOIN employees e ON t.task_employee_id = e.emp_user_id 
              WHERE t.task_project_id = ? 
              ORDER BY t.task_created_at DESC`,
             [project_id]
@@ -692,18 +848,13 @@ router.post("/create-subtask", upload.array('attachments'), async (req, res) => 
 
         // Insert employee assignments
         for (const empId of employeeIdsArray) {
-            const [empRows] = await db.query(
-                "SELECT emp_id FROM employees WHERE emp_user_id = ?",
-                [empId]
+            // Insert emp_user_id (string) directly, not emp_id (numeric)
+            await db.query(
+                `INSERT INTO subtask_assignment 
+                (subtask_id, employee_id, subass_assigned_at, subass_updated_at) 
+                VALUES (?, ?, NOW(), NOW())`,
+                [subtask_id, empId]
             );
-            if (empRows.length > 0) {
-                await db.query(
-                    `INSERT INTO subtask_assignment 
-                    (subtask_id, employee_id, subass_assigned_at, subass_updated_at) 
-                    VALUES (?, ?, NOW(), NOW())`,
-                    [subtask_id, empRows[0].emp_id]
-                );
-            }
         }
 
         // Upload files to S3 and store metadata
@@ -712,16 +863,12 @@ router.post("/create-subtask", upload.array('attachments'), async (req, res) => 
             try {
                 const s3Url = await uploadFileToS3(s3FolderPath, file);
                 
-                // Get the emp_id for the admin user
-                const [adminRows] = await db.query("SELECT emp_id FROM employees WHERE emp_user_id = ?", [admin_user_id]);
-                const adminEmpId = adminRows.length > 0 ? adminRows[0].emp_id : null;
-                
                 // Store file metadata in database
                 await db.query(
                     `INSERT INTO subtask_attachment 
                     (subatt_subtask_id, subatt_file_name, subatt_file_type, subatt_file_path, subatt_uploaded_by, subatt_created_at, subatt_updated_at) 
                     VALUES (?, ?, ?, ?, ?, NOW(), NOW())`,
-                    [subtask_id, file.originalname, file.mimetype, s3Url, adminEmpId]
+                    [subtask_id, file.originalname, file.mimetype, s3Url, admin_user_id]
                 );
 
                 uploadedFiles.push({
@@ -774,13 +921,14 @@ router.get("/subtasks/:task_id", async (req, res) => {
             return res.status(404).json({ error: "Task not found" });
         }
 
+        // Fetch ALL subtasks for this task (for admin/manager view)
         const [subtasks] = await db.query(
-            `SELECT s.*, 
-                    COALESCE(GROUP_CONCAT(CONCAT(e.emp_first_name, ' ', e.emp_last_name, ' (', e.emp_user_id, ')') SEPARATOR ', '), 'Not assigned') as assigned_employees
+            `SELECT DISTINCT s.*, 
+                    GROUP_CONCAT(CONCAT(e.emp_first_name, ' ', e.emp_last_name, ' (', e.emp_user_id, ')') SEPARATOR ', ') as assigned_employees
              FROM subtasks s 
              LEFT JOIN subtask_assignment sa ON s.subtask_id = sa.subtask_id
-             LEFT JOIN employees e ON sa.employee_id = e.emp_id
-             WHERE s.task_id = ? 
+             LEFT JOIN employees e ON (sa.employee_id = e.emp_id OR s.employee_id = e.emp_id)
+             WHERE s.task_id = ?
              GROUP BY s.subtask_id
              ORDER BY s.subtask_created_at DESC`,
             [task_id]
@@ -805,7 +953,7 @@ router.get("/subtask-attachments/:subtask_id", async (req, res) => {
             `SELECT sa.*, 
                     CONCAT(e.emp_first_name, ' ', e.emp_last_name) as uploaded_by_name
              FROM subtask_attachment sa 
-             LEFT JOIN employees e ON sa.subatt_uploaded_by = e.emp_id 
+             LEFT JOIN employees e ON sa.subatt_uploaded_by = e.emp_user_id 
              WHERE sa.subatt_subtask_id = ? 
              ORDER BY sa.subatt_created_at DESC`,
             [subtask_id]
@@ -854,16 +1002,12 @@ router.post("/upload-subtask-attachments", upload.array('attachments'), async (r
             try {
                 const s3Url = await uploadFileToS3(s3FolderPath, file);
                 
-                // Get the emp_id for the admin user
-                const [adminRows] = await db.query("SELECT emp_id FROM employees WHERE emp_user_id = ?", [admin_user_id]);
-                const adminEmpId = adminRows.length > 0 ? adminRows[0].emp_id : null;
-                
                 // Store file metadata in database
                 await db.query(
                     `INSERT INTO subtask_attachment 
                     (subatt_subtask_id, subatt_file_name, subatt_file_type, subatt_file_path, subatt_uploaded_by, subatt_created_at, subatt_updated_at) 
                     VALUES (?, ?, ?, ?, ?, NOW(), NOW())`,
-                    [subtask_id, file.originalname, file.mimetype, s3Url, adminEmpId]
+                    [subtask_id, file.originalname, file.mimetype, s3Url, admin_user_id]
                 );
 
                 uploadedFiles.push({
@@ -1277,6 +1421,379 @@ router.delete("/delete-subtask/:subtask_id", express.json(), async (req, res) =>
         res.status(500).json({ success: false, error: "Internal server error" });
     }
 });
+
+/**
+ * ✅ GET /api/projects/employee/teams/:employee_id
+ * Get teams where employee is assigned to tasks/subtasks
+ */
+router.get("/employee/teams/:employee_id", async (req, res) => {
+    const { employee_id } = req.params;
+    
+    console.log('🔍 Employee teams request for:', employee_id);
+    
+    try {
+        // Get employee details
+        const [empRows] = await db.query(
+            "SELECT emp_id, emp_user_id, emp_first_name, emp_last_name FROM employees WHERE emp_user_id = ?",
+            [employee_id]
+        );
+        
+        console.log('🔍 Employee query result:', empRows);
+        
+        if (empRows.length === 0) {
+            console.log('❌ Employee not found:', employee_id);
+            return res.status(404).json({ error: "Employee not found" });
+        }
+        
+        const employee = empRows[0];
+        console.log('🔍 Found employee:', employee);
+        
+        // Get teams where employee has tasks or subtasks
+        // Use emp_id (numeric) for assignments since that's how they're stored in the database
+        const [teams] = await db.query(
+            `SELECT DISTINCT tm.*, 
+                    COUNT(DISTINCT p.proj_id) as project_count,
+                    CONCAT(e.emp_first_name, ' ', e.emp_last_name) as leader_name
+             FROM teams tm
+             LEFT JOIN employees e ON tm.team_leader_id = e.emp_user_id
+             JOIN projects p ON tm.team_id = p.team_id
+             LEFT JOIN tasks t ON p.proj_id = t.task_project_id
+             LEFT JOIN subtasks s ON t.task_id = s.task_id
+             LEFT JOIN subtask_assignment sa ON s.subtask_id = sa.subtask_id
+             WHERE (t.task_employee_id = ? OR sa.employee_id = ? OR s.employee_id = ?)
+             GROUP BY tm.team_id
+             ORDER BY tm.team_created_at DESC`,
+            [employee.emp_id, employee.emp_id, employee.emp_id]
+        );
+        
+        console.log('🔍 Teams found for employee:', teams.length);
+        
+        res.json(teams);
+    } catch (error) {
+        console.error("Employee teams error:", error);
+        res.status(500).json({ error: "Failed to fetch employee teams" });
+    }
+});
+
+/**
+ * ✅ GET /api/projects/employee/projects/:team_id/:employee_id
+ * Get projects in a team where employee has tasks/subtasks
+ */
+router.get("/employee/projects/:team_id/:employee_id", async (req, res) => {
+    const { team_id, employee_id } = req.params;
+    
+    try {
+        // Get employee details
+        const [empRows] = await db.query(
+            "SELECT emp_id, emp_user_id FROM employees WHERE emp_user_id = ?",
+            [employee_id]
+        );
+        
+        if (empRows.length === 0) {
+            return res.status(404).json({ error: "Employee not found" });
+        }
+        
+        const employee = empRows[0];
+        
+        // Get projects where employee has tasks or subtasks
+        // Use emp_id (numeric) for assignments since that's how they're stored in the database
+        const [projects] = await db.query(
+            `SELECT DISTINCT p.*, 
+                    COUNT(DISTINCT t.task_id) as task_count
+             FROM projects p
+             JOIN tasks t ON p.proj_id = t.task_project_id
+             LEFT JOIN subtasks s ON t.task_id = s.task_id
+             LEFT JOIN subtask_assignment sa ON s.subtask_id = sa.subtask_id
+             WHERE p.team_id = ? AND (t.task_employee_id = ? OR sa.employee_id = ? OR s.employee_id = ?)
+             GROUP BY p.proj_id
+             ORDER BY p.proj_created_at DESC`,
+            [team_id, employee.emp_id, employee.emp_id, employee.emp_id]
+        );
+        
+        res.json(projects);
+    } catch (error) {
+        console.error("Employee projects error:", error);
+        res.status(500).json({ error: "Failed to fetch employee projects" });
+    }
+});
+
+/**
+ * ✅ GET /api/projects/employee/tasks/:project_id/:employee_id
+ * Get tasks in a project assigned to employee
+ */
+router.get("/employee/tasks/:project_id/:employee_id", async (req, res) => {
+    const { project_id, employee_id } = req.params;
+    
+    try {
+        // Get employee details
+        const [empRows] = await db.query(
+            "SELECT emp_id, emp_user_id FROM employees WHERE emp_user_id = ?",
+            [employee_id]
+        );
+        
+        if (empRows.length === 0) {
+            return res.status(404).json({ error: "Employee not found" });
+        }
+        
+        const employee = empRows[0];
+        
+        // Get tasks assigned to employee OR tasks where employee has subtasks
+        // Use emp_id (numeric) for assignments since that's how they're stored in the database
+        const [tasks] = await db.query(
+            `SELECT DISTINCT t.*, 
+                    CONCAT(e.emp_first_name, ' ', e.emp_last_name) as employee_name,
+                    COUNT(DISTINCT s.subtask_id) as subtask_count
+             FROM tasks t
+             LEFT JOIN employees e ON t.task_employee_id = e.emp_id
+             LEFT JOIN subtasks s ON t.task_id = s.task_id
+             LEFT JOIN subtask_assignment sa ON s.subtask_id = sa.subtask_id
+             WHERE t.task_project_id = ? AND (t.task_employee_id = ? OR sa.employee_id = ? OR s.employee_id = ?)
+             GROUP BY t.task_id
+             ORDER BY t.task_created_at DESC`,
+            [project_id, employee.emp_id, employee.emp_id, employee.emp_id]
+        );
+        
+        res.json(tasks);
+    } catch (error) {
+        console.error("Employee tasks error:", error);
+        res.status(500).json({ error: "Failed to fetch employee tasks" });
+    }
+});
+
+/**
+ * ✅ GET /api/projects/employee/subtasks/:task_id/:employee_id
+ * Get subtasks in a task assigned to employee
+ */
+router.get("/employee/subtasks/:task_id/:employee_id", async (req, res) => {
+    const { task_id, employee_id } = req.params;
+    
+    try {
+        // Get employee details
+        const [empRows] = await db.query(
+            "SELECT emp_id, emp_user_id FROM employees WHERE emp_user_id = ?",
+            [employee_id]
+        );
+        
+        if (empRows.length === 0) {
+            return res.status(404).json({ error: "Employee not found" });
+        }
+        
+        const employee = empRows[0];
+        
+        // Get subtasks assigned to employee (both direct and through assignment table)
+        // Use emp_id (numeric) for assignments since that's how they're stored in the database
+        const [subtasks] = await db.query(
+            `SELECT DISTINCT s.*, 
+                    GROUP_CONCAT(CONCAT(e.emp_first_name, ' ', e.emp_last_name, ' (', e.emp_user_id, ')') SEPARATOR ', ') as assigned_employees
+             FROM subtasks s 
+             LEFT JOIN subtask_assignment sa ON s.subtask_id = sa.subtask_id
+             LEFT JOIN employees e ON (sa.employee_id = e.emp_id OR s.employee_id = e.emp_id)
+             WHERE s.task_id = ? AND (sa.employee_id = ? OR s.employee_id = ?)
+             GROUP BY s.subtask_id
+             ORDER BY s.subtask_created_at DESC`,
+            [task_id, employee.emp_id, employee.emp_id]
+        );
+        
+        res.json(subtasks);
+    } catch (error) {
+        console.error("Employee subtasks error:", error);
+        res.status(500).json({ error: "Failed to fetch employee subtasks" });
+    }
+});
+
+/**
+ * ✅ POST /api/projects/employee/upload-attachment/:subtask_id
+ * Employee uploads attachment to subtask
+ */
+router.post("/employee/upload-attachment/:subtask_id", upload.array('attachments'), async (req, res) => {
+    const { subtask_id } = req.params;
+    const { employee_id, feedback } = req.body;
+    const files = req.files || [];
+    
+    try {
+        // Validate employee and subtask assignment
+        const [empRows] = await db.query(
+            "SELECT emp_id, emp_user_id FROM employees WHERE emp_user_id = ?",
+            [employee_id]
+        );
+        
+        if (empRows.length === 0) {
+            return res.status(404).json({ success: false, error: "Employee not found" });
+        }
+        
+        const employee = empRows[0];
+        
+        // Check if employee is assigned to this subtask
+        const [assignmentRows] = await db.query(
+            "SELECT * FROM subtask_assignment WHERE subtask_id = ? AND employee_id = ?",
+            [subtask_id, employee.emp_id]
+        );
+        
+        if (assignmentRows.length === 0) {
+            return res.status(403).json({ success: false, error: "Not assigned to this subtask" });
+        }
+        
+        // Get subtask and project details for S3 path
+        const [subtaskRows] = await db.query(
+            `SELECT s.*, t.task_name, p.proj_name, tm.team_name, tm.team_created_by 
+             FROM subtasks s 
+             JOIN tasks t ON s.task_id = t.task_id 
+             JOIN projects p ON t.task_project_id = p.proj_id 
+             JOIN teams tm ON p.team_id = tm.team_id 
+             WHERE s.subtask_id = ?`,
+            [subtask_id]
+        );
+        
+        if (subtaskRows.length === 0) {
+            return res.status(404).json({ success: false, error: "Subtask not found" });
+        }
+        
+        const subtask = subtaskRows[0];
+        
+        // Create S3 folder for employee uploads
+        const s3FolderPath = `${subtask.team_created_by}/${subtask.team_name}/${subtask.proj_name}/${subtask.task_name}/${subtask.subtask_name}/employee_uploads`;
+        await createS3Folder(s3FolderPath);
+        
+        // Upload files to S3 and store metadata
+        const uploadedFiles = [];
+        for (const file of files) {
+            try {
+                const s3Url = await uploadFileToS3(s3FolderPath, file);
+                
+                // Store file metadata in database
+                await db.query(
+                    `INSERT INTO subtask_attachment 
+                    (subatt_subtask_id, subatt_file_name, subatt_file_type, subatt_file_path, subatt_uploaded_by, subatt_created_at, subatt_updated_at) 
+                    VALUES (?, ?, ?, ?, ?, NOW(), NOW())`,
+                    [subtask_id, file.originalname, file.mimetype, s3Url, employee.emp_user_id]
+                );
+                
+                uploadedFiles.push({
+                    name: file.originalname,
+                    type: file.mimetype,
+                    url: s3Url
+                });
+            } catch (uploadError) {
+                console.error("File upload error:", uploadError);
+            }
+        }
+        
+        // Update subtask status to completed (100%) and add feedback
+        await db.query(
+            `UPDATE subtasks 
+             SET subtask_status = 2, 
+                 subtask_progress = 100,
+                 subtask_completion_feedback = ?,
+                 subtask_completed_at = NOW(),
+                 subtask_updated_at = NOW()
+             WHERE subtask_id = ?`,
+            [feedback, subtask_id]
+        );
+        
+        // Update task progress based on completed subtasks
+        await updateTaskProgress(subtask.task_id);
+        
+        res.json({ 
+            success: true, 
+            message: "Attachment uploaded and task marked as complete",
+            uploadedFiles: uploadedFiles
+        });
+    } catch (error) {
+        console.error("Employee upload error:", error);
+        res.status(500).json({ success: false, error: "Internal server error" });
+    }
+});
+
+/**
+ * ✅ GET /api/projects/employee/notifications/:employee_id
+ * Get notifications for employee (new tasks, etc.)
+ */
+router.get("/employee/notifications/:employee_id", async (req, res) => {
+    const { employee_id } = req.params;
+    
+    try {
+        // Get employee details
+        const [empRows] = await db.query(
+            "SELECT emp_id, emp_user_id FROM employees WHERE emp_user_id = ?",
+            [employee_id]
+        );
+        
+        if (empRows.length === 0) {
+            return res.status(404).json({ error: "Employee not found" });
+        }
+        
+        const employee = empRows[0];
+        
+        // Get recent subtask assignments (last 7 days)
+        const [notifications] = await db.query(
+            `SELECT sa.*, s.subtask_name, s.subtask_description, t.task_name, p.proj_name, tm.team_name
+             FROM subtask_assignment sa
+             JOIN subtasks s ON sa.subtask_id = s.subtask_id
+             JOIN tasks t ON s.task_id = t.task_id
+             JOIN projects p ON t.task_project_id = p.proj_id
+             JOIN teams tm ON p.team_id = tm.team_id
+             WHERE sa.employee_id = ? AND sa.subass_assigned_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)
+             ORDER BY sa.subass_assigned_at DESC`,
+            [employee.emp_id]
+        );
+        
+        res.json(notifications);
+    } catch (error) {
+        console.error("Employee notifications error:", error);
+        res.status(500).json({ error: "Failed to fetch notifications" });
+    }
+});
+
+// Helper function to update task progress
+async function updateTaskProgress(taskId) {
+    try {
+        // Get all subtasks for the task
+        const [subtasks] = await db.query(
+            "SELECT subtask_progress FROM subtasks WHERE task_id = ?",
+            [taskId]
+        );
+        
+        if (subtasks.length === 0) return;
+        
+        // Calculate average progress
+        const totalProgress = subtasks.reduce((sum, subtask) => sum + (subtask.subtask_progress || 0), 0);
+        const averageProgress = Math.round(totalProgress / subtasks.length);
+        
+        // Update task progress
+        await db.query(
+            "UPDATE tasks SET task_progress = ? WHERE task_id = ?",
+            [averageProgress, taskId]
+        );
+        
+        // Update project progress
+        const [taskRows] = await db.query(
+            "SELECT task_project_id FROM tasks WHERE task_id = ?",
+            [taskId]
+        );
+        
+        if (taskRows.length > 0) {
+            const projectId = taskRows[0].task_project_id;
+            
+            // Get all tasks for the project
+            const [projectTasks] = await db.query(
+                "SELECT task_progress FROM tasks WHERE task_project_id = ?",
+                [projectId]
+            );
+            
+            if (projectTasks.length > 0) {
+                const totalProjectProgress = projectTasks.reduce((sum, task) => sum + (task.task_progress || 0), 0);
+                const averageProjectProgress = Math.round(totalProjectProgress / projectTasks.length);
+                
+                await db.query(
+                    "UPDATE projects SET proj_progress = ? WHERE proj_id = ?",
+                    [averageProjectProgress, projectId]
+                );
+            }
+        }
+    } catch (error) {
+        console.error("Update progress error:", error);
+    }
+}
 
 // Test route to verify router is working
 router.get("/test", (req, res) => {
