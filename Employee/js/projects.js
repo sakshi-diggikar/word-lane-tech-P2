@@ -1625,6 +1625,16 @@ async function showSubtaskDetails(subtask) {
                 </div>
                 ` : '<div style="background:#f8f9fa;padding:1.5rem;border-radius:1rem;margin-bottom:1.2rem;"><h3 style="color:#363949;margin-bottom:0.8rem;">Attachments</h3><p style="color:#677483;">No attachments found.</p></div>'}
 
+                ${subtask.subtask_completion_feedback ? `
+                <div style="background:#fff3cd;padding:1.5rem;border-radius:1rem;margin-bottom:1.2rem;border-left:4px solid #ffc107;">
+                    <h3 style="color:#856404;margin-bottom:0.8rem;">💬 Admin Feedback</h3>
+                    <p style="color:#677483;white-space:pre-line;">${subtask.subtask_completion_feedback}</p>
+                    <div style="margin-top:1rem;font-size:0.9em;color:#856404;">
+                        <em>Please review this feedback and make any necessary adjustments to your work.</em>
+                    </div>
+                </div>
+                ` : ''}
+
                 <div style="margin-top:2rem;display:flex;justify-content:center;align-items:center;">
                     <button id="update-subtask-btn" style="background:#7380ec;color:#fff;padding:0.4em 1em;border-radius:0.5em;border:none;font-size:0.98em;cursor:pointer;min-width:90px;">Update Subtask</button>
                 </div>

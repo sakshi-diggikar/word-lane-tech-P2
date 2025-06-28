@@ -2016,4 +2016,110 @@ router.post('/submit-task', async (req, res) => {
     }
 });
 
+// Add admin feedback to subtask
+router.post('/subtask-feedback/:subtaskId', async (req, res) => {
+    try {
+        const { subtaskId } = req.params;
+        const { feedback, admin_user_id } = req.body;
+
+        if (!feedback || !admin_user_id) {
+            return res.status(400).json({ 
+                success: false, 
+                message: 'Feedback and admin user ID are required' 
+            });
+        }
+
+        // Update subtask with admin feedback
+        await db.query(`
+            UPDATE subtasks 
+            SET subtask_completion_feedback = ?, 
+                subtask_updated_at = NOW() 
+            WHERE subtask_id = ?
+        `, [feedback, subtaskId]);
+
+        // Add notification for employee
+        const [subtaskData] = await db.query(`
+            SELECT s.employee_id, s.subtask_name, t.task_name, p.proj_name
+            FROM subtasks s
+            JOIN tasks t ON s.task_id = t.task_id
+            JOIN projects p ON t.project_id = p.project_id
+            WHERE s.subtask_id = ?
+        `, [subtaskId]);
+
+        if (subtaskData.length > 0 && subtaskData[0].employee_id) {
+            await addNotification({
+                user_id: subtaskData[0].employee_id,
+                type: 'feedback',
+                message: `Admin provided feedback on your submitted subtask: ${subtaskData[0].subtask_name}`,
+                link: `/Employee/projects.html`
+            });
+        }
+
+        res.json({ 
+            success: true, 
+            message: 'Feedback added successfully' 
+        });
+
+    } catch (error) {
+        console.error('Error adding subtask feedback:', error);
+        res.status(500).json({ 
+            success: false, 
+            message: 'Error adding feedback' 
+        });
+    }
+});
+
+// Reopen completed subtask
+router.post('/reopen-subtask/:subtaskId', async (req, res) => {
+    try {
+        const { subtaskId } = req.params;
+        const { admin_user_id } = req.body;
+
+        if (!admin_user_id) {
+            return res.status(400).json({ 
+                success: false, 
+                message: 'Admin user ID is required' 
+            });
+        }
+
+        // Update subtask status back to active
+        await db.query(`
+            UPDATE subtasks 
+            SET subtask_status = 1, 
+                subtask_updated_at = NOW() 
+            WHERE subtask_id = ?
+        `, [subtaskId]);
+
+        // Add notification for employee
+        const [subtaskData] = await db.query(`
+            SELECT s.employee_id, s.subtask_name, t.task_name, p.proj_name
+            FROM subtasks s
+            JOIN tasks t ON s.task_id = t.task_id
+            JOIN projects p ON t.project_id = p.project_id
+            WHERE s.subtask_id = ?
+        `, [subtaskId]);
+
+        if (subtaskData.length > 0 && subtaskData[0].employee_id) {
+            await addNotification({
+                user_id: subtaskData[0].employee_id,
+                type: 'subtask_reopened',
+                message: `Your subtask "${subtaskData[0].subtask_name}" has been reopened by admin. Please review and resubmit.`,
+                link: `/Employee/projects.html`
+            });
+        }
+
+        res.json({ 
+            success: true, 
+            message: 'Subtask reopened successfully' 
+        });
+
+    } catch (error) {
+        console.error('Error reopening subtask:', error);
+        res.status(500).json({ 
+            success: false, 
+            message: 'Error reopening subtask' 
+        });
+    }
+});
+
 module.exports = router;

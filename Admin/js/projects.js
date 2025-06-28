@@ -704,16 +704,27 @@ async function createSubtaskCard(subtask) {
 
     // Load attachments for this subtask
     let attachments = [];
+    let employeeAttachments = [];
     try {
-        console.log('🔍 Loading attachments for subtask card:', subtask.subtask_id);
+        console.log('🔍 Fetching attachments for subtask ID:', subtask.subtask_id);
         const response = await fetch(`/api/projects/subtask-attachments/${subtask.subtask_id}`);
+        console.log('🔍 Attachment response status:', response.status);
         if (response.ok) {
             attachments = await response.json();
-            console.log('🔍 Attachments for subtask card:', attachments.length, 'files');
+            console.log('🔍 Attachments loaded:', attachments);
+            
+            // Separate admin attachments from employee attachments
+            const adminUserId = getAdminUserId();
+            employeeAttachments = attachments.filter(att => att.subatt_uploaded_by !== adminUserId);
+            attachments = attachments.filter(att => att.subatt_uploaded_by === adminUserId);
+        } else {
+            console.error('❌ Failed to load attachments, status:', response.status);
         }
     } catch (error) {
-        console.error('❌ Error loading attachments for subtask card:', error);
+        console.error('❌ Error loading attachments:', error);
     }
+
+    console.log('🔍 Rendering subtask details with', attachments.length, 'admin attachments and', employeeAttachments.length, 'employee attachments');
 
     // Attachments display
     let attachmentLinks = '';
@@ -1511,6 +1522,7 @@ async function showSubtaskDetails(subtask) {
 
     // Load attachments for this subtask
     let attachments = [];
+    let employeeAttachments = [];
     try {
         console.log('🔍 Fetching attachments for subtask ID:', subtask.subtask_id);
         const response = await fetch(`/api/projects/subtask-attachments/${subtask.subtask_id}`);
@@ -1518,6 +1530,11 @@ async function showSubtaskDetails(subtask) {
         if (response.ok) {
             attachments = await response.json();
             console.log('🔍 Attachments loaded:', attachments);
+            
+            // Separate admin attachments from employee attachments
+            const adminUserId = getAdminUserId();
+            employeeAttachments = attachments.filter(att => att.subatt_uploaded_by !== adminUserId);
+            attachments = attachments.filter(att => att.subatt_uploaded_by === adminUserId);
         } else {
             console.error('❌ Failed to load attachments, status:', response.status);
         }
@@ -1525,7 +1542,7 @@ async function showSubtaskDetails(subtask) {
         console.error('❌ Error loading attachments:', error);
     }
 
-    console.log('🔍 Rendering subtask details with', attachments.length, 'attachments');
+    console.log('🔍 Rendering subtask details with', attachments.length, 'admin attachments and', employeeAttachments.length, 'employee attachments');
 
     content.innerHTML = `
                 <div style="margin-bottom: 2rem;">
@@ -1568,7 +1585,7 @@ async function showSubtaskDetails(subtask) {
 
                 ${attachments && attachments.length > 0 ? `
                 <div style="background:#f8f9fa;padding:1.5rem;border-radius:1rem;margin-bottom:1.2rem;">
-                    <h3 style="color:#363949;margin-bottom:0.8rem;">Attachments (${attachments.length})</h3>
+                    <h3 style="color:#363949;margin-bottom:0.8rem;">Admin Attachments (${attachments.length})</h3>
                     <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
                         ${attachments.map(attachment => `
                             <a href="${attachment.subatt_file_path}" target="_blank" class="download-attachment" style="display:inline-flex;align-items:center;gap:0.5rem;padding:0.5rem 1rem;background:#7380ec;color:white;border-radius:0.5rem;text-decoration:none;">
@@ -1578,10 +1595,50 @@ async function showSubtaskDetails(subtask) {
                         `).join('')}
                     </div>
                 </div>
-                ` : '<div style="background:#f8f9fa;padding:1.5rem;border-radius:1rem;margin-bottom:1.2rem;"><h3 style="color:#363949;margin-bottom:0.8rem;">Attachments</h3><p style="color:#677483;">No attachments found.</p></div>'}
+                ` : ''}
 
-                <div style="margin-top:2rem;display:flex;justify-content:center;align-items:center;">
+                ${employeeAttachments && employeeAttachments.length > 0 ? `
+                <div style="background:#e8f5e8;padding:1.5rem;border-radius:1rem;margin-bottom:1.2rem;border-left:4px solid #28a745;">
+                    <h3 style="color:#28a745;margin-bottom:0.8rem;">📎 Employee Attachments (${employeeAttachments.length})</h3>
+                    <p style="color:#677483;margin-bottom:1rem;font-style:italic;">Files submitted by employee for this subtask:</p>
+                    <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
+                        ${employeeAttachments.map(attachment => `
+                            <div style="display:flex;align-items:center;gap:0.5rem;padding:0.5rem 1rem;background:#28a745;color:white;border-radius:0.5rem;">
+                                <span class="material-icons-sharp">description</span>
+                                <span>${attachment.subatt_file_name}</span>
+                                <a href="${attachment.subatt_file_path}" target="_blank" style="color:white;text-decoration:none;margin-left:0.5rem;">
+                                    <span class="material-icons-sharp" style="font-size:1.2rem;">open_in_new</span>
+                                </a>
+                                <a href="${attachment.subatt_file_path}" download style="color:white;text-decoration:none;">
+                                    <span class="material-icons-sharp" style="font-size:1.2rem;">download</span>
+                                </a>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+                ` : ''}
+
+                ${subtask.subtask_completion_feedback ? `
+                <div style="background:#fff3cd;padding:1.5rem;border-radius:1rem;margin-bottom:1.2rem;border-left:4px solid #ffc107;">
+                    <h3 style="color:#856404;margin-bottom:0.8rem;">💬 Admin Feedback</h3>
+                    <p style="color:#677483;white-space:pre-line;">${subtask.subtask_completion_feedback}</p>
+                </div>
+                ` : ''}
+
+                ${status === 'Completed' && employeeAttachments.length > 0 ? `
+                <div style="background:#f8f9fa;padding:1.5rem;border-radius:1rem;margin-bottom:1.2rem;">
+                    <h3 style="color:#363949;margin-bottom:0.8rem;">💬 Provide Feedback</h3>
+                    <textarea id="admin-feedback" placeholder="Provide feedback on the submitted work..." style="width:100%;min-height:100px;padding:0.8rem;border:1px solid #ddd;border-radius:0.5rem;resize:vertical;font-family:inherit;"></textarea>
+                    <div style="margin-top:1rem;display:flex;gap:0.5rem;">
+                        <button id="submit-feedback-btn" style="background:#28a745;color:white;padding:0.5rem 1rem;border:none;border-radius:0.5rem;cursor:pointer;">Submit Feedback</button>
+                        <button id="clear-feedback-btn" style="background:#6c757d;color:white;padding:0.5rem 1rem;border:none;border-radius:0.5rem;cursor:pointer;">Clear</button>
+                    </div>
+                </div>
+                ` : ''}
+
+                <div style="margin-top:2rem;display:flex;justify-content:center;align-items:center;gap:1rem;">
                     <button id="update-subtask-btn" style="background:#7380ec;color:#fff;padding:0.4em 1em;border-radius:0.5em;border:none;font-size:0.98em;cursor:pointer;min-width:90px;">Update Subtask</button>
+                    ${status === 'Completed' ? '<button id="reopen-subtask-btn" style="background:#ffc107;color:#000;padding:0.4em 1em;border-radius:0.5em;border:none;font-size:0.98em;cursor:pointer;min-width:90px;">Reopen Subtask</button>' : ''}
                 </div>
             `;
 
@@ -1591,6 +1648,84 @@ async function showSubtaskDetails(subtask) {
     const closeBtn = document.getElementById('close-subtask-details');
     closeBtn.onclick = () => modal.style.display = 'none';
     modal.onclick = (e) => { if (e.target === modal) modal.style.display = 'none'; };
+
+    // Submit feedback button handler
+    const submitFeedbackBtn = document.getElementById('submit-feedback-btn');
+    if (submitFeedbackBtn) {
+        submitFeedbackBtn.onclick = async function() {
+            const feedback = document.getElementById('admin-feedback').value.trim();
+            if (!feedback) {
+                showNotification('Please enter feedback before submitting', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/projects/subtask-feedback/${subtask.subtask_id}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        feedback: feedback,
+                        admin_user_id: getAdminUserId()
+                    })
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    showNotification('Feedback submitted successfully!', 'success');
+                    // Refresh the modal content to show the feedback
+                    showSubtaskDetails(subtask);
+                } else {
+                    showNotification(result.message || 'Failed to submit feedback', 'error');
+                }
+            } catch (error) {
+                console.error('Error submitting feedback:', error);
+                showNotification('Failed to submit feedback. Please try again.', 'error');
+            }
+        };
+    }
+
+    // Clear feedback button handler
+    const clearFeedbackBtn = document.getElementById('clear-feedback-btn');
+    if (clearFeedbackBtn) {
+        clearFeedbackBtn.onclick = function() {
+            document.getElementById('admin-feedback').value = '';
+        };
+    }
+
+    // Reopen subtask button handler
+    const reopenSubtaskBtn = document.getElementById('reopen-subtask-btn');
+    if (reopenSubtaskBtn) {
+        reopenSubtaskBtn.onclick = async function() {
+            if (confirm('Are you sure you want to reopen this subtask? The employee will be notified.')) {
+                try {
+                    const response = await fetch(`/api/projects/reopen-subtask/${subtask.subtask_id}`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            admin_user_id: getAdminUserId()
+                        })
+                    });
+
+                    const result = await response.json();
+                    if (result.success) {
+                        showNotification('Subtask reopened successfully!', 'success');
+                        modal.style.display = 'none';
+                        // Refresh the subtasks list
+                        await loadSubtasksForCurrentTask();
+                    } else {
+                        showNotification(result.message || 'Failed to reopen subtask', 'error');
+                    }
+                } catch (error) {
+                    console.error('Error reopening subtask:', error);
+                    showNotification('Failed to reopen subtask. Please try again.', 'error');
+                }
+            }
+        };
+    }
 
     // Update subtask button handler
     content.querySelector('#update-subtask-btn').onclick = function () {
