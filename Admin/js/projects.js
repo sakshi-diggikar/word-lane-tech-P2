@@ -323,10 +323,8 @@ function createTeamCard(team, onOpen) {
         dropdown.classList.remove("show");
     });
     card.querySelector(".delete-btn").addEventListener("click", () => {
-        if (confirm(`Are you sure you want to delete team "${team.team_name}"?`)) {
-            // TODO: Add backend API call to delete team
-            teams = teams.filter(t => t !== team);
-            renderTeams();
+        if (confirm(`Are you sure you want to delete team "${team.team_name}"? This will also delete all projects, tasks, and subtasks associated with this team.`)) {
+            deleteTeam(team.team_id);
         }
         dropdown.classList.remove("show");
     });
@@ -451,9 +449,8 @@ function createProjectCard(project, onOpen) {
         dropdown.classList.remove("show");
     });
     card.querySelector(".delete-btn").addEventListener("click", () => {
-        if (confirm(`Are you sure you want to delete project "${project.proj_name}"?`)) {
-            currentTeam.projects = currentTeam.projects.filter(p => p !== project);
-            renderProjects();
+        if (confirm(`Are you sure you want to delete project "${project.proj_name}"? This will also delete all tasks and subtasks associated with this project.`)) {
+            deleteProject(project.proj_id);
         }
         dropdown.classList.remove("show");
     });
@@ -611,9 +608,8 @@ function createTaskCard(task, onOpen) {
 
     // Delete button for task
     card.querySelector(".delete-btn").addEventListener("click", () => {
-        if (confirm(`Are you sure you want to delete task "${task.task_name}"?`)) {
-            currentProject.tasks = currentProject.tasks.filter(t => t !== task);
-            renderTasks();
+        if (confirm(`Are you sure you want to delete task "${task.task_name}"? This will also delete all subtasks associated with this task.`)) {
+            deleteTask(task.task_id);
         }
         dropdown.classList.remove("show");
     });
@@ -649,15 +645,15 @@ function createTaskCard(task, onOpen) {
 }
 
 // Create subtask card element
-function createSubtaskCard(subtask) {
+async function createSubtaskCard(subtask) {
     const card = document.createElement("div");
     card.classList.add("task-card");
     card.setAttribute("role", "listitem");
     card.tabIndex = 0;
-    card.setAttribute("aria-label", `Subtask: ${subtask.name}, details: ${subtask.details || 'No details'}`);
+    card.setAttribute("aria-label", `Subtask: ${subtask.subtask_name}, details: ${subtask.subtask_description || 'No details'}`);
 
     // Truncate description to 2 lines
-    let desc = subtask.details || '';
+    let desc = subtask.subtask_description || '';
     let descShort = desc;
     if (desc.length > 160 || desc.split('\n').length > 2) {
         let lines = desc.split('\n');
@@ -667,48 +663,44 @@ function createSubtaskCard(subtask) {
     }
 
     // Priority color
-    let priority = subtask.priority || 'Medium';
+    let priority = subtask.subtask_priority || 'Medium';
     let priorityColor = priority === 'High' ? '#ff4d4f' : priority === 'Medium' ? '#ffbb55' : '#41f1b6';
 
     // Status calculation
-    let status = subtask.status || 'Pending';
+    let status = subtask.subtask_status === 1 ? 'Active' : subtask.subtask_status === 2 ? 'Completed' : 'Pending';
     const now = new Date();
-    if (subtask.deadline && status !== 'Completed') {
-        if (now > subtask.deadline) status = 'Delayed';
+    if (subtask.subtask_deadline && status !== 'Completed') {
+        if (now > new Date(subtask.subtask_deadline)) status = 'Delayed';
     }
 
     // Progress bar (optional)
     let progress = subtask.progress || 0;
 
-    // Employee IDs (array or string)
-    let empids = Array.isArray(subtask.empids) ? subtask.empids : (subtask.empids ? [subtask.empids] : []);
-    let empidsDisplay = empids.length ? empids.join(', ') : 'N/A';
+    // Employee assignments
+    let assignedEmployees = subtask.assigned_employees || 'Not assigned';
 
-    // Attachments (array of File objects or file names)
-    let attachments = subtask.attachments || [];
+    // Load attachments for this subtask
+    let attachments = [];
+    try {
+        console.log('🔍 Loading attachments for subtask card:', subtask.subtask_id);
+        const response = await fetch(`/api/projects/subtask-attachments/${subtask.subtask_id}`);
+        if (response.ok) {
+            attachments = await response.json();
+            console.log('🔍 Attachments for subtask card:', attachments.length, 'files');
+        }
+    } catch (error) {
+        console.error('❌ Error loading attachments for subtask card:', error);
+    }
+
+    // Attachments display
     let attachmentLinks = '';
     if (attachments.length > 0) {
         attachmentLinks = `<a href="#" class="download-all-attachments" style="font-size:1.1em;color:#7380ec;text-decoration:underline;cursor:pointer;" title="Download all attachments">${attachments.length} file${attachments.length > 1 ? 's' : ''} attached <span class="material-icons-sharp" style="font-size:1em;vertical-align:middle;">download</span></a>`;
     }
 
-    // Uploaded task files (from submit in subtask details)
-    let uploadedTaskFiles = subtask.uploadedTaskFiles || [];
-    let uploadedTaskFilesLinks = '';
-    if (uploadedTaskFiles.length > 0) {
-        uploadedTaskFilesLinks = `
-            <div style="font-size:0.97em;color:#7d8da1;margin-bottom:0.3em;">
-                <b>Task File(s):</b>
-                <a href="#" class="download-all-taskfiles" style="font-size:1.1em;color:#41f1b6;text-decoration:underline;cursor:pointer;" title="Download all task files">
-                    ${uploadedTaskFiles.length} file${uploadedTaskFiles.length > 1 ? 's' : ''} uploaded
-                    <span class="material-icons-sharp" style="font-size:1em;vertical-align:middle;">download</span>
-                </a>
-            </div>
-        `;
-    }
-
     card.innerHTML = `
                 <div class="task-header">
-                    <h3 style="font-size:1.15rem;">${subtask.name}</h3>
+                    <h3 style="font-size:1.15rem;">${subtask.subtask_name}</h3>
                     <span class="priority-label" style="margin-left:auto;padding:2px 12px;border-radius:8px;font-size:1em;background:${priorityColor};color:white;align-self:center;">
                         ${priority}
                     </span>
@@ -721,13 +713,12 @@ function createSubtaskCard(subtask) {
                 </div>
                 <div class="task-details" title="${desc.replace(/"/g, '&quot;')}" style="margin-bottom:0.4em;">${descShort.replace(/\n/g, '<br>')}</div>
                 <div style="font-size:0.97em;color:#7d8da1;margin-bottom:0.3em;">
-                    <b>Employee ID(s):</b> ${empidsDisplay}
+                    <b>Employee(s):</b> ${assignedEmployees}
                 </div>
                 <div style="font-size:0.97em;color:#7d8da1;margin-bottom:0.3em;">
-                    <b>Deadline:</b> ${subtask.deadline ? formatDateTime(subtask.deadline) : 'N/A'}
+                    <b>Deadline:</b> ${subtask.subtask_deadline ? formatDateTime(subtask.subtask_deadline) : 'N/A'}
                 </div>
                 ${attachmentLinks ? `<div style="font-size:0.97em;color:#7d8da1;margin-bottom:0.3em;"><b>Attachment(s):</b> ${attachmentLinks}</div>` : ''}
-                ${uploadedTaskFilesLinks}
                 <div style="display:flex;flex-direction:column;align-items:flex-start;">
                     <div class="progress-bar" style="background:#eee;border-radius:8px;height:10px;width:100%;margin:0.3rem 0 0.3rem 0;">
                         <div style="width:${progress}%;background:#7380ec;height:100%;border-radius:8px;transition:width 0.3s;"></div>
@@ -738,7 +729,7 @@ function createSubtaskCard(subtask) {
                         ${status}
                     </span>
                     <span style="font-size:0.97em;color:#7d8da1;text-align:right;">
-                        ${subtask.createdAt ? formatDateTime(subtask.createdAt) : ''}
+                        ${subtask.subtask_created_at ? formatDateTime(subtask.subtask_created_at) : ''}
                     </span>
                 </div>
             `;
@@ -772,9 +763,8 @@ function createSubtaskCard(subtask) {
 
     // Delete button for subtask
     card.querySelector(".delete-btn").addEventListener("click", () => {
-        if (confirm(`Are you sure you want to delete subtask "${subtask.name}"?`)) {
-            currentTask.subtasks = currentTask.subtasks.filter(st => st !== subtask);
-            renderSubtasks();
+        if (confirm(`Are you sure you want to delete subtask "${subtask.subtask_name}"?`)) {
+            deleteSubtask(subtask.subtask_id);
         }
         dropdown.classList.remove("show");
     });
@@ -784,51 +774,14 @@ function createSubtaskCard(subtask) {
         card.querySelector('.download-all-attachments').addEventListener('click', function (e) {
             e.preventDefault();
             e.stopPropagation();
-            attachments.forEach(file => {
-                let url, filename;
-                if (file instanceof File) {
-                    url = URL.createObjectURL(file);
-                    filename = file.name;
-                } else {
-                    url = file;
-                    filename = typeof file === 'string' ? file.split('/').pop() : 'attachment';
-                }
+            attachments.forEach(attachment => {
                 const a = document.createElement('a');
-                a.href = url;
-                a.download = filename;
+                a.href = attachment.subatt_file_path;
+                a.download = attachment.subatt_file_name;
+                a.target = '_blank';
                 document.body.appendChild(a);
                 a.click();
                 document.body.removeChild(a);
-                if (file instanceof File) {
-                    setTimeout(() => URL.revokeObjectURL(url), 1000);
-                }
-            });
-        });
-    }
-
-    // Download all task files handler
-    if (uploadedTaskFiles.length > 0) {
-        card.querySelector('.download-all-taskfiles').addEventListener('click', function (e) {
-            e.preventDefault();
-            e.stopPropagation();
-            uploadedTaskFiles.forEach(file => {
-                let url, filename;
-                if (file instanceof File) {
-                    url = URL.createObjectURL(file);
-                    filename = file.name;
-                } else {
-                    url = file;
-                    filename = typeof file === 'string' ? file.split('/').pop() : 'taskfile';
-                }
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = filename;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                if (file instanceof File) {
-                    setTimeout(() => URL.revokeObjectURL(url), 1000);
-                }
             });
         });
     }
@@ -932,8 +885,34 @@ async function loadTasksForCurrentProject() {
     }
 }
 
+// Load subtasks for current task
+async function loadSubtasksForCurrentTask() {
+    if (currentTask) {
+        await renderSubtasks();
+    }
+}
+
+// Load subtasks for a task from backend
+async function loadSubtasksByTask(taskId) {
+    console.log('🔍 Loading subtasks for task ID:', taskId);
+    
+    try {
+        const response = await fetch(`/api/projects/subtasks/${taskId}`);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const subtasks = await response.json();
+        console.log('🔍 Subtasks loaded:', subtasks);
+        return subtasks;
+    } catch (error) {
+        console.error('❌ Error loading subtasks for task:', error);
+        showNotification(`Failed to load subtasks: ${error.message}`, 'error');
+        return [];
+    }
+}
+
 // Render subtasks list view
-function renderSubtasks() {
+async function renderSubtasks() {
     sectionTitle.textContent = "Subtasks";
     projectsView.hidden = true;
     tasksView.hidden = true;
@@ -943,12 +922,12 @@ function renderSubtasks() {
     createSubtaskBtn.onclick = () => showModal('subtask');
 
     // Breadcrumb
-    breadcrumbProject.textContent = currentProject.name;
+    breadcrumbProject.textContent = currentProject.proj_name;
     breadcrumbProject.onclick = goBackToProjects;
     breadcrumbProject.onkeydown = (e) => { if (e.key === 'Enter') goBackToProjects(); };
 
     breadcrumbSubproject.hidden = false;
-    breadcrumbSubproject.textContent = currentTask.name;
+    breadcrumbSubproject.textContent = currentTask.task_name;
     breadcrumbSubproject.onclick = goBackToTasks;
     breadcrumbSubproject.onkeydown = (e) => { if (e.key === 'Enter') goBackToTasks(); };
 
@@ -960,14 +939,18 @@ function renderSubtasks() {
     backSubprojectBtn.innerHTML = `<span class="material-icons-sharp"> arrow_back </span> Back to Tasks`;
 
     // Title
-    subtaskProjectTitle.textContent = `Subtasks - ${currentProject.name} / ${currentTask.name}`;
+    subtaskProjectTitle.textContent = `Subtasks - ${currentProject.proj_name} / ${currentTask.task_name}`;
+
+    // Load subtasks from backend
+    const subtasks = await loadSubtasksByTask(currentTask.task_id);
+    currentTask.subtasks = subtasks;
 
     // Show subtasks for current task
     subtaskCardsContainer.innerHTML = "";
-    (currentTask.subtasks || []).forEach(subtask => {
-        const card = createSubtaskCard(subtask);
+    for (const subtask of (currentTask.subtasks || [])) {
+        const card = await createSubtaskCard(subtask);
         subtaskCardsContainer.appendChild(card);
-    });
+    }
 }
 
 // Navigation functions
@@ -1471,30 +1454,44 @@ function showTaskDetails(task) {
 }
 
 // Function to show subtask details
-function showSubtaskDetails(subtask) {
+async function showSubtaskDetails(subtask) {
+    console.log('🔍 Opening subtask details for:', subtask);
     const modal = subtaskDetailsModal;
     const content = document.getElementById("subtask-details-content");
 
-    let status = subtask.status || 'Pending';
+    let status = subtask.subtask_status === 1 ? 'Active' : subtask.subtask_status === 2 ? 'Completed' : 'Pending';
     const now = new Date();
-    if (subtask.deadline && status !== 'Completed') {
-        if (now > subtask.deadline) status = 'Delayed';
+    if (subtask.subtask_deadline && status !== 'Completed') {
+        if (now > new Date(subtask.subtask_deadline)) status = 'Delayed';
     }
-    let priority = subtask.priority || 'Medium';
+    let priority = subtask.subtask_priority || 'Medium';
     let priorityColor = priority === 'High' ? '#ff4d4f' : priority === 'Medium' ? '#ffbb55' : '#41f1b6';
-    let empids = Array.isArray(subtask.empids) ? subtask.empids : (subtask.empids ? [subtask.empids] : []);
-    // Use the same logic as the main employee display for empidsDisplay
-    let empidsDisplay = empids.length
-        ? empids.map(id => {
-            const emp = employees.find(e => e.id === id);
-            return `<span style="display:inline-block;margin-right:1em;"><b>${id}</b> (${emp ? emp.name : 'Unknown'})</span>`;
-        }).join('')
-        : 'Not assigned';
+    
+    // Employee assignments
+    let assignedEmployees = subtask.assigned_employees || 'Not assigned';
+
+    // Load attachments for this subtask
+    let attachments = [];
+    try {
+        console.log('🔍 Fetching attachments for subtask ID:', subtask.subtask_id);
+        const response = await fetch(`/api/projects/subtask-attachments/${subtask.subtask_id}`);
+        console.log('🔍 Attachment response status:', response.status);
+        if (response.ok) {
+            attachments = await response.json();
+            console.log('🔍 Attachments loaded:', attachments);
+        } else {
+            console.error('❌ Failed to load attachments, status:', response.status);
+        }
+    } catch (error) {
+        console.error('❌ Error loading attachments:', error);
+    }
+
+    console.log('🔍 Rendering subtask details with', attachments.length, 'attachments');
 
     content.innerHTML = `
                 <div style="margin-bottom: 2rem;">
                     <div style="display:flex;align-items:center;justify-content:space-between;gap:1rem;">
-                        <h2 style="color:#7380ec;font-size:1.8rem;margin-bottom:0;">${subtask.name}</h2>
+                        <h2 style="color:#7380ec;font-size:1.8rem;margin-bottom:0;">${subtask.subtask_name}</h2>
                         <div style="display:flex;align-items:center;gap:0.7rem;">
                             <span class="priority-label" style="padding:4px 12px;border-radius:8px;font-size:1em;background:${priorityColor};color:white;">
                                 ${priority}
@@ -1508,57 +1505,44 @@ function showSubtaskDetails(subtask) {
                 
                 <div style="background:#f8f9fa;padding:1.5rem;border-radius:1rem;margin-bottom:1.5rem;">
                     <h3 style="color:#363949;margin-bottom:0.8rem;">Subtask Details</h3>
-                    <p style="color:#677483;white-space:pre-line;margin-bottom:1rem;">${subtask.details || 'No details provided.'}</p>
+                    <p style="color:#677483;white-space:pre-line;margin-bottom:1rem;">${subtask.subtask_description || 'No details provided.'}</p>
                     
                     <div style="display:grid;grid-template-columns:auto 1fr;gap:1rem;margin-top:1rem;">
                         <strong style="color:#363949;">Employee(s):</strong>
                         <span style="color:#677483;">
-                            ${empidsDisplay}
+                            ${assignedEmployees}
                         </span>
                         
                         <strong style="color:#363949;">Deadline:</strong>
-                        <span style="color:#677483;">${subtask.deadline ? formatDateTime(subtask.deadline) : 'N/A'}</span>
+                        <span style="color:#677483;">${subtask.subtask_deadline ? formatDateTime(subtask.subtask_deadline) : 'N/A'}</span>
                         
                         <strong style="color:#363949;">Created:</strong>
-                        <span style="color:#677483;">${subtask.createdAt ? formatDateTime(subtask.createdAt) : 'N/A'}</span>
+                        <span style="color:#677483;">${subtask.subtask_created_at ? formatDateTime(subtask.subtask_created_at) : 'N/A'}</span>
+                        
+                        <strong style="color:#363949;">Subtask ID:</strong>
+                        <span style="color:#677483;">${subtask.subtask_id || 'N/A'}</span>
+                        
+                        <strong style="color:#363949;">Task ID:</strong>
+                        <span style="color:#677483;">${subtask.task_id || 'N/A'}</span>
                     </div>
                 </div>
 
-                ${subtask.attachments && subtask.attachments.length > 0 ? `
-                <div style="background:#f8f9fa;padding:1.5rem;border-radius:1rem;">
-                    <h3 style="color:#363949;margin-bottom:0.8rem;">Attachments</h3>
-                    <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
-                        ${subtask.attachments.map(file => `
-                            <a href="#" class="download-attachment" style="display:inline-flex;align-items:center;gap:0.5rem;padding:0.5rem 1rem;background:#7380ec;color:white;border-radius:0.5rem;text-decoration:none;">
-                                <span class="material-icons-sharp">attach_file</span>
-                                ${file instanceof File ? file.name : file.split('/').pop()}
-                            </a>
-                        `).join('')}
-                    </div>
-                </div>
-                ` : ''}
-
-                ${(subtask.uploadedTaskFiles && subtask.uploadedTaskFiles.length > 0) ? `
+                ${attachments && attachments.length > 0 ? `
                 <div style="background:#f8f9fa;padding:1.5rem;border-radius:1rem;margin-bottom:1.2rem;">
-                    <h3 style="color:#363949;margin-bottom:0.8rem;">Task Uploaded File(s)</h3>
+                    <h3 style="color:#363949;margin-bottom:0.8rem;">Attachments (${attachments.length})</h3>
                     <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
-                        ${subtask.uploadedTaskFiles.map((file, idx) => `
-                            <a href="#" class="download-task-file" data-file-idx="${idx}" style="display:inline-flex;align-items:center;gap:0.5rem;padding:0.5rem 1rem;background:#41f1b6;color:white;border-radius:0.5rem;text-decoration:none;">
-                                <span class="material-icons-sharp">file_present</span>
-                                ${file instanceof File ? file.name : (typeof file === 'string' ? file.split('/').pop() : 'file')}
+                        ${attachments.map(attachment => `
+                            <a href="${attachment.subatt_file_path}" target="_blank" class="download-attachment" style="display:inline-flex;align-items:center;gap:0.5rem;padding:0.5rem 1rem;background:#7380ec;color:white;border-radius:0.5rem;text-decoration:none;">
+                                <span class="material-icons-sharp">attach_file</span>
+                                ${attachment.subatt_file_name}
                             </a>
                         `).join('')}
                     </div>
                 </div>
-                ` : ''}
+                ` : '<div style="background:#f8f9fa;padding:1.5rem;border-radius:1rem;margin-bottom:1.2rem;"><h3 style="color:#363949;margin-bottom:0.8rem;">Attachments</h3><p style="color:#677483;">No attachments found.</p></div>'}
 
-                <div style="margin-top:2rem;">
-                    <label style="font-weight:600;margin-left:1.5rem;">Upload Task File:</label>
-                    <input type="file" id="upload-task-file" multiple />
-                    <div style="display:flex;justify-content:center;align-items:center;gap:1rem;margin-top:1rem;">
-                        <button id="submit-task-btn" style="background:#41f1b6;color:#fff;padding:0.4em 1em;border-radius:0.5em;border:none;font-size:0.98em;cursor:pointer;min-width:90px;">Submit</button>
-                        <button id="update-subtask-btn" style="background:#7380ec;color:#fff;padding:0.4em 1em;border-radius:0.5em;border:none;font-size:0.98em;cursor:pointer;min-width:90px;">Update</button>
-                    </div>
+                <div style="margin-top:2rem;display:flex;justify-content:center;align-items:center;">
+                    <button id="update-subtask-btn" style="background:#7380ec;color:#fff;padding:0.4em 1em;border-radius:0.5em;border:none;font-size:0.98em;cursor:pointer;min-width:90px;">Update Subtask</button>
                 </div>
             `;
 
@@ -1569,519 +1553,21 @@ function showSubtaskDetails(subtask) {
     closeBtn.onclick = () => modal.style.display = 'none';
     modal.onclick = (e) => { if (e.target === modal) modal.style.display = 'none'; };
 
-    // Attachment download handlers
-    if (subtask.attachments) {
-        content.querySelectorAll('.download-attachment').forEach((link, index) => {
-            link.onclick = (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                const file = subtask.attachments[index];
-                let url, filename;
-                if (file instanceof File) {
-                    url = URL.createObjectURL(file);
-                    filename = file.name;
-                } else {
-                    url = file;
-                    filename = file.split('/').pop();
-                }
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = filename;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                if (file instanceof File) {
-                    setTimeout(() => URL.revokeObjectURL(url), 1000);
-                }
-            };
-        });
-    }
-
-    if (subtask.uploadedTaskFiles && subtask.uploadedTaskFiles.length > 0) {
-        content.querySelectorAll('.download-task-file').forEach(link => {
-            link.onclick = function (e) {
-                e.preventDefault();
-                e.stopPropagation();
-                const idx = parseInt(link.getAttribute('data-file-idx'), 10);
-                const file = subtask.uploadedTaskFiles[idx];
-                let url, filename;
-                if (file instanceof File) {
-                    url = URL.createObjectURL(file);
-                    filename = file.name;
-                } else {
-                    url = file;
-                    filename = typeof file === 'string' ? file.split('/').pop() : 'taskfile';
-                }
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = filename;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                if (file instanceof File) {
-                    setTimeout(() => URL.revokeObjectURL(url), 1000);
-                }
-            };
-        });
-    }
-
-    // Submit button handler
-    content.querySelector('#submit-task-btn').onclick = function () {
-        const uploadInput = content.querySelector('#upload-task-file');
-        if (!uploadInput.files || uploadInput.files.length === 0) {
-            alert('Please select at least one file to upload.');
-            uploadInput.focus();
-            return;
-        }
-        // Save uploaded files to subtask.uploadedTaskFiles (create array if not present)
-        if (!subtask.uploadedTaskFiles) subtask.uploadedTaskFiles = [];
-        Array.from(uploadInput.files).forEach(file => {
-            subtask.uploadedTaskFiles.push(file);
-        });
-        // Show a toast at bottom right
-        let toast = document.createElement('div');
-        toast.textContent = 'Submitted successfully!';
-        toast.style.position = 'fixed';
-        toast.style.bottom = '32px';
-        toast.style.right = '32px';
-        toast.style.background = '#41f1b6';
-        toast.style.color = '#fff';
-        toast.style.padding = '1em 2em';
-        toast.style.borderRadius = '0.7em';
-        toast.style.fontWeight = 'bold';
-        toast.style.zIndex = 9999;
-        toast.style.boxShadow = '0 2px 12px rgba(0,0,0,0.13)';
-        document.body.appendChild(toast);
-        setTimeout(() => {
-            toast.remove();
-        }, 2000);
-        // Close the modal
-        modal.style.display = 'none';
-        renderSubtasks();
-    };
-
     // Update subtask button handler
     content.querySelector('#update-subtask-btn').onclick = function () {
         showModal('subtask', subtask); // Pass the subtask object for update
         setTimeout(() => {
-            inputSubtaskName.value = subtask.name || '';
-            inputSubtaskDesc.value = subtask.details || '';
-            inputSubtaskEmpid.value = (Array.isArray(subtask.empids) ? subtask.empids.join(', ') : subtask.empids || '');
-            inputSubtaskDeadline.value = subtask.deadline ? toFlatpickrString(subtask.deadline) : '';
-            inputSubtaskPriority.value = subtask.priority || 'Medium';
+            inputSubtaskName.value = subtask.subtask_name || '';
+            inputSubtaskDesc.value = subtask.subtask_description || '';
+            inputSubtaskEmpid.value = assignedEmployees !== 'Not assigned' ? assignedEmployees : '';
+            inputSubtaskDeadline.value = subtask.subtask_deadline ? toFlatpickrString(subtask.subtask_deadline) : '';
+            inputSubtaskPriority.value = subtask.subtask_priority || 'Medium';
             // Change heading and button
-            modalTitle.textContent = 'Update the Subtask';
+            modalTitle.textContent = 'Update Subtask';
             document.getElementById('create-btn').textContent = 'Update';
         }, 100);
         modal.style.display = 'none';
     };
-}
-
-function setupTaskEmployeeAutocomplete() {
-    const input = document.getElementById('input-task-empid');
-    const suggestions = document.getElementById('task-empid-suggestions');
-    if (!input || !suggestions) return;
-
-    // Helper to show suggestions
-    input.oninput = function () {
-        const val = input.value.trim().toLowerCase();
-        suggestions.innerHTML = '';
-        if (!val) return;
-        
-        // Filter employees that start with 'emp' and match the input
-        const filtered = employees.filter(emp =>
-            emp.id.toLowerCase().includes(val) ||
-            emp.name.toLowerCase().includes(val)
-        );
-        
-        filtered.forEach(emp => {
-            const div = document.createElement('div');
-            div.className = 'autocomplete-suggestion';
-            div.textContent = `${emp.name} (${emp.id})`;
-            div.onclick = () => {
-                input.value = `${emp.name} (${emp.id})`;
-                suggestions.innerHTML = '';
-            };
-            suggestions.appendChild(div);
-        });
-        
-        suggestions.style.display = filtered.length ? 'block' : 'none';
-    };
-
-    // Hide suggestions on blur
-    input.onblur = function () {
-        setTimeout(() => { 
-            suggestions.innerHTML = ''; 
-            suggestions.style.display = 'none';
-        }, 150);
-    };
-
-    // On Enter, select first suggestion if available
-    input.onkeydown = function (e) {
-        if (e.key === 'Enter' && suggestions.firstChild) {
-            suggestions.firstChild.click();
-            e.preventDefault();
-        }
-    };
-}
-
-let selectedEmployees = [];
-function setupEmployeeAutocomplete() {
-    const input = document.getElementById('input-subtask-empid');
-    const suggestions = document.getElementById('subtask-empid-suggestions');
-    const selectedDiv = document.getElementById('selected-employees');
-    // let selectedEmployees = [];
-
-    // Helper to render selected chips
-    function renderSelected() {
-        selectedDiv.innerHTML = '';
-        selectedEmployees.forEach(emp => {
-            const chip = document.createElement('span');
-            chip.className = 'selected-employee-chip';
-            chip.textContent = `${emp.name} (${emp.id})`;
-            const remove = document.createElement('span');
-            remove.className = 'remove-chip';
-            remove.textContent = '×';
-            remove.onclick = () => {
-                selectedEmployees = selectedEmployees.filter(e => e.id !== emp.id);
-                renderSelected();
-            };
-            chip.appendChild(remove);
-            selectedDiv.appendChild(chip);
-        });
-    }
-
-    // Helper to show suggestions
-    input.oninput = function () {
-        const val = input.value.trim().toLowerCase();
-        suggestions.innerHTML = '';
-        if (!val) return;
-        const filtered = employees.filter(emp =>
-            emp.id.includes(val) ||
-            emp.name.toLowerCase().includes(val)
-        ).filter(emp => !selectedEmployees.some(e => e.id === emp.id));
-        filtered.forEach(emp => {
-            const div = document.createElement('div');
-            div.className = 'autocomplete-suggestion';
-            div.textContent = `${emp.name} (${emp.id})`;
-            div.onclick = () => {
-                selectedEmployees.push(emp);
-                renderSelected();
-                input.value = '';
-                suggestions.innerHTML = '';
-            };
-            suggestions.appendChild(div);
-        });
-    };
-
-    // Hide suggestions on blur
-    input.onblur = function () {
-        setTimeout(() => { suggestions.innerHTML = ''; }, 150);
-    };
-
-    // On Enter, select first suggestion if available
-    input.onkeydown = function (e) {
-        if (e.key === 'Enter' && suggestions.firstChild) {
-            suggestions.firstChild.click();
-            e.preventDefault();
-        }
-    };
-
-    // If editing, pre-fill selected employees
-    if (modalForm.getAttribute('data-editing-subtask') === 'true') {
-        const editingName = modalForm.getAttribute('data-editing-subtask-name');
-        const subtask = currentTask.subtasks.find(st => st.name === editingName);
-        if (subtask && Array.isArray(subtask.empids)) {
-            selectedEmployees = subtask.empids.map(id => {
-                const emp = employees.find(e => e.id === id);
-                return emp ? emp : { id, name: id };
-            });
-            renderSelected();
-        }
-    } else {
-        selectedEmployees = [];
-        renderSelected();
-    }
-}
-
-function setupLeaderAutocomplete() {
-    if (!inputLeaderId || !leaderIdSuggestions) return;
-
-    inputLeaderId.oninput = function () {
-        const val = inputLeaderId.value.trim().toLowerCase();
-        leaderIdSuggestions.innerHTML = '';
-        if (!val) return;
-        const filtered = employees.filter(emp =>
-            emp.id.includes(val) ||
-            emp.name.toLowerCase().includes(val)
-        );
-        filtered.forEach(emp => {
-            const div = document.createElement('div');
-            div.className = 'autocomplete-suggestion';
-            div.textContent = `${emp.name} (${emp.id})`;
-            div.onclick = () => {
-                inputLeaderId.value = `${emp.name} (${emp.id})`;
-                leaderIdSuggestions.innerHTML = '';
-            };
-            leaderIdSuggestions.appendChild(div);
-        });
-        leaderIdSuggestions.style.display = filtered.length ? 'block' : 'none';
-    };
-
-    inputLeaderId.onblur = function () {
-        setTimeout(() => { leaderIdSuggestions.innerHTML = ''; }, 150);
-    };
-
-    inputLeaderId.onkeydown = function (e) {
-        if (e.key === 'Enter' && leaderIdSuggestions.firstChild) {
-            leaderIdSuggestions.firstChild.click();
-            e.preventDefault();
-        }
-    };
-}
-
-// Form submission handler
-modalForm.addEventListener('submit', async function(e) {
-    e.preventDefault();
-    
-    const type = modalForm.getAttribute('data-type');
-    
-    if (type === 'team') {
-        const isEditing = modalForm.getAttribute('data-editing-team') === 'true';
-        if (isEditing) {
-            await handleTeamUpdate();
-        } else {
-            await handleTeamCreation();
-        }
-    } else if (type === 'project') {
-        // Handle project creation (DB logic)
-        const name = inputName.value.trim();
-        const description = inputDescription.value.trim();
-        const client = inputClient.value.trim();
-        const startdate = inputStartDate.value;
-        const deadline = inputDeadline.value;
-        const status = 1; // Default status (can be changed to a select if needed)
-        const adminUserId = getAdminUserId();
-        const teamId = currentTeam && currentTeam.team_id;
-
-        if (!name) {
-            alert('Please enter a project name.');
-            inputName.focus();
-            return;
-        }
-        if (!client) {
-            alert('Please enter a client name.');
-            inputClient.focus();
-            return;
-        }
-        if (!startdate) {
-            alert('Please select a start date.');
-            inputStartDate.focus();
-            return;
-        }
-        if (!deadline) {
-            alert('Please select a deadline.');
-            inputDeadline.focus();
-            return;
-        }
-        if (!teamId) {
-            alert('No team selected for creating a project.');
-            closeModal();
-            return;
-        }
-
-        // Send to backend
-        try {
-            const res = await fetch('/api/projects/create', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    proj_name: name,
-                    proj_description: description,
-                    proj_status: status,
-                    proj_start_date: startdate,
-                    proj_deadline: deadline,
-                    proj_created_by: adminUserId,
-                    team_id: teamId
-                })
-            });
-            const result = await res.json();
-            if (result.success) {
-                showNotification('Project created successfully!', 'success');
-                closeModal();
-                // Reload projects for this team
-                await loadProjectsByTeam(teamId);
-            } else {
-                showNotification(result.error || 'Failed to create project', 'error');
-            }
-        } catch (err) {
-            showNotification('Failed to create project. Please try again.', 'error');
-        }
-    } else if (type === 'task') {
-        // Handle task creation (DB logic)
-        const taskName = inputTaskName.value.trim();
-        const taskDesc = inputTaskDesc.value.trim();
-        const taskDeadline = inputTaskDeadline.value;
-        const taskPriority = inputTaskPriority.value;
-        let taskEmpidRaw = inputTaskEmpid.value.trim();
-        let taskEmpid = taskEmpidRaw;
-        const match = taskEmpidRaw.match(/\(([^)]+)\)$/);
-        if (match) {
-            taskEmpid = match[1];
-        }
-        
-        if (!taskName) {
-            alert('Please enter a task name.');
-            inputTaskName.focus();
-            return;
-        }
-        if (!taskDeadline) {
-            alert('Please select a task deadline.');
-            inputTaskDeadline.focus();
-            return;
-        }
-        if (!taskEmpid) {
-            alert('Please select an employee.');
-            inputTaskEmpid.focus();
-            return;
-        }
-        if (!currentProject) {
-            alert('No project is open to add a task.');
-            closeModal();
-            return;
-        }
-
-        const adminUserId = getAdminUserId();
-        if (!adminUserId) {
-            alert('No admin user ID found. Please log in again.');
-            return;
-        }
-
-        // Send to backend
-        try {
-            const res = await fetch('/api/projects/create-task', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    task_name: taskName,
-                    task_description: taskDesc,
-                    task_priority: taskPriority,
-                    task_employee_id: taskEmpid,
-                    task_deadline: taskDeadline,
-                    project_id: currentProject.proj_id,
-                    admin_user_id: adminUserId
-                })
-            });
-            const result = await res.json();
-            if (result.success) {
-                showNotification('Task created successfully!', 'success');
-                closeModal();
-                // Reload tasks for this project
-                await loadTasksForCurrentProject();
-            } else {
-                showNotification(result.error || 'Failed to create task', 'error');
-            }
-        } catch (err) {
-            showNotification('Failed to create task. Please try again.', 'error');
-        }
-    } else if (type === 'subtask') {
-        // Handle subtask creation (existing logic)
-        const subtaskName = inputSubtaskName.value.trim();
-        const subtaskDesc = inputSubtaskDesc.value.trim();
-        const subtaskDeadline = inputSubtaskDeadline.value;
-        const subtaskPriority = inputSubtaskPriority.value;
-        const subtaskEmpids = selectedEmployees.map(e => e.id);
-        const subtaskAttachment = inputSubtaskAttachment.files ? Array.from(inputSubtaskAttachment.files) : [];
-        
-        if (!subtaskName) {
-            alert('Please enter a subtask name.');
-            inputSubtaskName.focus();
-            return;
-        }
-        if (!selectedEmployees.length) {
-            alert('Please select at least one employee.');
-            inputSubtaskEmpid.focus();
-            return;
-        }
-        if (!subtaskDeadline) {
-            alert('Please select a subtask deadline.');
-            inputSubtaskDeadline.focus();
-            return;
-        }
-        if (!currentTask) {
-            alert('No Task is open to add subtask.');
-            closeModal();
-            return;
-        }
-        
-        const newSubtask = {
-            name: subtaskName,
-            details: subtaskDesc,
-            empids: subtaskEmpids,
-            deadline: new Date(subtaskDeadline),
-            createdAt: new Date(),
-            priority: subtaskPriority,
-            attachments: subtaskAttachment
-        };
-        currentTask.subtasks.unshift(newSubtask);
-        renderSubtasks();
-        closeModal();
-    }
-});
-
-// Handle team creation with backend API
-async function handleTeamCreation() {
-    const teamName = inputTeamName.value.trim();
-    const teamDescription = inputTeamDesc.value.trim();
-    let leaderIdRaw = inputLeaderId.value.trim();
-    let leaderId = leaderIdRaw;
-    
-    // Extract leader ID from format "Name (ID)"
-    const match = leaderIdRaw.match(/\(([^)]+)\)$/);
-    if (match) {
-        leaderId = match[1];
-    }
-    
-    if (!teamName) {
-        alert('Please enter a team name.');
-        inputTeamName.focus();
-        return;
-    }
-    
-    const adminUserId = getAdminUserId();
-    if (!adminUserId) {
-        alert('No admin user ID found. Please log in again.');
-        return;
-    }
-    
-    try {
-        const response = await fetch('/api/projects/create-team', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                team_name: teamName,
-                team_description: teamDescription,
-                leader_id: leaderId || null,
-                admin_user_id: adminUserId
-            })
-        });
-        
-        const result = await response.json();
-        
-        if (result.success) {
-            showNotification('Team created successfully!', 'success');
-            closeModal();
-            // Reload teams to show the new team
-            await loadTeams();
-        } else {
-            showNotification(result.error || 'Failed to create team', 'error');
-        }
-    } catch (error) {
-        console.error('Team creation error:', error);
-        showNotification('Failed to create team. Please try again.', 'error');
-    }
 }
 
 // Handle team update with backend API
@@ -2339,6 +1825,715 @@ async function loadTasksByProject(projectId) {
         console.error('❌ Error loading tasks for project:', error);
         showNotification(`Failed to load tasks: ${error.message}`, 'error');
         return [];
+    }
+}
+
+let selectedEmployees = [];
+function setupEmployeeAutocomplete() {
+    const input = document.getElementById('input-subtask-empid');
+    const suggestions = document.getElementById('subtask-empid-suggestions');
+    const selectedDiv = document.getElementById('selected-employees');
+    
+    // Filter employees to only show those with IDs starting with "emp"
+    const employeeEmployees = employees.filter(emp => emp.id.startsWith('emp'));
+
+    // Helper to render selected chips
+    function renderSelected() {
+        selectedDiv.innerHTML = '';
+        selectedEmployees.forEach(emp => {
+            const chip = document.createElement('span');
+            chip.className = 'selected-employee-chip';
+            chip.textContent = `${emp.name} (${emp.id})`;
+            chip.style.cssText = `
+                display: inline-block;
+                background: #7380ec;
+                color: white;
+                padding: 0.3em 0.8em;
+                border-radius: 1rem;
+                font-size: 0.9em;
+                margin: 0.2em;
+                position: relative;
+            `;
+            const remove = document.createElement('span');
+            remove.className = 'remove-chip';
+            remove.textContent = '×';
+            remove.style.cssText = `
+                margin-left: 0.5em;
+                cursor: pointer;
+                font-weight: bold;
+                font-size: 1.1em;
+            `;
+            remove.onclick = () => {
+                selectedEmployees = selectedEmployees.filter(e => e.id !== emp.id);
+                renderSelected();
+            };
+            chip.appendChild(remove);
+            selectedDiv.appendChild(chip);
+        });
+    }
+
+    // Helper to show suggestions
+    input.oninput = function () {
+        const val = input.value.trim().toLowerCase();
+        suggestions.innerHTML = '';
+        if (!val) return;
+        
+        const filtered = employeeEmployees.filter(emp =>
+            emp.id.toLowerCase().includes(val) ||
+            emp.name.toLowerCase().includes(val)
+        ).filter(emp => !selectedEmployees.some(e => e.id === emp.id));
+        
+        if (filtered.length === 0) {
+            const noResults = document.createElement('div');
+            noResults.className = 'autocomplete-suggestion';
+            noResults.textContent = 'No employees found';
+            noResults.style.color = '#999';
+            noResults.style.fontStyle = 'italic';
+            suggestions.appendChild(noResults);
+        } else {
+            filtered.forEach(emp => {
+                const div = document.createElement('div');
+                div.className = 'autocomplete-suggestion';
+                div.innerHTML = `
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span>${emp.name}</span>
+                        <span style="color: #7380ec; font-size: 0.9em;">${emp.id}</span>
+                    </div>
+                `;
+                div.onclick = () => {
+                    selectedEmployees.push(emp);
+                    renderSelected();
+                    input.value = '';
+                    suggestions.innerHTML = '';
+                    suggestions.style.display = 'none';
+                };
+                suggestions.appendChild(div);
+            });
+        }
+        
+        suggestions.style.display = filtered.length > 0 || val.length > 0 ? 'block' : 'none';
+    };
+
+    // Hide suggestions on blur
+    input.onblur = function () {
+        setTimeout(() => { 
+            suggestions.innerHTML = ''; 
+            suggestions.style.display = 'none';
+        }, 150);
+    };
+
+    // On Enter, select first suggestion if available
+    input.onkeydown = function (e) {
+        if (e.key === 'Enter' && suggestions.firstChild && !suggestions.firstChild.textContent.includes('No employees found')) {
+            e.preventDefault();
+            suggestions.firstChild.click();
+        }
+    };
+
+    // If editing, pre-fill selected employees
+    if (modalForm.getAttribute('data-editing-subtask') === 'true') {
+        const editingName = modalForm.getAttribute('data-editing-subtask-name');
+        const subtask = currentTask.subtasks.find(st => st.subtask_name === editingName);
+        if (subtask && subtask.assigned_employees && subtask.assigned_employees !== 'Not assigned') {
+            // Parse assigned employees from the string format "Name (ID), Name2 (ID2)"
+            const employeeStrings = subtask.assigned_employees.split(', ');
+            selectedEmployees = employeeStrings.map(empStr => {
+                const match = empStr.match(/^(.+?) \((.+?)\)$/);
+                if (match) {
+                    return { name: match[1], id: match[2] };
+                }
+                return null;
+            }).filter(emp => emp !== null);
+            renderSelected();
+        }
+    } else {
+        selectedEmployees = [];
+        renderSelected();
+    }
+} // <-- This closes setupEmployeeAutocomplete properly
+
+// Setup leader autocomplete for team creation
+function setupLeaderAutocomplete() {
+    const input = document.getElementById('input-leader-id');
+    const suggestions = document.getElementById('leader-id-suggestions');
+    
+    if (!input || !suggestions) {
+        console.warn('Leader autocomplete elements not found');
+        return;
+    }
+
+    // Filter employees to only show those with IDs starting with "emp"
+    const employeeEmployees = employees.filter(emp => emp.id.startsWith('emp'));
+
+    // Helper to show suggestions
+    input.oninput = function () {
+        const val = input.value.trim().toLowerCase();
+        suggestions.innerHTML = '';
+        if (!val) {
+            suggestions.style.display = 'none';
+            return;
+        }
+        
+        const filtered = employeeEmployees.filter(emp =>
+            emp.id.toLowerCase().includes(val) ||
+            emp.name.toLowerCase().includes(val)
+        );
+        
+        if (filtered.length === 0) {
+            const noResults = document.createElement('div');
+            noResults.className = 'autocomplete-suggestion';
+            noResults.textContent = 'No employees found';
+            noResults.style.color = '#999';
+            noResults.style.fontStyle = 'italic';
+            suggestions.appendChild(noResults);
+        } else {
+            filtered.forEach(emp => {
+                const div = document.createElement('div');
+                div.className = 'autocomplete-suggestion';
+                div.innerHTML = `
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span>${emp.name}</span>
+                        <span style="color: #7380ec; font-size: 0.9em;">${emp.id}</span>
+                    </div>
+                `;
+                div.onclick = () => {
+                    input.value = `${emp.name} (${emp.id})`;
+                    suggestions.innerHTML = '';
+                    suggestions.style.display = 'none';
+                };
+                suggestions.appendChild(div);
+            });
+        }
+        
+        suggestions.style.display = filtered.length > 0 || val.length > 0 ? 'block' : 'none';
+    };
+
+    // Hide suggestions on blur
+    input.onblur = function () {
+        setTimeout(() => { 
+            suggestions.innerHTML = ''; 
+            suggestions.style.display = 'none';
+        }, 150);
+    };
+
+    // On Enter, select first suggestion if available
+    input.onkeydown = function (e) {
+        if (e.key === 'Enter' && suggestions.firstChild && !suggestions.firstChild.textContent.includes('No employees found')) {
+            e.preventDefault();
+            suggestions.firstChild.click();
+        }
+    };
+}
+
+// Setup task employee autocomplete for task creation
+function setupTaskEmployeeAutocomplete() {
+    const input = document.getElementById('input-task-empid');
+    const suggestions = document.getElementById('task-empid-suggestions');
+    
+    if (!input || !suggestions) {
+        console.warn('Task employee autocomplete elements not found');
+        return;
+    }
+
+    // Filter employees to only show those with IDs starting with "emp"
+    const employeeEmployees = employees.filter(emp => emp.id.startsWith('emp'));
+
+    // Helper to show suggestions
+    input.oninput = function () {
+        const val = input.value.trim().toLowerCase();
+        suggestions.innerHTML = '';
+        if (!val) {
+            suggestions.style.display = 'none';
+            return;
+        }
+        
+        const filtered = employeeEmployees.filter(emp =>
+            emp.id.toLowerCase().includes(val) ||
+            emp.name.toLowerCase().includes(val)
+        );
+        
+        if (filtered.length === 0) {
+            const noResults = document.createElement('div');
+            noResults.className = 'autocomplete-suggestion';
+            noResults.textContent = 'No employees found';
+            noResults.style.color = '#999';
+            noResults.style.fontStyle = 'italic';
+            suggestions.appendChild(noResults);
+        } else {
+            filtered.forEach(emp => {
+                const div = document.createElement('div');
+                div.className = 'autocomplete-suggestion';
+                div.innerHTML = `
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span>${emp.name}</span>
+                        <span style="color: #7380ec; font-size: 0.9em;">${emp.id}</span>
+                    </div>
+                `;
+                div.onclick = () => {
+                    input.value = `${emp.name} (${emp.id})`;
+                    suggestions.innerHTML = '';
+                    suggestions.style.display = 'none';
+                };
+                suggestions.appendChild(div);
+            });
+        }
+        
+        suggestions.style.display = filtered.length > 0 || val.length > 0 ? 'block' : 'none';
+    };
+
+    // Hide suggestions on blur
+    input.onblur = function () {
+        setTimeout(() => { 
+            suggestions.innerHTML = ''; 
+            suggestions.style.display = 'none';
+        }, 150);
+    };
+
+    // On Enter, select first suggestion if available
+    input.onkeydown = function (e) {
+        if (e.key === 'Enter' && suggestions.firstChild && !suggestions.firstChild.textContent.includes('No employees found')) {
+            e.preventDefault();
+            suggestions.firstChild.click();
+        }
+    };
+}
+
+// Form submission handler
+modalForm.addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const type = modalForm.getAttribute('data-type');
+    
+    if (type === 'team') {
+        const isEditing = modalForm.getAttribute('data-editing-team') === 'true';
+        if (isEditing) {
+            await handleTeamUpdate();
+        } else {
+            await handleTeamCreation();
+        }
+    } else if (type === 'project') {
+        // Handle project creation (DB logic)
+        const name = inputName.value.trim();
+        const description = inputDescription.value.trim();
+        const client = inputClient.value.trim();
+        const startdate = inputStartDate.value;
+        const deadline = inputDeadline.value;
+        const status = 1; // Default status (can be changed to a select if needed)
+        const adminUserId = getAdminUserId();
+        const teamId = currentTeam && currentTeam.team_id;
+
+        if (!name) {
+            alert('Please enter a project name.');
+            inputName.focus();
+            return;
+        }
+        if (!client) {
+            alert('Please enter a client name.');
+            inputClient.focus();
+            return;
+        }
+        if (!startdate) {
+            alert('Please select a start date.');
+            inputStartDate.focus();
+            return;
+        }
+        if (!deadline) {
+            alert('Please select a deadline.');
+            inputDeadline.focus();
+            return;
+        }
+        if (!teamId) {
+            alert('No team selected for creating a project.');
+            closeModal();
+            return;
+        }
+
+        // Send to backend
+        try {
+            const res = await fetch('/api/projects/create', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    proj_name: name,
+                    proj_description: description,
+                    proj_status: status,
+                    proj_start_date: startdate,
+                    proj_deadline: deadline,
+                    proj_created_by: adminUserId,
+                    team_id: teamId
+                })
+            });
+            const result = await res.json();
+            if (result.success) {
+                showNotification('Project created successfully!', 'success');
+                closeModal();
+                // Reload projects for this team
+                await loadProjectsByTeam(teamId);
+            } else {
+                showNotification(result.error || 'Failed to create project', 'error');
+            }
+        } catch (err) {
+            showNotification('Failed to create project. Please try again.', 'error');
+        }
+    } else if (type === 'task') {
+        // Handle task creation (DB logic)
+        const taskName = inputTaskName.value.trim();
+        const taskDesc = inputTaskDesc.value.trim();
+        const taskDeadline = inputTaskDeadline.value;
+        const taskPriority = inputTaskPriority.value;
+        let taskEmpidRaw = inputTaskEmpid.value.trim();
+        let taskEmpid = taskEmpidRaw;
+        const match = taskEmpidRaw.match(/\(([^)]+)\)$/);
+        if (match) {
+            taskEmpid = match[1];
+        }
+        
+        if (!taskName) {
+            alert('Please enter a task name.');
+            inputTaskName.focus();
+            return;
+        }
+        if (!taskDeadline) {
+            alert('Please select a task deadline.');
+            inputTaskDeadline.focus();
+            return;
+        }
+        if (!taskEmpid) {
+            alert('Please select an employee.');
+            inputTaskEmpid.focus();
+            return;
+        }
+        if (!currentProject) {
+            alert('No project is open to add a task.');
+            closeModal();
+            return;
+        }
+
+        const adminUserId = getAdminUserId();
+        if (!adminUserId) {
+            alert('No admin user ID found. Please log in again.');
+            return;
+        }
+
+        // Send to backend
+        try {
+            const res = await fetch('/api/projects/create-task', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    task_name: taskName,
+                    task_description: taskDesc,
+                    task_priority: taskPriority,
+                    task_employee_id: taskEmpid,
+                    task_deadline: taskDeadline,
+                    project_id: currentProject.proj_id,
+                    admin_user_id: adminUserId
+                })
+            });
+            const result = await res.json();
+            if (result.success) {
+                showNotification('Task created successfully!', 'success');
+                closeModal();
+                // Reload tasks for this project
+                await loadTasksForCurrentProject();
+            } else {
+                showNotification(result.error || 'Failed to create task', 'error');
+            }
+        } catch (err) {
+            showNotification('Failed to create task. Please try again.', 'error');
+        }
+    } else if (type === 'subtask') {
+        // Handle subtask creation with file uploads
+        console.log('🔍 Starting subtask creation...');
+        const subtaskName = inputSubtaskName.value.trim();
+        const subtaskDesc = inputSubtaskDesc.value.trim();
+        const subtaskDeadline = inputSubtaskDeadline.value;
+        const subtaskPriority = inputSubtaskPriority.value;
+        const subtaskEmpids = selectedEmployees.map(e => e.id);
+        const subtaskAttachment = inputSubtaskAttachment.files ? Array.from(inputSubtaskAttachment.files) : [];
+        
+        console.log('🔍 Subtask form data:', {
+            subtaskName,
+            subtaskDesc,
+            subtaskDeadline,
+            subtaskPriority,
+            subtaskEmpids,
+            fileCount: subtaskAttachment.length,
+            currentTask: currentTask ? currentTask.task_id : 'null'
+        });
+        
+        if (!subtaskName) {
+            alert('Please enter a subtask name.');
+            inputSubtaskName.focus();
+            return;
+        }
+        if (!selectedEmployees.length) {
+            alert('Please select at least one employee.');
+            inputSubtaskEmpid.focus();
+            return;
+        }
+        if (!subtaskDeadline) {
+            alert('Please select a subtask deadline.');
+            inputSubtaskDeadline.focus();
+            return;
+        }
+        if (!currentTask) {
+            alert('No Task is open to add subtask.');
+            closeModal();
+            return;
+        }
+
+        const adminUserId = getAdminUserId();
+        if (!adminUserId) {
+            alert('No admin user ID found. Please log in again.');
+            return;
+        }
+
+        // Create FormData for file upload
+        const formData = new FormData();
+        formData.append('subtask_name', subtaskName);
+        formData.append('subtask_description', subtaskDesc);
+        formData.append('task_id', currentTask.task_id);
+        formData.append('employee_ids', JSON.stringify(subtaskEmpids));
+        formData.append('subtask_deadline', subtaskDeadline);
+        formData.append('subtask_priority', subtaskPriority);
+        formData.append('admin_user_id', adminUserId);
+        
+        // Append files
+        for (let i = 0; i < subtaskAttachment.length; i++) {
+            formData.append('attachments', subtaskAttachment[i]);
+        }
+
+        // Send to backend
+        try {
+            console.log('🔍 Creating subtask with data:', {
+                subtaskName,
+                subtaskDesc,
+                taskId: currentTask.task_id,
+                subtaskEmpids,
+                subtaskDeadline,
+                subtaskPriority,
+                adminUserId,
+                fileCount: subtaskAttachment.length
+            });
+            
+            console.log('🔍 Sending request to /api/projects/create-subtask');
+            const res = await fetch('/api/projects/create-subtask', {
+                method: 'POST',
+                body: formData
+            });
+            
+            console.log('🔍 Response status:', res.status);
+            const result = await res.json();
+            console.log('🔍 Response result:', result);
+            
+            if (result.success) {
+                showNotification('Subtask created successfully!', 'success');
+                closeModal();
+                // Reload subtasks for this task
+                console.log('🔍 Reloading subtasks...');
+                await loadSubtasksForCurrentTask();
+            } else {
+                showNotification(result.error || 'Failed to create subtask', 'error');
+            }
+        } catch (err) {
+            console.error('❌ Subtask creation error:', err);
+            showNotification('Failed to create subtask. Please try again.', 'error');
+        }
+    }
+});
+
+// Handle team creation with backend API
+async function handleTeamCreation() {
+    const teamName = inputTeamName.value.trim();
+    const teamDescription = inputTeamDesc.value.trim();
+    let leaderIdRaw = inputLeaderId.value.trim();
+    let leaderId = leaderIdRaw;
+    
+    // Extract leader ID from format "Name (ID)"
+    const match = leaderIdRaw.match(/\(([^)]+)\)$/);
+    if (match) {
+        leaderId = match[1];
+    }
+    
+    if (!teamName) {
+        alert('Please enter a team name.');
+        inputTeamName.focus();
+        return;
+    }
+    
+    const adminUserId = getAdminUserId();
+    if (!adminUserId) {
+        alert('No admin user ID found. Please log in again.');
+        return;
+    }
+    
+    try {
+        const response = await fetch('/api/projects/create-team', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                team_name: teamName,
+                team_description: teamDescription,
+                leader_id: leaderId || null,
+                admin_user_id: adminUserId
+            })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            showNotification('Team created successfully!', 'success');
+            closeModal();
+            // Reload teams to show the new team
+            await loadTeams();
+        } else {
+            showNotification(result.error || 'Failed to create team', 'error');
+        }
+    } catch (error) {
+        console.error('Team creation error:', error);
+        showNotification('Failed to create team. Please try again.', 'error');
+    }
+}
+
+// Delete functions
+async function deleteTeam(teamId) {
+    const adminUserId = getAdminUserId();
+    if (!adminUserId) {
+        showNotification('No admin user ID found. Please log in again.', 'error');
+        return;
+    }
+
+    try {
+        const response = await fetch(`/api/projects/delete-team/${teamId}`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                admin_user_id: adminUserId
+            })
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            showNotification('Team deleted successfully!', 'success');
+            // Reload teams to reflect the deletion
+            await loadTeams();
+        } else {
+            showNotification(result.error || 'Failed to delete team', 'error');
+        }
+    } catch (error) {
+        console.error('Team deletion error:', error);
+        showNotification('Failed to delete team. Please try again.', 'error');
+    }
+}
+
+async function deleteProject(projectId) {
+    const adminUserId = getAdminUserId();
+    if (!adminUserId) {
+        showNotification('No admin user ID found. Please log in again.', 'error');
+        return;
+    }
+
+    try {
+        const response = await fetch(`/api/projects/delete-project/${projectId}`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                admin_user_id: adminUserId
+            })
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            showNotification('Project deleted successfully!', 'success');
+            // Reload projects for current team
+            if (currentTeam) {
+                await loadProjectsByTeam(currentTeam.team_id);
+            }
+        } else {
+            showNotification(result.error || 'Failed to delete project', 'error');
+        }
+    } catch (error) {
+        console.error('Project deletion error:', error);
+        showNotification('Failed to delete project. Please try again.', 'error');
+    }
+}
+
+async function deleteTask(taskId) {
+    const adminUserId = getAdminUserId();
+    if (!adminUserId) {
+        showNotification('No admin user ID found. Please log in again.', 'error');
+        return;
+    }
+
+    try {
+        const response = await fetch(`/api/projects/delete-task/${taskId}`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                admin_user_id: adminUserId
+            })
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            showNotification('Task deleted successfully!', 'success');
+            // Reload tasks for current project
+            if (currentProject) {
+                await loadTasksForCurrentProject();
+            }
+        } else {
+            showNotification(result.error || 'Failed to delete task', 'error');
+        }
+    } catch (error) {
+        console.error('Task deletion error:', error);
+        showNotification('Failed to delete task. Please try again.', 'error');
+    }
+}
+
+async function deleteSubtask(subtaskId) {
+    const adminUserId = getAdminUserId();
+    if (!adminUserId) {
+        showNotification('No admin user ID found. Please log in again.', 'error');
+        return;
+    }
+
+    try {
+        const response = await fetch(`/api/projects/delete-subtask/${subtaskId}`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                admin_user_id: adminUserId
+            })
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            showNotification('Subtask deleted successfully!', 'success');
+            // Reload subtasks for current task
+            if (currentTask) {
+                await loadSubtasksForCurrentTask();
+            }
+        } else {
+            showNotification(result.error || 'Failed to delete subtask', 'error');
+        }
+    } catch (error) {
+        console.error('Subtask deletion error:', error);
+        showNotification('Failed to delete subtask. Please try again.', 'error');
     }
 }
 

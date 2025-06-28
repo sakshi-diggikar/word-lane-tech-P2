@@ -5,8 +5,15 @@ const router = express.Router();
 const multer = require("multer");
 const db = require("../db"); //  DB pool
 const { createS3Folder, uploadFileToS3 } = require("../utils/s3Utils");
+const { s3 } = require("../s3"); // Fixed S3 import
 
 require("dotenv").config();
+
+// Debug route to test router
+router.get("/debug", (req, res) => {
+    console.log('🔍 Debug route hit');
+    res.json({ message: "Projects router is working!", routes: ["delete-team", "delete-project", "delete-task", "delete-subtask"] });
+});
 
 // ✅ Multer for in-memory file upload
 const storage = multer.memoryStorage();
@@ -89,10 +96,110 @@ async function updateProjectsTable() {
     }
 }
 
+// Create subtask_assignment table if it doesn't exist
+async function createSubtaskAssignmentTable() {
+    try {
+        await db.query(`
+            CREATE TABLE IF NOT EXISTS subtask_assignment (
+                subass_id INT AUTO_INCREMENT PRIMARY KEY,
+                subtask_id INT,
+                employee_id INT,
+                subass_assigned_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                subass_updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                FOREIGN KEY (subtask_id) REFERENCES subtasks(subtask_id) ON DELETE CASCADE,
+                FOREIGN KEY (employee_id) REFERENCES employees(emp_id) ON DELETE CASCADE
+            )
+        `);
+        console.log("Subtask assignment table ready");
+    } catch (error) {
+        console.error("Error creating subtask_assignment table:", error);
+    }
+}
+
+// Create subtask_attachment table if it doesn't exist
+async function createSubtaskAttachmentTable() {
+    try {
+        await db.query(`
+            CREATE TABLE IF NOT EXISTS subtask_attachment (
+                subatt_id INT AUTO_INCREMENT PRIMARY KEY,
+                subatt_subtask_id INT,
+                subatt_file_name VARCHAR(255),
+                subatt_file_type VARCHAR(100),
+                subatt_file_path TEXT,
+                subatt_uploaded_by INT,
+                subatt_created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                subatt_updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                FOREIGN KEY (subatt_subtask_id) REFERENCES subtasks(subtask_id) ON DELETE CASCADE,
+                FOREIGN KEY (subatt_uploaded_by) REFERENCES employees(emp_id) ON DELETE SET NULL
+            )
+        `);
+        console.log("Subtask attachment table ready");
+    } catch (error) {
+        console.error("Error creating subtask_attachment table:", error);
+    }
+}
+
+// Create subtasks table if it doesn't exist
+async function createSubtasksTable() {
+    try {
+        await db.query(`
+            CREATE TABLE IF NOT EXISTS subtasks (
+                subtask_id INT AUTO_INCREMENT PRIMARY KEY,
+                subtask_name VARCHAR(50),
+                subtask_description VARCHAR(255),
+                task_id INT,
+                employee_id INT,
+                subtask_status INT DEFAULT 1,
+                subtask_priority VARCHAR(20) DEFAULT 'Medium',
+                subtask_deadline DATETIME,
+                subtask_created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                subtask_updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                FOREIGN KEY (task_id) REFERENCES tasks(task_id) ON DELETE CASCADE,
+                FOREIGN KEY (employee_id) REFERENCES employees(emp_id) ON DELETE SET NULL,
+                FOREIGN KEY (subtask_status) REFERENCES progress_levels(progress_id) ON DELETE SET NULL
+            )
+        `);
+        console.log("Subtasks table ready");
+    } catch (error) {
+        console.error("Error creating subtasks table:", error);
+    }
+}
+
+// Update subtasks table to include priority and deadline if they don't exist
+async function updateSubtasksTable() {
+    try {
+        // Check if subtask_priority column exists
+        const [priorityColumns] = await db.query("SHOW COLUMNS FROM subtasks LIKE 'subtask_priority'");
+        if (priorityColumns.length === 0) {
+            await db.query(`
+                ALTER TABLE subtasks 
+                ADD COLUMN subtask_priority VARCHAR(20) DEFAULT 'Medium'
+            `);
+            console.log("Subtasks table updated with subtask_priority column");
+        }
+        
+        // Check if subtask_deadline column exists
+        const [deadlineColumns] = await db.query("SHOW COLUMNS FROM subtasks LIKE 'subtask_deadline'");
+        if (deadlineColumns.length === 0) {
+            await db.query(`
+                ALTER TABLE subtasks 
+                ADD COLUMN subtask_deadline DATETIME
+            `);
+            console.log("Subtasks table updated with subtask_deadline column");
+        }
+    } catch (error) {
+        console.error("Error updating subtasks table:", error);
+    }
+}
+
 // Initialize tables
 createProgressLevelsTable();
 createTeamsTable();
 updateProjectsTable();
+createSubtasksTable();
+updateSubtasksTable();
+createSubtaskAssignmentTable();
+createSubtaskAttachmentTable();
 
 /**
  * ✅ POST /api/projects/create
@@ -493,6 +600,7 @@ router.get("/employees", async (req, res) => {
              WHERE emp_user_id LIKE 'emp%' 
              ORDER BY emp_first_name, emp_last_name`
         );
+        console.log('🔍 Backend: Found', employees.length, 'employees with emp IDs');
         res.json(employees);
     } catch (err) {
         console.error("Fetch employees error:", err);
@@ -500,10 +608,704 @@ router.get("/employees", async (req, res) => {
     }
 });
 
+/**
+ * ✅ POST /api/projects/create-subtask
+ * Create new subtask with file attachments
+ * S3 folder structure: admin_id/team_name/project_name/task_name/subtask_name/
+ */
+router.post("/create-subtask", upload.array('attachments'), async (req, res) => {
+    const { 
+        subtask_name, 
+        subtask_description, 
+        task_id, 
+        employee_ids, 
+        subtask_deadline, 
+        subtask_priority,
+        admin_user_id 
+    } = req.body;
+    const files = req.files || [];
+
+    try {
+        // Validate task exists and get project/team info
+        const [taskRows] = await db.query(
+            `SELECT t.*, p.proj_name, p.team_id, tm.team_name, tm.team_created_by 
+             FROM tasks t 
+             JOIN projects p ON t.task_project_id = p.proj_id 
+             JOIN teams tm ON p.team_id = tm.team_id 
+             WHERE t.task_id = ?`,
+            [task_id]
+        );
+        
+        if (taskRows.length === 0) {
+            return res.status(400).json({ success: false, error: "Invalid task ID" });
+        }
+        
+        const task = taskRows[0];
+        const { proj_name, team_name, team_created_by } = task;
+
+        // Parse employee IDs
+        let employeeIdsArray = [];
+        if (employee_ids) {
+            try {
+                employeeIdsArray = JSON.parse(employee_ids);
+            } catch (e) {
+                employeeIdsArray = employee_ids.split(',').map(id => id.trim());
+            }
+        }
+
+        // Validate employees exist
+        for (const empId of employeeIdsArray) {
+            const [empRows] = await db.query(
+                "SELECT emp_id FROM employees WHERE emp_user_id = ?",
+                [empId]
+            );
+            if (empRows.length === 0) {
+                return res.status(400).json({ success: false, error: `Invalid employee ID: ${empId}` });
+            }
+        }
+
+        // Create S3 folder structure: admin_id/team_name/project_name/task_name/subtask_name/
+        const s3FolderPath = `${team_created_by}/${team_name}/${proj_name}/${task.task_name}/${subtask_name}`;
+        await createS3Folder(s3FolderPath);
+
+        // Insert subtask into database
+        // Get the emp_id of the first assigned employee to store in subtasks table
+        let primaryEmployeeId = null;
+        if (employeeIdsArray.length > 0) {
+            const [empRows] = await db.query(
+                "SELECT emp_id FROM employees WHERE emp_user_id = ?",
+                [employeeIdsArray[0]]
+            );
+            if (empRows.length > 0) {
+                primaryEmployeeId = empRows[0].emp_id;
+            }
+        }
+
+        const [result] = await db.query(
+            `INSERT INTO subtasks 
+            (subtask_name, subtask_description, task_id, employee_id, subtask_status, subtask_priority, subtask_deadline, subtask_created_at, subtask_updated_at) 
+            VALUES (?, ?, ?, ?, 1, ?, ?, NOW(), NOW())`,
+            [subtask_name, subtask_description, task_id, primaryEmployeeId, subtask_priority, subtask_deadline]
+        );
+
+        const subtask_id = result.insertId;
+
+        // Insert employee assignments
+        for (const empId of employeeIdsArray) {
+            const [empRows] = await db.query(
+                "SELECT emp_id FROM employees WHERE emp_user_id = ?",
+                [empId]
+            );
+            if (empRows.length > 0) {
+                await db.query(
+                    `INSERT INTO subtask_assignment 
+                    (subtask_id, employee_id, subass_assigned_at, subass_updated_at) 
+                    VALUES (?, ?, NOW(), NOW())`,
+                    [subtask_id, empRows[0].emp_id]
+                );
+            }
+        }
+
+        // Upload files to S3 and store metadata
+        const uploadedFiles = [];
+        for (const file of files) {
+            try {
+                const s3Url = await uploadFileToS3(s3FolderPath, file);
+                
+                // Get the emp_id for the admin user
+                const [adminRows] = await db.query("SELECT emp_id FROM employees WHERE emp_user_id = ?", [admin_user_id]);
+                const adminEmpId = adminRows.length > 0 ? adminRows[0].emp_id : null;
+                
+                // Store file metadata in database
+                await db.query(
+                    `INSERT INTO subtask_attachment 
+                    (subatt_subtask_id, subatt_file_name, subatt_file_type, subatt_file_path, subatt_uploaded_by, subatt_created_at, subatt_updated_at) 
+                    VALUES (?, ?, ?, ?, ?, NOW(), NOW())`,
+                    [subtask_id, file.originalname, file.mimetype, s3Url, adminEmpId]
+                );
+
+                uploadedFiles.push({
+                    name: file.originalname,
+                    type: file.mimetype,
+                    url: s3Url
+                });
+            } catch (uploadError) {
+                console.error("File upload error:", uploadError);
+                // Continue with other files even if one fails
+            }
+        }
+
+        // Fetch the created subtask with employee details
+        const [subtaskRows] = await db.query(
+            `SELECT s.*, 
+                    GROUP_CONCAT(CONCAT(e.emp_first_name, ' ', e.emp_last_name, ' (', e.emp_user_id, ')') SEPARATOR ', ') as assigned_employees
+             FROM subtasks s 
+             LEFT JOIN subtask_assignment sa ON s.subtask_id = sa.subtask_id
+             LEFT JOIN employees e ON sa.employee_id = e.emp_id
+             WHERE s.subtask_id = ?
+             GROUP BY s.subtask_id`,
+            [subtask_id]
+        );
+
+        res.json({ 
+            success: true, 
+            message: "Subtask created successfully",
+            subtask: subtaskRows[0],
+            uploadedFiles: uploadedFiles
+        });
+    } catch (error) {
+        console.error("Subtask creation error:", error);
+        res.status(500).json({ success: false, error: "Internal server error" });
+    }
+});
+
+/**
+ * ✅ GET /api/projects/subtasks/:task_id
+ * Fetch subtasks for a specific task
+ */
+router.get("/subtasks/:task_id", async (req, res) => {
+    const { task_id } = req.params;
+    console.log('🔍 Backend: Fetching subtasks for task_id:', task_id);
+    
+    try {
+        // First check if the task exists
+        const [taskCheck] = await db.query("SELECT task_id FROM tasks WHERE task_id = ?", [task_id]);
+        if (taskCheck.length === 0) {
+            return res.status(404).json({ error: "Task not found" });
+        }
+
+        const [subtasks] = await db.query(
+            `SELECT s.*, 
+                    COALESCE(GROUP_CONCAT(CONCAT(e.emp_first_name, ' ', e.emp_last_name, ' (', e.emp_user_id, ')') SEPARATOR ', '), 'Not assigned') as assigned_employees
+             FROM subtasks s 
+             LEFT JOIN subtask_assignment sa ON s.subtask_id = sa.subtask_id
+             LEFT JOIN employees e ON sa.employee_id = e.emp_id
+             WHERE s.task_id = ? 
+             GROUP BY s.subtask_id
+             ORDER BY s.subtask_created_at DESC`,
+            [task_id]
+        );
+        console.log('🔍 Backend: Found', subtasks.length, 'subtasks for task', task_id);
+        res.json(subtasks);
+    } catch (err) {
+        console.error("❌ Backend: Fetch subtasks error:", err);
+        res.status(500).json({ error: "Failed to fetch subtasks for task" });
+    }
+});
+
+/**
+ * ✅ GET /api/projects/subtask-attachments/:subtask_id
+ * Fetch attachments for a specific subtask
+ */
+router.get("/subtask-attachments/:subtask_id", async (req, res) => {
+    const { subtask_id } = req.params;
+    
+    try {
+        const [attachments] = await db.query(
+            `SELECT sa.*, 
+                    CONCAT(e.emp_first_name, ' ', e.emp_last_name) as uploaded_by_name
+             FROM subtask_attachment sa 
+             LEFT JOIN employees e ON sa.subatt_uploaded_by = e.emp_id 
+             WHERE sa.subatt_subtask_id = ? 
+             ORDER BY sa.subatt_created_at DESC`,
+            [subtask_id]
+        );
+        res.json(attachments);
+    } catch (err) {
+        console.error("Fetch subtask attachments error:", err);
+        res.status(500).json({ error: "Failed to fetch subtask attachments" });
+    }
+});
+
+/**
+ * ✅ POST /api/projects/upload-subtask-attachments
+ * Upload additional attachments to an existing subtask
+ */
+router.post("/upload-subtask-attachments", upload.array('attachments'), async (req, res) => {
+    const { subtask_id, admin_user_id } = req.body;
+    const files = req.files || [];
+
+    try {
+        // Validate subtask exists and get task/project/team info
+        const [subtaskRows] = await db.query(
+            `SELECT s.*, t.task_name, p.proj_name, tm.team_name, tm.team_created_by 
+             FROM subtasks s 
+             JOIN tasks t ON s.task_id = t.task_id 
+             JOIN projects p ON t.task_project_id = p.proj_id 
+             JOIN teams tm ON p.team_id = tm.team_id 
+             WHERE s.subtask_id = ?`,
+            [subtask_id]
+        );
+        
+        if (subtaskRows.length === 0) {
+            return res.status(400).json({ success: false, error: "Invalid subtask ID" });
+        }
+        
+        const subtask = subtaskRows[0];
+        const { task_name, proj_name, team_name, team_created_by, subtask_name } = subtask;
+
+        // Create S3 folder structure: admin_id/team_name/project_name/task_name/subtask_name/
+        const s3FolderPath = `${team_created_by}/${team_name}/${proj_name}/${task_name}/${subtask_name}`;
+        await createS3Folder(s3FolderPath);
+
+        // Upload files to S3 and store metadata
+        const uploadedFiles = [];
+        for (const file of files) {
+            try {
+                const s3Url = await uploadFileToS3(s3FolderPath, file);
+                
+                // Get the emp_id for the admin user
+                const [adminRows] = await db.query("SELECT emp_id FROM employees WHERE emp_user_id = ?", [admin_user_id]);
+                const adminEmpId = adminRows.length > 0 ? adminRows[0].emp_id : null;
+                
+                // Store file metadata in database
+                await db.query(
+                    `INSERT INTO subtask_attachment 
+                    (subatt_subtask_id, subatt_file_name, subatt_file_type, subatt_file_path, subatt_uploaded_by, subatt_created_at, subatt_updated_at) 
+                    VALUES (?, ?, ?, ?, ?, NOW(), NOW())`,
+                    [subtask_id, file.originalname, file.mimetype, s3Url, adminEmpId]
+                );
+
+                uploadedFiles.push({
+                    name: file.originalname,
+                    type: file.mimetype,
+                    url: s3Url
+                });
+            } catch (uploadError) {
+                console.error("File upload error:", uploadError);
+                // Continue with other files even if one fails
+            }
+        }
+
+        res.json({ 
+            success: true, 
+            message: "Files uploaded successfully",
+            uploadedFiles: uploadedFiles
+        });
+    } catch (error) {
+        console.error("Upload subtask attachments error:", error);
+        res.status(500).json({ success: false, error: "Internal server error" });
+    }
+});
+
+/**
+ * ✅ DELETE /api/projects/delete-team/:team_id
+ * Delete team and all its projects, tasks, subtasks, and S3 folders
+ */
+router.delete("/delete-team/:team_id", express.json(), async (req, res) => {
+    console.log('🔍 Delete team route hit:', req.params.team_id);
+    console.log('🔍 Request body:', req.body);
+    
+    const { team_id } = req.params;
+    const { admin_user_id } = req.body;
+
+    try {
+        // Validate admin user
+        const [adminRows] = await db.query("SELECT * FROM employees WHERE emp_user_id = ?", [admin_user_id]);
+        if (adminRows.length === 0) {
+            return res.status(400).json({ success: false, error: "Invalid admin user ID" });
+        }
+
+        // Check if team exists and belongs to this admin
+        const [teamRows] = await db.query(
+            "SELECT * FROM teams WHERE team_id = ? AND team_created_by = ?",
+            [team_id, admin_user_id]
+        );
+        if (teamRows.length === 0) {
+            return res.status(404).json({ success: false, error: "Team not found or access denied" });
+        }
+
+        const team = teamRows[0];
+
+        // Start transaction
+        await db.query("START TRANSACTION");
+
+        try {
+            // 1. Get all projects for this team
+            const [projects] = await db.query("SELECT * FROM projects WHERE team_id = ?", [team_id]);
+            
+            // 2. For each project, get all tasks
+            for (const project of projects) {
+                const [tasks] = await db.query("SELECT * FROM tasks WHERE task_project_id = ?", [project.proj_id]);
+                
+                // 3. For each task, delete subtasks first (children before parents)
+                for (const task of tasks) {
+                    // Delete subtask attachments first
+                    await db.query("DELETE FROM subtask_attachments WHERE subtask_id IN (SELECT subtask_id FROM subtasks WHERE task_id = ?)", [task.task_id]);
+                    
+                    // Delete subtask assignments
+                    await db.query("DELETE FROM subtask_assignment WHERE subtask_id IN (SELECT subtask_id FROM subtasks WHERE task_id = ?)", [task.task_id]);
+                    
+                    // Delete subtasks
+                    await db.query("DELETE FROM subtasks WHERE task_id = ?", [task.task_id]);
+                }
+                
+                // 4. Delete tasks
+                await db.query("DELETE FROM tasks WHERE task_project_id = ?", [project.proj_id]);
+            }
+            
+            // 5. Delete projects
+            await db.query("DELETE FROM projects WHERE team_id = ?", [team_id]);
+            
+            // 6. Finally delete the team
+            await db.query("DELETE FROM teams WHERE team_id = ?", [team_id]);
+
+            // Commit transaction
+            await db.query("COMMIT");
+
+            // Try to delete S3 folder (but don't fail if S3 fails)
+            try {
+                const s3FolderPath = `${admin_user_id}/${team.team_name}/`;
+                console.log('🔍 Attempting to delete S3 folder:', s3FolderPath);
+                
+                // List all objects in the folder
+                const listParams = {
+                    Bucket: process.env.AWS_S3_BUCKET_NAME,
+                    Prefix: s3FolderPath
+                };
+                
+                const listedObjects = await s3.listObjectsV2(listParams).promise();
+                
+                if (listedObjects.Contents.length > 0) {
+                    const deleteParams = {
+                        Bucket: process.env.AWS_S3_BUCKET_NAME,
+                        Delete: {
+                            Objects: listedObjects.Contents.map(({ Key }) => ({ Key }))
+                        }
+                    };
+                    
+                    await s3.deleteObjects(deleteParams).promise();
+                    console.log('✅ S3 folder deleted successfully');
+                }
+            } catch (s3Error) {
+                console.warn('⚠️ S3 deletion failed (continuing with DB deletion):', s3Error.message);
+                // Don't fail the entire operation if S3 fails
+            }
+
+            res.json({ success: true, message: "Team and all associated data deleted successfully" });
+
+        } catch (error) {
+            // Rollback transaction on error
+            await db.query("ROLLBACK");
+            throw error;
+        }
+
+    } catch (error) {
+        console.error("Team deletion error:", error);
+        res.status(500).json({ success: false, error: "Failed to delete team: " + error.message });
+    }
+});
+
+/**
+ * ✅ DELETE /api/projects/delete-project/:project_id
+ * Delete project and all its tasks, subtasks, and S3 folders
+ */
+router.delete("/delete-project/:project_id", express.json(), async (req, res) => {
+    const { project_id } = req.params;
+    const { admin_user_id } = req.body;
+
+    try {
+        // Validate admin user
+        const [adminRows] = await db.query("SELECT * FROM employees WHERE emp_user_id = ?", [admin_user_id]);
+        if (adminRows.length === 0) {
+            return res.status(400).json({ success: false, error: "Invalid admin user ID" });
+        }
+
+        // Get project details
+        const [projectRows] = await db.query(
+            `SELECT p.*, t.team_name, t.team_created_by 
+             FROM projects p 
+             JOIN teams t ON p.team_id = t.team_id 
+             WHERE p.proj_id = ? AND t.team_created_by = ?`,
+            [project_id, admin_user_id]
+        );
+        if (projectRows.length === 0) {
+            return res.status(404).json({ success: false, error: "Project not found or access denied" });
+        }
+
+        const project = projectRows[0];
+
+        // Get all tasks for this project
+        const [tasks] = await db.query("SELECT * FROM tasks WHERE task_project_id = ?", [project_id]);
+        
+        // Delete all subtask attachments and S3 files
+        for (const task of tasks) {
+            const [subtasks] = await db.query("SELECT * FROM subtasks WHERE task_id = ?", [task.task_id]);
+            
+            for (const subtask of subtasks) {
+                // Delete subtask attachments from S3
+                const [attachments] = await db.query(
+                    "SELECT * FROM subtask_attachments WHERE subtask_id = ?",
+                    [subtask.subtask_id]
+                );
+                
+                for (const attachment of attachments) {
+                    try {
+                        // Delete from S3
+                        const key = attachment.subatt_file_path.replace(`https://${process.env.AWS_S3_BUCKET_NAME}.s3.amazonaws.com/`, '');
+                        await s3.deleteObject({
+                            Bucket: process.env.AWS_S3_BUCKET_NAME,
+                            Key: key
+                        }).promise();
+                    } catch (s3Error) {
+                        console.error("S3 delete error:", s3Error);
+                    }
+                }
+                
+                // Delete subtask attachments from database
+                await db.query("DELETE FROM subtask_attachments WHERE subtask_id = ?", [subtask.subtask_id]);
+                
+                // Delete subtask assignments
+                await db.query("DELETE FROM subtask_assignment WHERE subtask_id = ?", [subtask.subtask_id]);
+            }
+            
+            // Delete subtasks
+            await db.query("DELETE FROM subtasks WHERE task_id = ?", [task.task_id]);
+        }
+        
+        // Delete tasks
+        await db.query("DELETE FROM tasks WHERE task_project_id = ?", [project_id]);
+
+        // Delete S3 folder structure for the project
+        try {
+            const s3FolderPath = `${project.team_created_by}/${project.team_name}/${project.proj_name}`;
+            const { Contents } = await s3.listObjectsV2({
+                Bucket: process.env.AWS_S3_BUCKET_NAME,
+                Prefix: s3FolderPath
+            }).promise();
+            
+            if (Contents && Contents.length > 0) {
+                const deleteParams = {
+                    Bucket: process.env.AWS_S3_BUCKET_NAME,
+                    Delete: {
+                        Objects: Contents.map(obj => ({ Key: obj.Key }))
+                    }
+                };
+                await s3.deleteObjects(deleteParams).promise();
+            }
+        } catch (s3Error) {
+            console.error("S3 folder delete error:", s3Error);
+        }
+
+        // Delete project from database
+        await db.query("DELETE FROM projects WHERE proj_id = ?", [project_id]);
+
+        res.json({ success: true, message: "Project and all associated data deleted successfully" });
+    } catch (error) {
+        console.error("Project deletion error:", error);
+        res.status(500).json({ success: false, error: "Internal server error" });
+    }
+});
+
+/**
+ * ✅ DELETE /api/projects/delete-task/:task_id
+ * Delete task and all its subtasks and S3 folders
+ */
+router.delete("/delete-task/:task_id", express.json(), async (req, res) => {
+    const { task_id } = req.params;
+    const { admin_user_id } = req.body;
+
+    try {
+        // Validate admin user
+        const [adminRows] = await db.query("SELECT * FROM employees WHERE emp_user_id = ?", [admin_user_id]);
+        if (adminRows.length === 0) {
+            return res.status(400).json({ success: false, error: "Invalid admin user ID" });
+        }
+
+        // Get task details
+        const [taskRows] = await db.query(
+            `SELECT t.*, p.proj_name, p.team_id, tm.team_name, tm.team_created_by 
+             FROM tasks t 
+             JOIN projects p ON t.task_project_id = p.proj_id 
+             JOIN teams tm ON p.team_id = tm.team_id 
+             WHERE t.task_id = ? AND tm.team_created_by = ?`,
+            [task_id, admin_user_id]
+        );
+        if (taskRows.length === 0) {
+            return res.status(404).json({ success: false, error: "Task not found or access denied" });
+        }
+
+        const task = taskRows[0];
+
+        // Get all subtasks for this task
+        const [subtasks] = await db.query("SELECT * FROM subtasks WHERE task_id = ?", [task_id]);
+        
+        // Delete all subtask attachments and S3 files
+        for (const subtask of subtasks) {
+            const [attachments] = await db.query(
+                "SELECT * FROM subtask_attachments WHERE subtask_id = ?",
+                [subtask.subtask_id]
+            );
+            
+            for (const attachment of attachments) {
+                try {
+                    // Delete from S3
+                    const key = attachment.subatt_file_path.replace(`https://${process.env.AWS_S3_BUCKET_NAME}.s3.amazonaws.com/`, '');
+                    await s3.deleteObject({
+                        Bucket: process.env.AWS_S3_BUCKET_NAME,
+                        Key: key
+                    }).promise();
+                } catch (s3Error) {
+                    console.error("S3 delete error:", s3Error);
+                }
+            }
+            
+            // Delete subtask attachments from database
+            await db.query("DELETE FROM subtask_attachments WHERE subtask_id = ?", [subtask.subtask_id]);
+            
+            // Delete subtask assignments
+            await db.query("DELETE FROM subtask_assignment WHERE subtask_id = ?", [subtask.subtask_id]);
+        }
+
+        // Delete S3 folder structure for the task
+        try {
+            const s3FolderPath = `${task.team_created_by}/${task.team_name}/${task.proj_name}/${task.task_name}`;
+            const { Contents } = await s3.listObjectsV2({
+                Bucket: process.env.AWS_S3_BUCKET_NAME,
+                Prefix: s3FolderPath
+            }).promise();
+            
+            if (Contents && Contents.length > 0) {
+                const deleteParams = {
+                    Bucket: process.env.AWS_S3_BUCKET_NAME,
+                    Delete: {
+                        Objects: Contents.map(obj => ({ Key: obj.Key }))
+                    }
+                };
+                await s3.deleteObjects(deleteParams).promise();
+            }
+        } catch (s3Error) {
+            console.error("S3 folder delete error:", s3Error);
+        }
+
+        // Delete subtasks
+        await db.query("DELETE FROM subtasks WHERE task_id = ?", [task_id]);
+
+        // Delete task from database
+        await db.query("DELETE FROM tasks WHERE task_id = ?", [task_id]);
+
+        res.json({ success: true, message: "Task and all associated data deleted successfully" });
+    } catch (error) {
+        console.error("Task deletion error:", error);
+        res.status(500).json({ success: false, error: "Internal server error" });
+    }
+});
+
+/**
+ * ✅ DELETE /api/projects/delete-subtask/:subtask_id
+ * Delete subtask and its S3 folder
+ */
+router.delete("/delete-subtask/:subtask_id", express.json(), async (req, res) => {
+    const { subtask_id } = req.params;
+    const { admin_user_id } = req.body;
+
+    try {
+        // Validate admin user
+        const [adminRows] = await db.query("SELECT * FROM employees WHERE emp_user_id = ?", [admin_user_id]);
+        if (adminRows.length === 0) {
+            return res.status(400).json({ success: false, error: "Invalid admin user ID" });
+        }
+
+        // Get subtask details
+        const [subtaskRows] = await db.query(
+            `SELECT s.*, t.task_name, p.proj_name, tm.team_name, tm.team_created_by 
+             FROM subtasks s 
+             JOIN tasks t ON s.task_id = t.task_id 
+             JOIN projects p ON t.task_project_id = p.proj_id 
+             JOIN teams tm ON p.team_id = tm.team_id 
+             WHERE s.subtask_id = ? AND tm.team_created_by = ?`,
+            [subtask_id, admin_user_id]
+        );
+        if (subtaskRows.length === 0) {
+            return res.status(404).json({ success: false, error: "Subtask not found or access denied" });
+        }
+
+        const subtask = subtaskRows[0];
+
+        // Delete subtask attachments from S3
+        const [attachments] = await db.query(
+            "SELECT * FROM subtask_attachments WHERE subtask_id = ?",
+            [subtask_id]
+        );
+        
+        for (const attachment of attachments) {
+            try {
+                // Delete from S3
+                const key = attachment.subatt_file_path.replace(`https://${process.env.AWS_S3_BUCKET_NAME}.s3.amazonaws.com/`, '');
+                await s3.deleteObject({
+                    Bucket: process.env.AWS_S3_BUCKET_NAME,
+                    Key: key
+                }).promise();
+            } catch (s3Error) {
+                console.error("S3 delete error:", s3Error);
+            }
+        }
+
+        // Delete subtask attachments from database
+        await db.query("DELETE FROM subtask_attachments WHERE subtask_id = ?", [subtask_id]);
+        
+        // Delete subtask assignments
+        await db.query("DELETE FROM subtask_assignment WHERE subtask_id = ?", [subtask_id]);
+
+        // Delete S3 folder structure for the subtask
+        try {
+            const s3FolderPath = `${subtask.team_created_by}/${subtask.team_name}/${subtask.proj_name}/${subtask.task_name}/${subtask.subtask_name}`;
+            const { Contents } = await s3.listObjectsV2({
+                Bucket: process.env.AWS_S3_BUCKET_NAME,
+                Prefix: s3FolderPath
+            }).promise();
+            
+            if (Contents && Contents.length > 0) {
+                const deleteParams = {
+                    Bucket: process.env.AWS_S3_BUCKET_NAME,
+                    Delete: {
+                        Objects: Contents.map(obj => ({ Key: obj.Key }))
+                    }
+                };
+                await s3.deleteObjects(deleteParams).promise();
+            }
+        } catch (s3Error) {
+            console.error("S3 folder delete error:", s3Error);
+        }
+
+        // Delete subtask from database
+        await db.query("DELETE FROM subtasks WHERE subtask_id = ?", [subtask_id]);
+
+        res.json({ success: true, message: "Subtask and all associated data deleted successfully" });
+    } catch (error) {
+        console.error("Subtask deletion error:", error);
+        res.status(500).json({ success: false, error: "Internal server error" });
+    }
+});
+
 // Test route to verify router is working
 router.get("/test", (req, res) => {
     console.log('🔍 Backend: Test route hit');
     res.json({ message: "Projects router is working!" });
+});
+
+// Test route to check table existence
+router.get("/test-tables", async (req, res) => {
+    try {
+        const tables = ['subtasks', 'subtask_assignment', 'subtask_attachment'];
+        const results = {};
+        
+        for (const table of tables) {
+            try {
+                const [rows] = await db.query(`SHOW TABLES LIKE '${table}'`);
+                results[table] = rows.length > 0 ? 'exists' : 'missing';
+            } catch (err) {
+                results[table] = 'error: ' + err.message;
+            }
+        }
+        
+        res.json({ 
+            message: "Table check completed", 
+            tables: results 
+        });
+    } catch (error) {
+        res.status(500).json({ error: "Failed to check tables", details: error.message });
+    }
 });
 
 module.exports = router;
