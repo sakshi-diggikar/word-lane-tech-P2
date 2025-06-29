@@ -2415,6 +2415,9 @@ modalForm.addEventListener('submit', async function(e) {
         formData.append('subtask_name', subtaskName);
         formData.append('subtask_description', subtaskDesc);
         formData.append('task_id', currentTask.task_id);
+        // Ensure subtaskEmpids is an array of emp_id (int)
+        const subtaskEmpids = selectedEmployees.map(e => e.emp_id);
+        console.log('🔍 [FIX] subtaskEmpids (emp_id array):', subtaskEmpids);
         formData.append('employee_ids', JSON.stringify(subtaskEmpids));
         formData.append('subtask_deadline', subtaskDeadline);
         formData.append('subtask_priority', subtaskPriority);
