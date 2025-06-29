@@ -76,6 +76,9 @@ let currentTask = null;
 // Modal reference (will be set after DOM loads)
 let projectModal = null;
 
+// Global selected employees array - will be reset for each modal
+let selectedEmployees = [];
+
 // Get employee user ID from session storage
 function getEmployeeUserId() {
     return sessionStorage.getItem("emp_user_id");
@@ -1285,6 +1288,10 @@ function closeModal() {
     modalForm.removeAttribute('data-editing-task-name');
     modalForm.removeAttribute('data-editing-subtask');
     modalForm.removeAttribute('data-editing-subtask-name');
+    
+    // Reset selected employees array
+    selectedEmployees = [];
+    console.log('🔍 Frontend: Modal closed, selectedEmployees reset:', selectedEmployees);
 }
 
 // Open modal to create root level project
@@ -1924,7 +1931,7 @@ async function loadTasksByProject(projectId) {
     }
 }
 
-let selectedEmployees = [];
+// let selectedEmployees = [];
 function setupEmployeeAutocomplete() {
     const input = document.getElementById('input-subtask-empid');
     const suggestions = document.getElementById('subtask-empid-suggestions');
@@ -2026,6 +2033,10 @@ function setupEmployeeAutocomplete() {
         }
     };
 
+    // Reset selected employees for new subtask creation
+    selectedEmployees = [];
+    renderSelected();
+
     // If editing, pre-fill selected employees
     if (modalForm.getAttribute('data-editing-subtask') === 'true') {
         const editingName = modalForm.getAttribute('data-editing-subtask-name');
@@ -2042,9 +2053,6 @@ function setupEmployeeAutocomplete() {
             }).filter(emp => emp !== null);
             renderSelected();
         }
-    } else {
-        selectedEmployees = [];
-        renderSelected();
     }
 } // <-- This closes setupEmployeeAutocomplete properly
 
@@ -2348,6 +2356,10 @@ if (modalForm) {
             const subtaskPriority = inputSubtaskPriority.value;
             const subtaskEmpids = selectedEmployees.map(e => e.id);
             const subtaskAttachment = inputSubtaskAttachment.files ? Array.from(inputSubtaskAttachment.files) : [];
+            
+            console.log('🔍 Frontend: selectedEmployees array:', selectedEmployees);
+            console.log('🔍 Frontend: subtaskEmpids array:', subtaskEmpids);
+            console.log('🔍 Frontend: selectedEmployees length:', selectedEmployees.length);
             
             console.log('🔍 Subtask form data:', {
                 subtaskName,

@@ -280,3 +280,378 @@ main .insights>div.income span {
         font-size: 0.9rem;
     }
 }
+
+/* Leave Applications Page Styles */
+
+/* Filters Section */
+.filters {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    padding: 1rem;
+    background: var(--color-white);
+    border-radius: var(--card-border-radius);
+    box-shadow: var(--box-shadow);
+    flex-wrap: wrap;
+    align-items: end;
+}
+
+.filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    min-width: 150px;
+}
+
+.filter-group label {
+    font-weight: 600;
+    color: var(--color-dark-variant);
+    font-size: 0.9rem;
+}
+
+.filter-group select,
+.filter-group input {
+    padding: 0.5rem;
+    border: 1px solid var(--color-light);
+    border-radius: var(--border-radius-2);
+    font-size: 0.9rem;
+    background: var(--color-white);
+    color: var(--color-dark);
+}
+
+.filter-group select:focus,
+.filter-group input:focus {
+    outline: none;
+    border-color: var(--color-primary);
+}
+
+.clear-filters-btn {
+    padding: 0.5rem 1rem;
+    background: var(--color-light);
+    color: var(--color-dark);
+    border: none;
+    border-radius: var(--border-radius-2);
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.clear-filters-btn:hover {
+    background: var(--color-dark);
+    color: var(--color-white);
+}
+
+/* Table Styles */
+.table-container {
+    background: var(--color-white);
+    border-radius: var(--card-border-radius);
+    box-shadow: var(--box-shadow);
+    overflow: hidden;
+}
+
+.leave-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+}
+
+.leave-table thead {
+    background: var(--color-primary);
+    color: var(--color-white);
+}
+
+.leave-table th {
+    padding: 1rem;
+    text-align: left;
+    font-weight: 600;
+}
+
+.leave-table td {
+    padding: 1rem;
+    border-bottom: 1px solid var(--color-light);
+}
+
+.leave-table tbody tr:hover {
+    background: var(--color-light);
+}
+
+/* Status Badges */
+.status-badge {
+    padding: 0.3rem 0.8rem;
+    border-radius: var(--border-radius-2);
+    font-weight: 600;
+    font-size: 0.8rem;
+    text-align: center;
+    display: inline-block;
+    min-width: 80px;
+}
+
+.status-pending {
+    background: var(--color-warning);
+    color: var(--color-dark);
+}
+
+.status-approved {
+    background: var(--color-success);
+    color: var(--color-white);
+}
+
+.status-rejected {
+    background: var(--color-danger);
+    color: var(--color-white);
+}
+
+/* Action Buttons */
+.action-buttons {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.btn {
+    padding: 0.3rem 0.8rem;
+    border: none;
+    border-radius: var(--border-radius-2);
+    cursor: pointer;
+    font-size: 0.8rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn-view {
+    background: var(--color-info);
+    color: var(--color-white);
+}
+
+.btn-view:hover {
+    background: var(--color-info-dark);
+}
+
+.btn-approve {
+    background: var(--color-success);
+    color: var(--color-white);
+}
+
+.btn-approve:hover {
+    background: var(--color-success-dark);
+}
+
+.btn-reject {
+    background: var(--color-danger);
+    color: var(--color-white);
+}
+
+.btn-reject:hover {
+    background: var(--color-danger-dark);
+}
+
+/* Loading and No Data */
+.loading, .no-data {
+    text-align: center;
+    padding: 3rem;
+    color: var(--color-dark-variant);
+}
+
+.spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid var(--color-light);
+    border-top: 4px solid var(--color-primary);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 1rem;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Modal Styles */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    background: var(--color-white);
+    padding: 2rem;
+    border-radius: var(--card-border-radius);
+    box-shadow: var(--box-shadow);
+    max-width: 600px;
+    width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+    position: relative;
+}
+
+.close-icon {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: var(--color-dark-variant);
+}
+
+.close-icon:hover {
+    color: var(--color-danger);
+}
+
+.modal-content h2 {
+    margin-bottom: 1.5rem;
+    color: var(--color-dark);
+}
+
+/* Form Styles */
+.form-group {
+    margin-bottom: 1rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: var(--color-dark-variant);
+}
+
+.form-group select,
+.form-group textarea {
+    width: 100%;
+    padding: 0.8rem;
+    border: 1px solid var(--color-light);
+    border-radius: var(--border-radius-2);
+    font-size: 0.9rem;
+    background: var(--color-white);
+    color: var(--color-dark);
+}
+
+.form-group select:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: var(--color-primary);
+}
+
+.form-actions {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+
+.submit-btn {
+    padding: 0.8rem 1.5rem;
+    background: var(--color-primary);
+    color: var(--color-white);
+    border: none;
+    border-radius: var(--border-radius-2);
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.submit-btn:hover {
+    background: var(--color-primary-dark);
+}
+
+.cancel-btn {
+    padding: 0.8rem 1.5rem;
+    background: var(--color-light);
+    color: var(--color-dark);
+    border: none;
+    border-radius: var(--border-radius-2);
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.cancel-btn:hover {
+    background: var(--color-dark);
+    color: var(--color-white);
+}
+
+/* Leave Details Content */
+.leave-detail-row {
+    display: flex;
+    margin-bottom: 1rem;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid var(--color-light);
+}
+
+.leave-detail-label {
+    font-weight: 600;
+    color: var(--color-dark-variant);
+    min-width: 120px;
+}
+
+.leave-detail-value {
+    color: var(--color-dark);
+    flex: 1;
+}
+
+/* Status Notification */
+.status-notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 1rem 1.5rem;
+    border-radius: var(--border-radius-2);
+    background: var(--color-success);
+    color: var(--color-white);
+    box-shadow: var(--box-shadow);
+    transform: translateX(100%);
+    opacity: 0;
+    transition: all 0.3s ease;
+    z-index: 1001;
+    max-width: 300px;
+}
+
+.status-notification.show {
+    transform: translateX(0);
+    opacity: 1;
+}
+
+.status-notification.error {
+    background: var(--color-danger);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .filters {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .filter-group {
+        min-width: auto;
+    }
+    
+    .leave-table {
+        font-size: 0.8rem;
+    }
+    
+    .leave-table th,
+    .leave-table td {
+        padding: 0.5rem;
+    }
+    
+    .action-buttons {
+        flex-direction: column;
+        gap: 0.3rem;
+    }
+    
+    .modal-content {
+        width: 95%;
+        padding: 1rem;
+    }
+    
+    .form-actions {
+        flex-direction: column;
+    }
+}

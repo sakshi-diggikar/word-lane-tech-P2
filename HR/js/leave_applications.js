@@ -1,356 +1,320 @@
-// Extended dummy data for leave applications
-const LEAVE_APPLICATIONS_DATA = [
-    { id: 1, applicantName: "Alice Johnson", subject: "Annual Leave Request", startDate: "2023-11-15", endDate: "2023-11-20", description: "Requesting annual leave for a family trip to the mountains. Will be unreachable by phone.", status: "pending" },
-    { id: 2, applicantName: "Bob Williams", subject: "Sick Leave", startDate: "2023-11-08", endDate: "2023-11-08", description: "Feeling unwell, unable to come to work. Experiencing flu-like symptoms.", status: "pending" },
-    { id: 3, applicantName: "Charlie Brown", subject: "Personal Leave", startDate: "2023-11-25", endDate: "2023-11-25", description: "Attending a personal appointment with a specialist. Will return next day.", status: "pending" },
-    { id: 4, applicantName: "Diana Prince", subject: "Vacation Request", startDate: "2023-12-01", endDate: "2023-12-10", description: "Planning a vacation to the mountains. Need to recharge before year-end projects.", status: "pending" },
-    { id: 5, applicantName: "Eve Adams", subject: "Maternity Leave", startDate: "2024-01-01", endDate: "2024-03-31", description: "Applying for maternity leave as per company policy. Expected due date is Jan 15th.", status: "pending" },
-    { id: 6, applicantName: "Frank White", subject: "Paternity Leave", startDate: "2023-11-20", endDate: "2023-11-24", description: "Requesting paternity leave for newborn. My wife needs support during this time.", status: "pending" },
-    { id: 7, applicantName: "Grace Lee", subject: "Bereavement Leave", startDate: "2023-11-10", endDate: "2023-11-12", description: "Requesting leave due to a family bereavement. Will provide necessary documents.", status: "pending" },
-    { id: 8, applicantName: "Henry Green", subject: "Study Leave", startDate: "2023-12-05", endDate: "2023-12-07", description: "Applying for study leave to prepare for professional certification exam.", status: "pending" },
-    { id: 9, applicantName: "Ivy King", subject: "Medical Appointment", startDate: "2023-11-28", endDate: "2023-11-28", description: "Need to attend a routine medical check-up. Will be back in the afternoon.", status: "pending" },
-    { id: 10, applicantName: "Jack Black", subject: "Unpaid Leave", startDate: "2023-12-15", endDate: "2023-12-20", description: "Requesting unpaid leave for personal reasons. Have exhausted all paid leave.", status: "pending" },
-    { id: 11, applicantName: "Karen Stone", subject: "Annual Leave", startDate: "2024-01-10", endDate: "2024-01-17", description: "Planning a trip to visit family abroad. Need to finalize travel arrangements.", status: "pending" },
-    { id: 12, applicantName: "Liam Hall", subject: "Sick Leave", startDate: "2023-11-09", endDate: "2023-11-09", description: "Sudden onset of fever. Unable to perform duties today.", status: "pending" },
-    { id: 13, applicantName: "Mia Clark", subject: "Personal Day", startDate: "2023-12-03", endDate: "2023-12-03", description: "Taking a personal day for a home renovation project.", status: "pending" },
-    { id: 14, applicantName: "Noah Lewis", subject: "Conference Leave", startDate: "2024-02-01", endDate: "2024-02-03", description: "Attending the annual industry conference. Registration confirmed.", status: "pending" },
-    { id: 15, applicantName: "Olivia Scott", subject: "Emergency Leave", startDate: "2023-11-18", endDate: "2023-11-18", description: "Urgent family matter requires immediate attention.", status: "pending" },
-    { id: 16, applicantName: "Peter Young", subject: "Annual Leave", startDate: "2024-03-01", endDate: "2024-03-07", description: "Planning a short getaway. Will ensure all tasks are handed over.", status: "pending" },
-    { id: 17, applicantName: "Quinn Wright", subject: "Sick Leave", startDate: "2023-11-11", endDate: "2023-11-11", description: "Food poisoning, cannot come to office.", status: "pending" },
-    { id: 18, applicantName: "Rachel Hill", subject: "Personal Leave", startDate: "2023-12-26", endDate: "2023-12-27", description: "Extended holiday break for family gathering.", status: "pending" },
-    { id: 19, applicantName: "Sam Baker", subject: "Training Leave", startDate: "2024-01-20", endDate: "2024-01-22", description: "Attending mandatory compliance training.", status: "pending" },
-    { id: 20, applicantName: "Tina Adams", subject: "Annual Leave", startDate: "2024-04-01", endDate: "2024-04-05", description: "Spring break vacation with kids.", status: "pending" },
-    { id: 21, applicantName: "Uma Devi", subject: "Sick Leave", startDate: "2023-11-13", endDate: "2023-11-14", description: "Recovering from minor surgery.", status: "pending" },
-    { id: 22, applicantName: "Victor Roy", subject: "Personal Leave", startDate: "2023-12-10", endDate: "2023-12-10", description: "Attending a friend's wedding.", status: "pending" },
-    { id: 23, applicantName: "Wendy Chen", subject: "Annual Leave", startDate: "2024-02-15", endDate: "2024-02-20", description: "Visiting relatives overseas.", status: "pending" },
-    { id: 24, applicantName: "Xavier Bell", subject: "Study Leave", startDate: "2024-03-10", endDate: "2024-03-12", description: "Preparing for a professional development course.", status: "pending" },
-    { id: 25, applicantName: "Yara Khan", subject: "Emergency Leave", startDate: "2023-11-22", endDate: "2023-11-22", description: "Unexpected plumbing issue at home.", status: "pending" },
-];
+// leave_applications.js - HR Leave Applications Management
 
-let allApplications = [...LEAVE_APPLICATIONS_DATA]; // Original dataset
-let filteredApplications = [...allApplications]; // Applications after search/filter
-let currentPage = 1;
-const applicationsPerPage = 10;
+let allLeaves = [];
+let filteredLeaves = [];
+let currentLeaveId = null;
 
-const getStatusBadge = (status) => {
-    const cls = status.toLowerCase();
-    return `<span class="status-badge ${cls}">${status}</span>`;
-};
+// DOM Elements
+const leaveTableBody = document.getElementById('leave-applications-tbody');
+const loadingElement = document.getElementById('loading');
+const noDataElement = document.getElementById('no-data');
+const statusNotification = document.getElementById('status-notification');
+const statusMessage = document.getElementById('status-notification-message');
 
-const updateSummaryCards = () => {
-    const totalApplications = allApplications.length; // Use allApplications for total count
-    const pendingCount = allApplications.filter(app => app.status === 'pending').length;
-    const approvedCount = allApplications.filter(app => app.status === 'approved').length;
-    const rejectedCount = allApplications.filter(app => app.status === 'rejected').length;
+// Filter Elements
+const statusFilter = document.getElementById('status-filter');
+const dateFilterStart = document.getElementById('date-filter-start');
+const dateFilterEnd = document.getElementById('date-filter-end');
+const employeeFilter = document.getElementById('employee-filter');
+const clearFiltersBtn = document.getElementById('clear-filters');
 
-    document.getElementById('pending-count').textContent = pendingCount;
-    document.getElementById('approved-count').textContent = approvedCount;
-    document.getElementById('rejected-count').textContent = rejectedCount;
+// Modal Elements
+const leaveDetailsModal = document.getElementById('leave-details-modal');
+const leaveDetailsContent = document.getElementById('leave-details-content');
+const closeLeaveDetails = document.getElementById('close-leave-details');
+const approvalModal = document.getElementById('approval-modal');
+const approvalForm = document.getElementById('approval-form');
+const closeApprovalModal = document.getElementById('close-approval-modal');
+const cancelApproval = document.getElementById('cancel-approval');
 
-    document.getElementById('pending-percentage').textContent = totalApplications > 0 ? `${((pendingCount / totalApplications) * 100).toFixed(0)}%` : '0%';
-    document.getElementById('approved-percentage').textContent = totalApplications > 0 ? `${((approvedCount / totalApplications) * 100).toFixed(0)}%` : '0%';
-    document.getElementById('rejected-percentage').textContent = totalApplications > 0 ? `${((rejectedCount / totalApplications) * 100).toFixed(0)}%` : '0%';
+// Initialize the page
+document.addEventListener('DOMContentLoaded', function() {
+    loadLeaveApplications();
+    setupEventListeners();
+});
 
-    // Update circle progress (simplified for demonstration)
-    const salesCircle = document.querySelector('.sales .progress circle');
-    const expensesCircle = document.querySelector('.expenses .progress circle');
-    const incomeCircle = document.querySelector('.income .progress circle');
+// Setup event listeners
+function setupEventListeners() {
+    // Filter event listeners
+    if (statusFilter) statusFilter.addEventListener('change', applyFilters);
+    if (dateFilterStart) dateFilterStart.addEventListener('change', applyFilters);
+    if (dateFilterEnd) dateFilterEnd.addEventListener('change', applyFilters);
+    if (employeeFilter) employeeFilter.addEventListener('input', applyFilters);
+    if (clearFiltersBtn) clearFiltersBtn.addEventListener('click', clearFilters);
 
-    const calculateStrokeOffset = (count) => {
-        if (totalApplications === 0) return 110; // Full circle if no applications
-        const percentage = (count / totalApplications);
-        return 110 - (percentage * 110); // Assuming stroke-dasharray is 110
-    };
+    // Modal event listeners
+    if (closeLeaveDetails) closeLeaveDetails.addEventListener('click', () => leaveDetailsModal.style.display = 'none');
+    if (closeApprovalModal) closeApprovalModal.addEventListener('click', () => approvalModal.style.display = 'none');
+    if (cancelApproval) cancelApproval.addEventListener('click', () => approvalModal.style.display = 'none');
 
-    if (salesCircle) salesCircle.style.strokeDashoffset = calculateStrokeOffset(pendingCount);
-    if (expensesCircle) expensesCircle.style.strokeDashoffset = calculateStrokeOffset(approvedCount);
-    if (incomeCircle) incomeCircle.style.strokeDashoffset = calculateStrokeOffset(rejectedCount);
-};
+    // Close modals when clicking outside
+    window.addEventListener('click', (e) => {
+        if (e.target === leaveDetailsModal) leaveDetailsModal.style.display = 'none';
+        if (e.target === approvalModal) approvalModal.style.display = 'none';
+    });
 
+    // Approval form submission
+    if (approvalForm) approvalForm.addEventListener('submit', handleApprovalSubmit);
+}
 
-const buildApplicationsTable = () => {
-    const tbody = document.querySelector("#leave-applications-table tbody");
-    tbody.innerHTML = ""; // Clear existing rows
+// Load all leave applications
+async function loadLeaveApplications() {
+    try {
+        showLoading(true);
+        const response = await leaveAPI.getAllLeaves();
+        
+        if (response.success) {
+            leaveApplications = response.leaves;
+            displayLeaveApplications(leaveApplications);
+            updateStatistics();
+        } else {
+            showNotification('Failed to load leave applications', 'error');
+        }
+    } catch (error) {
+        console.error('Error loading leave applications:', error);
+        showNotification('Error loading leave applications', 'error');
+    } finally {
+        showLoading(false);
+    }
+}
 
-    const startIndex = (currentPage - 1) * applicationsPerPage;
-    const endIndex = startIndex + applicationsPerPage;
-    const applicationsToDisplay = filteredApplications.slice(startIndex, endIndex);
+// Render the leave applications table
+function renderLeaveTable() {
+    if (!leaveTableBody) return;
 
-    if (applicationsToDisplay.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="6">No applications found.</td></tr>`;
+    if (filteredLeaves.length === 0) {
+        leaveTableBody.innerHTML = '';
+        showNoData(true);
         return;
     }
 
-    let bodyContent = '';
-    applicationsToDisplay.forEach(app => {
-        bodyContent += `
-        <tr data-id="${app.id}">
-          <td>${app.applicantName}</td>
-          <td>${app.subject}</td>
-          <td>${new Date(app.startDate).toLocaleDateString()}</td>
-          <td>${new Date(app.endDate).toLocaleDateString()}</td>
-          <td>${getStatusBadge(app.status)}</td>
-          <td class="primary view-details">Details</td>
+    showNoData(false);
+    
+    leaveTableBody.innerHTML = filteredLeaves.map(leave => `
+        <tr>
+            <td>
+                <div>
+                    <strong>${leave.employee_name || `Employee ID: ${leave.employee_id}`}</strong>
+                    <br>
+                    <small>ID: ${leave.employee_id}</small>
+                </div>
+            </td>
+            <td>${formatDate(leave.leave_start_date)}</td>
+            <td>${formatDate(leave.leave_end_date)}</td>
+            <td>
+                <div class="reason-text" title="${leave.leave_reason}">
+                    ${truncateText(leave.leave_reason, 50)}
+                </div>
+            </td>
+            <td>
+                <span class="status-badge status-${leave.leave_status.toLowerCase()}">
+                    ${leave.leave_status}
+                </span>
+            </td>
+            <td>${formatDateTime(leave.leave_created_at)}</td>
+            <td>
+                <div class="action-buttons">
+                    <button class="btn btn-view" onclick="viewLeaveDetails(${leave.leave_id})">
+                        View
+                    </button>
+                    ${leave.leave_status === 'Pending' ? `
+                        <button class="btn btn-approve" onclick="openApprovalModal(${leave.leave_id}, 'Approved')">
+                            Approve
+                        </button>
+                        <button class="btn btn-reject" onclick="openApprovalModal(${leave.leave_id}, 'Rejected')">
+                            Reject
+                        </button>
+                    ` : ''}
+                </div>
+            </td>
         </tr>
-      `;
-    });
-    tbody.innerHTML = bodyContent;
+    `).join('');
+}
 
-    // Add event listeners for details button
-    tbody.querySelectorAll('.view-details').forEach(button => {
-        button.addEventListener('click', (event) => {
-            const row = event.target.closest('tr');
-            const appId = parseInt(row.dataset.id);
-            showLeaveDetailModal(appId);
-        });
-    });
+// Apply filters to the leave applications
+function applyFilters() {
+    const status = statusFilter ? statusFilter.value : '';
+    const startDate = dateFilterStart ? dateFilterStart.value : '';
+    const endDate = dateFilterEnd ? dateFilterEnd.value : '';
+    const employee = employeeFilter ? employeeFilter.value.toLowerCase() : '';
 
-    setupPagination();
-};
+    filteredLeaves = allLeaves.filter(leave => {
+        // Status filter
+        if (status && leave.leave_status !== status) return false;
 
-const setupPagination = () => {
-    const paginationContainer = document.querySelector(".recent-orders .orders-header a"); // Re-using the "Show All" link's parent
-    if (!paginationContainer) return;
+        // Date range filter
+        if (startDate && leave.leave_start_date < startDate) return false;
+        if (endDate && leave.leave_end_date > endDate) return false;
 
-    // Remove existing pagination if any
-    let existingPaginationDiv = document.getElementById('pagination-controls');
-    if (existingPaginationDiv) {
-        existingPaginationDiv.remove();
-    }
-
-    const totalPages = Math.ceil(filteredApplications.length / applicationsPerPage);
-
-    if (totalPages <= 1) {
-        // No pagination needed
-        return;
-    }
-
-    const paginationDiv = document.createElement('div');
-    paginationDiv.id = 'pagination-controls';
-    paginationDiv.style.display = 'flex';
-    paginationDiv.style.justifyContent = 'center';
-    paginationDiv.style.marginTop = '1rem';
-    paginationDiv.style.gap = '0.5rem';
-
-    for (let i = 1; i <= totalPages; i++) {
-        const pageLink = document.createElement('span');
-        pageLink.textContent = i;
-        pageLink.classList.add('page-link');
-        if (i === currentPage) {
-            pageLink.classList.add('active');
-        }
-        pageLink.addEventListener('click', () => {
-            currentPage = i;
-            buildApplicationsTable();
-        });
-        paginationDiv.appendChild(pageLink);
-    }
-
-    // Insert pagination before the "Show All" link
-    paginationContainer.parentNode.insertBefore(paginationDiv, paginationContainer);
-};
-
-
-const showLeaveDetailModal = (appId) => {
-    const application = allApplications.find(app => app.id === appId); // Use allApplications to find original data
-    if (!application) return;
-
-    const modal = document.getElementById('leave-detail-modal');
-    document.getElementById('modal-applicant').textContent = application.applicantName;
-    document.getElementById('modal-subject').textContent = application.subject;
-    document.getElementById('modal-start-date').textContent = new Date(application.startDate).toLocaleDateString();
-    document.getElementById('modal-end-date').textContent = new Date(application.endDate).toLocaleDateString();
-    document.getElementById('modal-description').textContent = application.description;
-    document.getElementById('modal-status').innerHTML = getStatusBadge(application.status);
-
-    const approveBtn = document.getElementById('approve-btn');
-    const rejectBtn = document.getElementById('reject-btn');
-
-    // Store appId on buttons for easy access in event listeners
-    approveBtn.dataset.appId = appId;
-    rejectBtn.dataset.appId = appId;
-
-    // Remove previous listeners to prevent multiple calls
-    approveBtn.onclick = null;
-    rejectBtn.onclick = null;
-
-    approveBtn.addEventListener('click', (e) => updateApplicationStatus(parseInt(e.target.dataset.appId), 'approved'), { once: true });
-    rejectBtn.addEventListener('click', (e) => updateApplicationStatus(parseInt(e.target.dataset.appId), 'rejected'), { once: true });
-
-
-    // Hide/show buttons based on current status
-    if (application.status === 'pending') {
-        approveBtn.style.display = 'inline-block';
-        rejectBtn.style.display = 'inline-block';
-    } else {
-        approveBtn.style.display = 'none';
-        rejectBtn.style.display = 'none';
-    }
-
-    modal.style.display = 'flex'; // Use flex to center the modal
-};
-const updateApplicationStatus = (appId, newStatus) => {
-    const applicationIndex = allApplications.findIndex(app => app.id === appId);
-    if (applicationIndex > -1) {
-        allApplications[applicationIndex].status = newStatus;
-
-        // Remove from filtered (shown) table if we are in pending view
-        filteredApplications = filteredApplications.filter(app => app.id !== appId);
-
-        updateSummaryCards();
-        buildApplicationsTable();
-
-        document.getElementById('leave-detail-modal').style.display = 'none';
-    }
-};
-
-
-const applyApplicationFilter = (filter) => {
-    let tempFiltered = [...allApplications]; // Start with all data
-
-    // Apply search first
-    const searchValue = document.getElementById("application-search")?.value.toLowerCase() || "";
-    if (searchValue) {
-        tempFiltered = tempFiltered.filter(app =>
-            app.applicantName.toLowerCase().includes(searchValue) ||
-            app.subject.toLowerCase().includes(searchValue) ||
-            app.description.toLowerCase().includes(searchValue)
-        );
-    }
-
-    // Then apply status filter
-    if (filter !== 'all') {
-        tempFiltered = tempFiltered.filter(app => app.status.toLowerCase() === filter.toLowerCase());
-    }
-
-    filteredApplications = tempFiltered; // Update the global filteredApplications
-    currentPage = 1; // Reset to first page after filter/search
-    buildApplicationsTable();
-};
-
-document.addEventListener("DOMContentLoaded", () => {
-    updateSummaryCards();
-    applyApplicationFilter('all'); // Initial load with all applications
-
-    // Modal close functionality
-    const modal = document.getElementById('leave-detail-modal');
-    const closeButton = document.querySelector('.modal .close-button');
-    closeButton.onclick = () => modal.style.display = 'none';
-    window.onclick = (event) => {
-        if (event.target === modal) {
-            modal.style.display = 'none';
-        }
-    };
-
-    // Search functionality
-    const searchInput = document.getElementById("application-search");
-    if (searchInput) {
-        searchInput.addEventListener("input", () => {
-            applyApplicationFilter(document.querySelector('.dropdown-content div.active')?.dataset.filter || 'all');
-        });
-    }
-
-    // Filter dropdown logic
-    const sortIcon = document.getElementById("sort-icon");
-    const sortOptions = document.getElementById("sort-options");
-
-    if (sortIcon && sortOptions) {
-        sortIcon.addEventListener("click", () => {
-            sortOptions.style.display =
-                sortOptions.style.display === "block" ? "none" : "block";
-        });
-
-        sortOptions.querySelectorAll("div").forEach((option) => {
-            option.addEventListener("click", () => {
-                // Remove active class from all options and add to the clicked one
-                sortOptions.querySelectorAll("div").forEach(opt => opt.classList.remove('active'));
-                option.classList.add('active');
-
-                const filter = option.getAttribute("data-filter");
-                applyApplicationFilter(filter);
-                sortOptions.style.display = "none";
-            });
-        });
-
-        document.addEventListener("click", (e) => {
-            if (
-                !sortIcon.contains(e.target) &&
-                !sortOptions.contains(e.target) &&
-                sortOptions.style.display === "block"
-            ) {
-                sortOptions.style.display = "none";
+        // Employee filter
+        if (employee) {
+            const employeeName = (leave.employee_name || '').toLowerCase();
+            const employeeId = leave.employee_id.toString();
+            if (!employeeName.includes(employee) && !employeeId.includes(employee)) {
+                return false;
             }
-        });
-    }
+        }
 
-    // Sidebar & theme toggle (re-used from index.js, ensure it's not duplicated if index.js is also loaded)
-    const menuBtn = document.querySelector("#menu-btn");
-    const closeBtn = document.querySelector("#close-btn");
-    const themeToggler = document.querySelector(".theme-toggler");
-
-    menuBtn?.addEventListener("click", () => {
-        document.querySelector("aside").style.display = "block";
+        return true;
     });
 
-    closeBtn?.addEventListener("click", () => {
-        document.querySelector("aside").style.display = "none";
-    });
+    renderLeaveTable();
+}
 
-    themeToggler?.addEventListener("click", () => {
-        document.body.classList.toggle("dark-theme-variables");
-        themeToggler
-            .querySelector("span:nth-child(1)")
-            ?.classList.toggle("active");
-        themeToggler
-            .querySelector("span:nth-child(2)")
-            ?.classList.toggle("active");
-    });
+// Clear all filters
+function clearFilters() {
+    if (statusFilter) statusFilter.value = '';
+    if (dateFilterStart) dateFilterStart.value = '';
+    if (dateFilterEnd) dateFilterEnd.value = '';
+    if (employeeFilter) employeeFilter.value = '';
+    filteredLeaves = [...allLeaves];
+    renderLeaveTable();
+}
 
-
-    const showStatusList = (status) => {
-        const list = allApplications.filter(app => app.status === status.toLowerCase());
-        if (list.length === 0) {
-            alert(`No ${status} applications.`);
+// View leave details
+async function viewLeaveDetails(leaveId) {
+    try {
+        const leave = allLeaves.find(l => l.leave_id === leaveId);
+        if (!leave) {
+            showNotification('Leave application not found', 'error');
             return;
         }
 
-        const names = list.map(app => `• ${app.applicantName} (${app.subject})`).join('\n');
-        alert(`${status.toUpperCase()} Applications:\n\n${names}`);
-    };
+        leaveDetailsContent.innerHTML = `
+            <div class="leave-detail-row">
+                <div class="leave-detail-label">Employee:</div>
+                <div class="leave-detail-value">${leave.employee_name || `Employee ID: ${leave.employee_id}`}</div>
+            </div>
+            <div class="leave-detail-row">
+                <div class="leave-detail-label">Employee ID:</div>
+                <div class="leave-detail-value">${leave.employee_id}</div>
+            </div>
+            <div class="leave-detail-row">
+                <div class="leave-detail-label">Start Date:</div>
+                <div class="leave-detail-value">${formatDate(leave.leave_start_date)}</div>
+            </div>
+            <div class="leave-detail-row">
+                <div class="leave-detail-label">End Date:</div>
+                <div class="leave-detail-value">${formatDate(leave.leave_end_date)}</div>
+            </div>
+            <div class="leave-detail-row">
+                <div class="leave-detail-label">Status:</div>
+                <div class="leave-detail-value">
+                    <span class="status-badge status-${leave.leave_status.toLowerCase()}">
+                        ${leave.leave_status}
+                    </span>
+                </div>
+            </div>
+            <div class="leave-detail-row">
+                <div class="leave-detail-label">Applied On:</div>
+                <div class="leave-detail-value">${formatDateTime(leave.leave_created_at)}</div>
+            </div>
+            ${leave.leave_approved_by ? `
+                <div class="leave-detail-row">
+                    <div class="leave-detail-label">Approved By:</div>
+                    <div class="leave-detail-value">${leave.approved_by_name || `Employee ID: ${leave.leave_approved_by}`}</div>
+                </div>
+                <div class="leave-detail-row">
+                    <div class="leave-detail-label">Approved On:</div>
+                    <div class="leave-detail-value">${formatDateTime(leave.leave_approved_at)}</div>
+                </div>
+            ` : ''}
+            ${leave.leave_approval_remark ? `
+                <div class="leave-detail-row">
+                    <div class="leave-detail-label">Remark:</div>
+                    <div class="leave-detail-value">${leave.leave_approval_remark}</div>
+                </div>
+            ` : ''}
+            <div class="leave-detail-row">
+                <div class="leave-detail-label">Reason:</div>
+                <div class="leave-detail-value">${leave.leave_reason}</div>
+            </div>
+        `;
 
-    const statusCardMap = {
-        pending: 'sales',
-        approved: 'expenses',
-        rejected: 'income',
-    };
-
-    Object.entries(statusCardMap).forEach(([status, className]) => {
-        const card = document.querySelector(`.${className}`);
-        if (card) {
-            card.addEventListener('click', () => {
-                applyApplicationFilter(status);
-                showBackToAllButton();
-            });
-        }
-    });
-
-
-    const backToAllBtn = document.getElementById('back-to-all-btn');
-    if (backToAllBtn) {
-        backToAllBtn.addEventListener('click', () => {
-            // Remove filter, restore full view
-            document.querySelectorAll('.dropdown-content div').forEach(d => d.classList.remove('active'));
-            applyApplicationFilter('pending');
-            backToAllBtn.style.display = 'none';
-        });
+        leaveDetailsModal.style.display = 'flex';
+    } catch (error) {
+        console.error('Error viewing leave details:', error);
+        showNotification('Failed to load leave details', 'error');
     }
+}
 
-    function showBackToAllButton() {
-        const btn = document.getElementById('back-to-all-btn');
-        if (btn) btn.style.display = 'inline-block';
-    }
+// Open approval modal
+function openApprovalModal(leaveId, defaultStatus) {
+    currentLeaveId = leaveId;
+    const approvalStatus = document.getElementById('approval-status');
+    const approvalRemark = document.getElementById('approval-remark');
+    const approvalModal = document.getElementById('approval-modal');
 
+    if (approvalStatus) approvalStatus.value = defaultStatus;
+    if (approvalRemark) approvalRemark.value = '';
+    if (approvalModal) approvalModal.style.display = 'flex';
+}
+
+// Handle approval form submission
+async function handleApprovalSubmit(e) {
+    e.preventDefault();
     
+    try {
+        const status = document.getElementById('approval-status').value;
+        const remark = document.getElementById('approval-remark').value;
+        
+        if (!status) {
+            showNotification('Please select a status', 'error');
+            return;
+        }
 
+        const statusData = {
+            status: status,
+            approved_by: 1, // Assuming HR user ID is 1, you might want to get this from session
+            approval_remark: remark || null
+        };
 
-});
+        await leaveAPI.updateLeaveStatus(currentLeaveId, statusData);
+        
+        showNotification(`Leave application ${status.toLowerCase()} successfully`);
+        
+        // Close modal and refresh data
+        approvalModal.style.display = 'none';
+        await loadLeaveApplications();
+        
+    } catch (error) {
+        console.error('Error updating leave status:', error);
+        showNotification(error.message || 'Failed to update leave status', 'error');
+    }
+}
+
+// Utility functions
+function formatDate(dateString) {
+    if (!dateString) return 'N/A';
+    return new Date(dateString).toLocaleDateString();
+}
+
+function formatDateTime(dateTimeString) {
+    if (!dateTimeString) return 'N/A';
+    return new Date(dateTimeString).toLocaleString();
+}
+
+function truncateText(text, maxLength) {
+    if (!text) return 'N/A';
+    return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
+}
+
+function showLoading(show) {
+    if (loadingElement) loadingElement.style.display = show ? 'block' : 'none';
+}
+
+function showNoData(show) {
+    if (noDataElement) noDataElement.style.display = show ? 'block' : 'none';
+}
+
+function showNotification(message, type = 'success') {
+    if (statusMessage) statusMessage.textContent = message;
+    if (statusNotification) {
+        statusNotification.className = `status-notification ${type}`;
+        statusNotification.classList.add('show');
+        
+        setTimeout(() => {
+            statusNotification.classList.remove('show');
+        }, type === 'error' ? 5000 : 3000);
+    }
+} 

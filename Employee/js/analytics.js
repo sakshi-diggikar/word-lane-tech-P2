@@ -11,6 +11,11 @@ document.addEventListener('DOMContentLoaded', function () {
     const secondaryChartCtx = document.getElementById('secondaryChart').getContext('2d');
     const analyticsCharts = document.querySelector('.analytics-charts');
 
+    // Global variables for leave data
+    let currentEmployeeId = 'emp001'; // Default, will be updated from session
+    let leaveApplications = [];
+    let leaveStats = { pending: 0, approved: 0, rejected: 0, total: 0 };
+
     // Updated cardsData with filters and no graphs for profile
     const cardsData = [
         {
@@ -130,17 +135,12 @@ document.addEventListener('DOMContentLoaded', function () {
             id: 'leave-analytics',
             title: 'Leave Application Analytics',
             icon: 'fa-plane-departure',
-            value: '4 Days',
+            value: '0 Days',
             badge: 'warning',
-            badgeText: '2 Pending',
+            badgeText: '0 Pending',
             description: 'Your leave activity this month',
             tableHeaders: ['Leave Type', 'From', 'To', 'Days', 'Reason', 'Status', 'Applied On'],
-            tableData: [
-                ['Casual', '2025-06-05', '2025-06-06', '2', 'Travel', 'Approved', '2025-06-01'],
-                ['Sick', '2025-06-10', '2025-06-11', '2', 'Fever', 'Pending', '2025-06-09'],
-                ['Earned', '2025-06-15', '2025-06-16', '2', 'Personal', 'Approved', '2025-06-10'],
-                ['Casual', '2025-06-20', '2025-06-21', '2', 'Family Event', 'Rejected', '2025-06-15']
-            ],
+            tableData: [], // Will be populated from API
             filters: [
                 {
                     id: 'status-filter',
@@ -150,17 +150,17 @@ document.addEventListener('DOMContentLoaded', function () {
                 {
                     id: 'type-filter',
                     label: 'Leave Type',
-                    options: ['All', 'Casual', 'Sick', 'Earned']
+                    options: ['All', 'Casual', 'Sick', 'Earned', 'Annual']
                 }
             ],
             mainChart: {
                 type: 'bar',
                 data: {
-                    labels: ['Casual', 'Sick', 'Earned'],
+                    labels: ['Casual', 'Sick', 'Earned', 'Annual'],
                     datasets: [{
                         label: 'Days Taken',
-                        data: [4, 2, 0],
-                        backgroundColor: ['#7380ec', '#ff7782', '#ffbb55']
+                        data: [0, 0, 0, 0],
+                        backgroundColor: ['#7380ec', '#ff7782', '#ffbb55', '#41f1b6']
                     }]
                 },
                 options: { responsive: true }
@@ -171,7 +171,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
                     datasets: [{
                         label: 'Leaves Taken',
-                        data: [1, 0, 2, 0, 1, 4],
+                        data: [0, 0, 0, 0, 0, 0],
                         borderColor: '#7380ec',
                         tension: 0.3
                     }]
@@ -211,9 +211,154 @@ document.addEventListener('DOMContentLoaded', function () {
     let currentCard = null;
 
     // Initialize the page
-    function init() {
+    async function init() {
+        await loadEmployeeData();
+        await loadLeaveApplications();
         renderCards();
         setupEventListeners();
+        startLeaveStatusPolling();
+    }
+
+    // Load employee data
+    async function loadEmployeeData() {
+        try {
+            const employeeUserId = sessionStorage.getItem("emp_user_id") || "emp001";
+            currentEmployeeId = employeeUserId;
+        } catch (error) {
+            console.error('Error loading employee data:', error);
+        }
+    }
+
+    // Load leave applications from API
+    async function loadLeaveApplications() {
+        try {
+            // First get employee data to get the correct employee ID
+            const employeeResponse = await fetch(`/api/leaves/employee-data/${currentEmployeeId}`);
+            if (!employeeResponse.ok) {
+                console.error('Failed to load employee data');
+                return;
+            }
+            
+            const employeeData = await employeeResponse.json();
+            const employeeId = employeeData.employee.emp_id;
+            
+            // Now get leave applications using the employee ID
+            const response = await fetch(`/api/leaves/employee/${employeeId}`);
+            if (response.ok) {
+                const data = await response.json();
+                leaveApplications = data.leaves || [];
+                updateLeaveAnalytics();
+            } else {
+                console.error('Failed to load leave applications');
+            }
+        } catch (error) {
+            console.error('Error loading leave applications:', error);
+        }
+    }
+
+    // Update leave analytics with real data
+    function updateLeaveAnalytics() {
+        const leaveCard = cardsData.find(card => card.id === 'leave-analytics');
+        if (!leaveCard) return;
+
+        // Calculate statistics
+        leaveStats = {
+            pending: leaveApplications.filter(leave => leave.leave_status === 'Pending').length,
+            approved: leaveApplications.filter(leave => leave.leave_status === 'Approved').length,
+            rejected: leaveApplications.filter(leave => leave.leave_status === 'Rejected').length,
+            total: leaveApplications.length
+        };
+
+        // Calculate total days
+        const totalDays = leaveApplications
+            .filter(leave => leave.leave_status === 'Approved')
+            .reduce((total, leave) => {
+                const start = new Date(leave.leave_start_date);
+                const end = new Date(leave.leave_end_date);
+                const days = Math.ceil((end - start) / (1000 * 60 * 60 * 24)) + 1;
+                return total + days;
+            }, 0);
+
+        // Update card values
+        leaveCard.value = `${totalDays} Days`;
+        leaveCard.badgeText = `${leaveStats.pending} Pending`;
+
+        // Update table data
+        leaveCard.tableData = leaveApplications.map(leave => {
+            const start = new Date(leave.leave_start_date);
+            const end = new Date(leave.leave_end_date);
+            const days = Math.ceil((end - start) / (1000 * 60 * 60 * 24)) + 1;
+            const appliedDate = new Date(leave.leave_created_at).toLocaleDateString();
+            
+            return [
+                'Annual Leave', // Default type since we don't have it in the current schema
+                start.toLocaleDateString(),
+                end.toLocaleDateString(),
+                days.toString(),
+                leave.leave_reason,
+                leave.leave_status,
+                appliedDate
+            ];
+        });
+
+        // Update charts
+        const leaveTypes = ['Casual', 'Sick', 'Earned', 'Annual'];
+        const leaveTypeData = leaveTypes.map(type => {
+            // For now, all leaves are counted as Annual since we don't have type in schema
+            return type === 'Annual' ? totalDays : 0;
+        });
+
+        leaveCard.mainChart.data.datasets[0].data = leaveTypeData;
+
+        // Update monthly data (simplified - just current month)
+        const currentMonth = new Date().getMonth();
+        const monthlyData = [0, 0, 0, 0, 0, 0];
+        monthlyData[currentMonth] = totalDays;
+        leaveCard.secondaryChart.data.datasets[0].data = monthlyData;
+
+        // Re-render cards if leave card is currently displayed
+        if (currentCard && currentCard.id === 'leave-analytics') {
+            renderCards();
+            showCardDetails(leaveCard);
+        }
+    }
+
+    // Poll for leave status changes
+    function startLeaveStatusPolling() {
+        setInterval(async () => {
+            const previousStats = { ...leaveStats };
+            await loadLeaveApplications();
+            
+            // Check for status changes and show notifications
+            if (leaveStats.approved > previousStats.approved) {
+                const newApproved = leaveStats.approved - previousStats.approved;
+                showNotification(`${newApproved} leave application(s) approved!`, 'success');
+            }
+            
+            if (leaveStats.rejected > previousStats.rejected) {
+                const newRejected = leaveStats.rejected - previousStats.rejected;
+                showNotification(`${newRejected} leave application(s) rejected.`, 'error');
+            }
+        }, 30000); // Check every 30 seconds
+    }
+
+    // Show notification function
+    function showNotification(message, type = 'success') {
+        const statusNotification = document.getElementById('status-notification');
+        const statusMessage = document.getElementById('status-notification-message');
+        
+        if (statusMessage) statusMessage.textContent = message;
+        if (statusNotification) {
+            statusNotification.className = `status-notification ${type}`;
+            statusNotification.classList.add('show');
+            
+            setTimeout(() => {
+                statusNotification.classList.remove('show');
+            }, type === 'error' ? 5000 : 3000);
+        } else {
+            // Fallback to alert if notification element not found
+            alert(message);
+        }
     }
 
     // Render all cards
@@ -363,6 +508,18 @@ document.addEventListener('DOMContentLoaded', function () {
 
         // Search functionality
         searchInput.addEventListener('input', filterTable);
+
+        // Listen for leave application submissions
+        window.addEventListener('leaveApplicationSubmitted', async () => {
+            await loadLeaveApplications();
+            showNotification('Leave application added to your analytics!', 'success');
+        });
+
+        // Listen for leave status updates
+        window.addEventListener('leaveStatusUpdated', async () => {
+            await loadLeaveApplications();
+            showNotification('Leave status updated!', 'success');
+        });
     }
 
     // Show card details

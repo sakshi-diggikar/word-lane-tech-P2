@@ -15,6 +15,7 @@ const app = express();
 const authRoutes = require('./routes/auth');
 const hrAPI = require('./routes/hrAPI');
 const projectRoutes = require('./routes/projects'); // ✅ project API added
+const leaveRoutes = require('./routes/leaves'); // ✅ leave API added
 
 // Middlewares
 app.use(cors());
@@ -31,12 +32,14 @@ app.use((req, res, next) => {
 app.use('/api/auth', authRoutes);                 // Login authentication
 app.use('/api/hr/employees', hrAPI);               // HR employee management
 app.use('/api/projects', projectRoutes);           //  Project/task/S3 upload
+app.use('/api/leaves', leaveRoutes);               // Leave applications
 
 // Debug: List all routes
 console.log('🔍 Server: Mounted routes:');
 console.log('🔍 Server: - /api/auth');
 console.log('🔍 Server: - /api/hr/employees');
 console.log('🔍 Server: - /api/projects');
+console.log('🔍 Server: - /api/leaves');
 
 // Test route at root level
 app.get('/test', (req, res) => {

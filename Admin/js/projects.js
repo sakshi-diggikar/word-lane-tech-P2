@@ -418,38 +418,38 @@ function createProjectCard(project, onOpen) {
     }
 
     card.innerHTML = `
-        <div class="project-header">
+                <div class="project-header">
             <h3 style="font-size:1.25rem;">${project.proj_name}</h3>
-            <span class="priority-label" style="margin-left:auto;padding:2px 12px;border-radius:8px;font-size:1em;background:${priorityColor};color:white;align-self:center;">
-                ${priority}
-            </span>
-            <span class="material-icons-sharp three-dots" tabindex="0" aria-haspopup="true" aria-label="Project options menu" style="margin-left:8px;">more_vert</span>
-            <div class="dropdown-menu" role="menu">
-                <button class="route-btn" role="menuitem">Route</button>
-                <button class="archive-btn" role="menuitem">Archive</button>
-                <button class="delete-btn" role="menuitem">Delete</button>
-            </div>
-        </div>
-        <div class="project-details" title="${desc.replace(/"/g, '&quot;')}" style="margin-bottom:0.4em;">${descShort.replace(/\n/g, '<br>')}</div>
-        <div class="project-client" style="color:#7380ec;font-weight:600;margin-bottom:0.5em;">
+                    <span class="priority-label" style="margin-left:auto;padding:2px 12px;border-radius:8px;font-size:1em;background:${priorityColor};color:white;align-self:center;">
+                        ${priority}
+                    </span>
+                    <span class="material-icons-sharp three-dots" tabindex="0" aria-haspopup="true" aria-label="Project options menu" style="margin-left:8px;">more_vert</span>
+                    <div class="dropdown-menu" role="menu">
+                        <button class="route-btn" role="menuitem">Route</button>
+                        <button class="archive-btn" role="menuitem">Archive</button>
+                        <button class="delete-btn" role="menuitem">Delete</button>
+                    </div>
+                </div>
+                <div class="project-details" title="${desc.replace(/"/g, '&quot;')}" style="margin-bottom:0.4em;">${descShort.replace(/\n/g, '<br>')}</div>
+                <div class="project-client" style="color:#7380ec;font-weight:600;margin-bottom:0.5em;">
             Client: ${project.proj_client ? project.proj_client : 'N/A'}
-        </div>
-        <div class="project-dates" style="display:flex;flex-direction:column;align-items:flex-start;">
+                </div>
+                    <div class="project-dates" style="display:flex;flex-direction:column;align-items:flex-start;">
             <span title="Start date" style="font-size:0.97em;color:#7d8da1;"><b>Start:</b> ${startDate}</span>
             <span title="Due date" style="font-size:0.97em;color:#7d8da1;margin-top:0.3em;"><b>Due:</b> ${endDate}</span>
-        </div>
+                    </div>
         <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-top:0.3em;">
-            <div></div>
+                    <div></div>
             <div class="task-count" style="display:flex;align-items:center;">
                 <span style="font-weight:600;color:#7380ec;font-size:1.1em;">
                     ${project.tasks ? project.tasks.length : 0} Tasks
-                </span>
-            </div>
-        </div>
+                        </span>
+                    </div>
+                </div>
         <div style="display:flex;flex-direction:column;align-items:flex-start;margin-top:0.3em;">
-            <div class="progress-bar" style="background:#eee;border-radius:8px;height:10px;width:100%;margin:0.3rem 0 0.3rem 0;">
+                    <div class="progress-bar" style="background:#eee;border-radius:8px;height:10px;width:100%;margin:0.3rem 0 0.3rem 0;">
                 <div style="width:${projectProgress}%;background:${projectProgress === 100 ? '#28a745' : '#7380ec'};height:100%;border-radius:8px;transition:width 0.3s;"></div>
-            </div>
+                    </div>
             <span style="font-size:0.9em;color:#7d8da1;margin-top:0.2em;">${projectProgress}% Complete</span>
         </div>
         <div style="font-size:0.97em;color:#7d8da1;margin-bottom:0.3em;">
@@ -457,13 +457,13 @@ function createProjectCard(project, onOpen) {
         </div>
         <div style="font-size:0.97em;color:#7d8da1;margin-bottom:0.3em;">
             <b>Created At:</b> ${createdAt}
-        </div>
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:0.3em;">
+                </div>
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-top:0.3em;">
             <span class="status-label" style="padding:2px 12px;border-radius:8px;font-size:1em;background:${statusColor};color:white;">
-                ${status}
-            </span>
-        </div>
-    `;
+                        ${status}
+                    </span>
+                </div>
+            `;
 
     // Dropdown menu toggle and actions (Route, Archive, Delete)
     const dots = card.querySelector(".three-dots");
@@ -699,26 +699,20 @@ async function createSubtaskCard(subtask) {
     // Progress bar - show 100% if completed, otherwise use subtask progress
     let progress = subtask.subtask_status === 2 ? 100 : (subtask.subtask_progress || 0);
 
-    // Employee assignments
+    // Employee assignments: use assigned_employees from backend only
     let assignedEmployees = subtask.assigned_employees || 'Not assigned';
 
     // Load attachments for this subtask
     let attachments = [];
     let employeeAttachments = [];
     try {
-        console.log('🔍 Fetching attachments for subtask ID:', subtask.subtask_id);
         const response = await fetch(`/api/projects/subtask-attachments/${subtask.subtask_id}`);
-        console.log('🔍 Attachment response status:', response.status);
         if (response.ok) {
             attachments = await response.json();
-            console.log('🔍 Attachments loaded:', attachments);
-            
             // Separate admin attachments from employee attachments
             const adminUserId = getAdminUserId();
             employeeAttachments = attachments.filter(att => att.subatt_uploaded_by !== adminUserId);
             attachments = attachments.filter(att => att.subatt_uploaded_by === adminUserId);
-        } else {
-            console.error('❌ Failed to load attachments, status:', response.status);
         }
     } catch (error) {
         console.error('❌ Error loading attachments:', error);
@@ -1212,6 +1206,17 @@ function showModal(type, subtaskToEdit = null) {
         modalTitle.textContent = 'Create New Subtask';
         const createBtn = document.getElementById('create-btn');
         if (createBtn) createBtn.textContent = 'Create';
+        
+        console.log('🔍 DEBUG: Before resetting selectedEmployees');
+        debugSelectedEmployees();
+        
+        // Reset selected employees array for new subtask creation
+        selectedEmployees = [];
+        console.log('🔍 Frontend: Subtask modal opened, selectedEmployees reset:', selectedEmployees);
+        
+        console.log('🔍 DEBUG: After resetting selectedEmployees');
+        debugSelectedEmployees();
+        
         if (inputSubtaskName) inputSubtaskName.style.display = 'block';
         const inputSubtaskNameLabel = document.getElementById('input-subtask-name-label');
         if (inputSubtaskNameLabel) inputSubtaskNameLabel.style.display = 'block';
@@ -1236,6 +1241,10 @@ function showModal(type, subtaskToEdit = null) {
         if (inputSubtaskName) inputSubtaskName.focus();
         setTimeout(() => {
             setupEmployeeAutocomplete();
+            // Clear the selected employees display
+            if (selectedEmployeesDiv) {
+                selectedEmployeesDiv.innerHTML = '';
+            }
         }, 100);
     }
     
@@ -1253,6 +1262,9 @@ function showModal(type, subtaskToEdit = null) {
 
 // Close modal function
 function closeModal() {
+    console.log('🔍 DEBUG: Before closing modal');
+    debugSelectedEmployees();
+    
     projectModal.style.display = 'none';
     projectModal.classList.remove('active');
     projectModal.setAttribute('aria-hidden', 'true');
@@ -1266,6 +1278,13 @@ function closeModal() {
     modalForm.removeAttribute('data-editing-task-name');
     modalForm.removeAttribute('data-editing-subtask');
     modalForm.removeAttribute('data-editing-subtask-name');
+    
+    // Reset selected employees array
+    selectedEmployees = [];
+    console.log('🔍 Frontend: Modal closed, selectedEmployees reset:', selectedEmployees);
+    
+    console.log('🔍 DEBUG: After closing modal');
+    debugSelectedEmployees();
 }
 
 // Open modal to create root level project
@@ -1363,12 +1382,12 @@ function showProjectDetails(project) {
     const modal = projectDetailsModal;
     const content = document.getElementById("project-details-content");
     content.innerHTML = `
-        <div style="margin-bottom: 2rem;">
+                <div style="margin-bottom: 2rem;">
             <h2 style="color:#7380ec;font-size:1.8rem;margin-bottom:0;">${project.proj_name}</h2>
-        </div>
-        <div style="background:#f8f9fa;padding:1.5rem;border-radius:1rem;margin-bottom:1.5rem;">
-            <h3 style="color:#363949;margin-bottom:0.8rem;">Project Details</h3>
-            <div style="display:grid;grid-template-columns:auto 1fr;gap:1rem;margin-top:1rem;">
+                        </div>
+                <div style="background:#f8f9fa;padding:1.5rem;border-radius:1rem;margin-bottom:1.5rem;">
+                    <h3 style="color:#363949;margin-bottom:0.8rem;">Project Details</h3>
+                    <div style="display:grid;grid-template-columns:auto 1fr;gap:1rem;margin-top:1rem;">
                 <strong style="color:#363949;">Project ID:</strong>
                 <span style="color:#677483;">${project.proj_id}</span>
                 <strong style="color:#363949;">Name:</strong>
@@ -1377,9 +1396,9 @@ function showProjectDetails(project) {
                 <span style="color:#677483;">${project.proj_description}</span>
                 <strong style="color:#363949;">Status:</strong>
                 <span style="color:#677483;">${project.proj_status}</span>
-                <strong style="color:#363949;">Start Date:</strong>
+                        <strong style="color:#363949;">Start Date:</strong>
                 <span style="color:#677483;">${project.proj_start_date ? formatDateTime(project.proj_start_date) : 'N/A'}</span>
-                <strong style="color:#363949;">Deadline:</strong>
+                        <strong style="color:#363949;">Deadline:</strong>
                 <span style="color:#677483;">${project.proj_deadline ? formatDateTime(project.proj_deadline) : 'N/A'}</span>
                 <strong style="color:#363949;">Created At:</strong>
                 <span style="color:#677483;">${project.proj_created_at ? formatDateTime(project.proj_created_at) : 'N/A'}</span>
@@ -1389,8 +1408,8 @@ function showProjectDetails(project) {
                 <span style="color:#677483;">${project.proj_created_by}</span>
                 <strong style="color:#363949;">Team ID:</strong>
                 <span style="color:#677483;">${project.team_id}</span>
-            </div>
-        </div>
+                    </div>
+                </div>
     `;
     modal.style.display = 'flex';
     // Close button handler
@@ -1622,7 +1641,7 @@ async function showSubtaskDetails(subtask) {
                 <div style="background:#fff3cd;padding:1.5rem;border-radius:1rem;margin-bottom:1.2rem;border-left:4px solid #ffc107;">
                     <h3 style="color:#856404;margin-bottom:0.8rem;">💬 Admin Feedback</h3>
                     <p style="color:#677483;white-space:pre-line;">${subtask.subtask_completion_feedback}</p>
-                </div>
+                    </div>
                 ` : ''}
 
                 ${status === 'Completed' && employeeAttachments.length > 0 ? `
@@ -1713,7 +1732,7 @@ async function showSubtaskDetails(subtask) {
                     const result = await response.json();
                     if (result.success) {
                         showNotification('Subtask reopened successfully!', 'success');
-                        modal.style.display = 'none';
+        modal.style.display = 'none';
                         // Refresh the subtasks list
                         await loadSubtasksForCurrentTask();
                     } else {
@@ -2017,17 +2036,40 @@ async function loadTasksByProject(projectId) {
     }
 }
 
+// Test function to debug selectedEmployees issue
+function debugSelectedEmployees() {
+    console.log('🔍 DEBUG: Current selectedEmployees state:');
+    console.log('🔍 DEBUG: selectedEmployees array:', selectedEmployees);
+    console.log('🔍 DEBUG: selectedEmployees length:', selectedEmployees.length);
+    console.log('🔍 DEBUG: selectedEmployees type:', typeof selectedEmployees);
+    console.log('🔍 DEBUG: Is selectedEmployees an array?', Array.isArray(selectedEmployees));
+    if (selectedEmployees.length > 0) {
+        console.log('🔍 DEBUG: First employee:', selectedEmployees[0]);
+        console.log('🔍 DEBUG: All employee IDs:', selectedEmployees.map(e => e.id));
+    }
+}
+
 let selectedEmployees = [];
 function setupEmployeeAutocomplete() {
     const input = document.getElementById('input-subtask-empid');
     const suggestions = document.getElementById('subtask-empid-suggestions');
     const selectedDiv = document.getElementById('selected-employees');
     
+    console.log('🔍 setupEmployeeAutocomplete called');
+    console.log('🔍 Global employees array:', employees);
+    console.log('🔍 Global employees length:', employees.length);
+    
     // Filter employees to only show those with IDs starting with "emp"
     const employeeEmployees = employees.filter(emp => emp.id.startsWith('emp'));
+    console.log('🔍 Filtered employeeEmployees:', employeeEmployees);
+    console.log('🔍 Filtered employeeEmployees length:', employeeEmployees.length);
+    
+    console.log('🔍 Current selectedEmployees before setup:', selectedEmployees);
+    console.log('🔍 Current selectedEmployees length:', selectedEmployees.length);
 
     // Helper to render selected chips
     function renderSelected() {
+        console.log('🔍 renderSelected called, selectedEmployees:', selectedEmployees);
         selectedDiv.innerHTML = '';
         selectedEmployees.forEach(emp => {
             const chip = document.createElement('span');
@@ -2054,6 +2096,7 @@ function setupEmployeeAutocomplete() {
             `;
             remove.onclick = () => {
                 selectedEmployees = selectedEmployees.filter(e => e.id !== emp.id);
+                console.log('🔍 Employee removed, new selectedEmployees:', selectedEmployees);
                 renderSelected();
             };
             chip.appendChild(remove);
@@ -2080,24 +2123,27 @@ function setupEmployeeAutocomplete() {
             noResults.style.fontStyle = 'italic';
             suggestions.appendChild(noResults);
         } else {
-            filtered.forEach(emp => {
-                const div = document.createElement('div');
-                div.className = 'autocomplete-suggestion';
+        filtered.forEach(emp => {
+            const div = document.createElement('div');
+            div.className = 'autocomplete-suggestion';
                 div.innerHTML = `
                     <div style="display: flex; justify-content: space-between; align-items: center;">
                         <span>${emp.name}</span>
                         <span style="color: #7380ec; font-size: 0.9em;">${emp.id}</span>
                     </div>
                 `;
-                div.onclick = () => {
-                    selectedEmployees.push(emp);
-                    renderSelected();
-                    input.value = '';
-                    suggestions.innerHTML = '';
+            div.onclick = () => {
+                    console.log('🔍 Employee clicked:', emp);
+                    console.log('🔍 selectedEmployees before adding:', selectedEmployees);
+                selectedEmployees.push(emp);
+                    console.log('🔍 selectedEmployees after adding:', selectedEmployees);
+                renderSelected();
+                input.value = '';
+                suggestions.innerHTML = '';
                     suggestions.style.display = 'none';
-                };
-                suggestions.appendChild(div);
-            });
+            };
+            suggestions.appendChild(div);
+        });
         }
         
         suggestions.style.display = filtered.length > 0 || val.length > 0 ? 'block' : 'none';
@@ -2136,7 +2182,8 @@ function setupEmployeeAutocomplete() {
             renderSelected();
         }
     } else {
-        selectedEmployees = [];
+        // Don't reset selectedEmployees here since we already reset it when modal opens
+        // selectedEmployees = [];
         renderSelected();
     }
 } // <-- This closes setupEmployeeAutocomplete properly
@@ -2176,16 +2223,16 @@ function setupLeaderAutocomplete() {
             noResults.style.fontStyle = 'italic';
             suggestions.appendChild(noResults);
         } else {
-            filtered.forEach(emp => {
-                const div = document.createElement('div');
-                div.className = 'autocomplete-suggestion';
+        filtered.forEach(emp => {
+            const div = document.createElement('div');
+            div.className = 'autocomplete-suggestion';
                 div.innerHTML = `
                     <div style="display: flex; justify-content: space-between; align-items: center;">
                         <span>${emp.name}</span>
                         <span style="color: #7380ec; font-size: 0.9em;">${emp.id}</span>
                     </div>
                 `;
-                div.onclick = () => {
+            div.onclick = () => {
                     input.value = `${emp.name} (${emp.id})`;
                     suggestions.innerHTML = '';
                     suggestions.style.display = 'none';
@@ -2298,7 +2345,7 @@ modalForm.addEventListener('submit', async function(e) {
         if (isEditing) {
             await handleTeamUpdate();
         } else {
-            await handleTeamCreation();
+        await handleTeamCreation();
         }
     } else if (type === 'project') {
         // Handle project creation (DB logic)
@@ -2310,7 +2357,7 @@ modalForm.addEventListener('submit', async function(e) {
         const status = 1; // Default status (can be changed to a select if needed)
         const adminUserId = getAdminUserId();
         const teamId = currentTeam && currentTeam.team_id;
-
+        
         if (!name) {
             alert('Please enter a project name.');
             inputName.focus();
@@ -2336,7 +2383,7 @@ modalForm.addEventListener('submit', async function(e) {
             closeModal();
             return;
         }
-
+        
         // Send to backend
         try {
             const res = await fetch('/api/projects/create', {
@@ -2355,7 +2402,7 @@ modalForm.addEventListener('submit', async function(e) {
             const result = await res.json();
             if (result.success) {
                 showNotification('Project created successfully!', 'success');
-                closeModal();
+        closeModal();
                 // Reload projects for this team
                 await loadProjectsByTeam(teamId);
             } else {
@@ -2397,7 +2444,7 @@ modalForm.addEventListener('submit', async function(e) {
             closeModal();
             return;
         }
-
+        
         const adminUserId = getAdminUserId();
         if (!adminUserId) {
             alert('No admin user ID found. Please log in again.');
@@ -2422,7 +2469,7 @@ modalForm.addEventListener('submit', async function(e) {
             const result = await res.json();
             if (result.success) {
                 showNotification('Task created successfully!', 'success');
-                closeModal();
+        closeModal();
                 // Reload tasks for this project
                 await loadTasksForCurrentProject();
             } else {
@@ -2434,6 +2481,10 @@ modalForm.addEventListener('submit', async function(e) {
     } else if (type === 'subtask') {
         // Handle subtask creation with file uploads
         console.log('🔍 Starting subtask creation...');
+        debugSelectedEmployees(); // Debug call
+        console.log('🔍 Frontend: selectedEmployees array before processing:', selectedEmployees);
+        console.log('🔍 Frontend: selectedEmployees length:', selectedEmployees.length);
+        
         const subtaskName = inputSubtaskName.value.trim();
         const subtaskDesc = inputSubtaskDesc.value.trim();
         const subtaskDeadline = inputSubtaskDeadline.value;
@@ -2441,15 +2492,11 @@ modalForm.addEventListener('submit', async function(e) {
         const subtaskEmpids = selectedEmployees.map(e => e.id);
         const subtaskAttachment = inputSubtaskAttachment.files ? Array.from(inputSubtaskAttachment.files) : [];
         
-        console.log('🔍 Subtask form data:', {
-            subtaskName,
-            subtaskDesc,
-            subtaskDeadline,
-            subtaskPriority,
-            subtaskEmpids,
-            fileCount: subtaskAttachment.length,
-            currentTask: currentTask ? currentTask.task_id : 'null'
-        });
+        console.log('🔍 Frontend: selectedEmployees array:', selectedEmployees);
+        console.log('🔍 Frontend: subtaskEmpids array:', subtaskEmpids);
+        console.log('🔍 Frontend: selectedEmployees length:', selectedEmployees.length);
+        
+        debugSelectedEmployees(); // Debug call before form submission
         
         if (!subtaskName) {
             alert('Please enter a subtask name.');
@@ -2471,7 +2518,7 @@ modalForm.addEventListener('submit', async function(e) {
             closeModal();
             return;
         }
-
+        
         const adminUserId = getAdminUserId();
         if (!adminUserId) {
             alert('No admin user ID found. Please log in again.');
@@ -2518,7 +2565,7 @@ modalForm.addEventListener('submit', async function(e) {
             
             if (result.success) {
                 showNotification('Subtask created successfully!', 'success');
-                closeModal();
+        closeModal();
                 // Reload subtasks for this task
                 console.log('🔍 Reloading subtasks...');
                 await loadSubtasksForCurrentTask();

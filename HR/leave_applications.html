@@ -5,13 +5,11 @@
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Leave Applications</title>
-
+    <title>Leave Applications - Word Lane Tech</title>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Sharp" rel="stylesheet" />
-    <link rel="stylesheet" href="css/leave_app.css" />
     <link rel="stylesheet" href="../css/style.css" />
     <link rel="stylesheet" href="../css/notification.css" />
-
+    <link rel="stylesheet" href="css/leave_app.css" />
 </head>
 
 <body>
@@ -31,14 +29,6 @@
                     <span class="material-icons-sharp"> dashboard </span>
                     <h3>Dashboard</h3>
                 </a>
-                <a href="HR_management.html">
-                    <span class="material-icons-sharp"> people </span>
-                    <h3>Management</h3>
-                </a>
-                <a href="#" class="active">
-                    <span class="material-icons-sharp"> event_busy </span>
-                    <h3>Leave Applications</h3>
-                </a>
                 <a href="analytics.html">
                     <span class="material-icons-sharp"> insights </span>
                     <h3>Analytics</h3>
@@ -46,6 +36,14 @@
                 <a href="attendance.html">
                     <span class="material-icons-sharp"> event_note </span>
                     <h3>Attendance</h3>
+                </a>
+                <a href="HR_management.html">
+                    <span class="material-icons-sharp"> people </span>
+                    <h3>HR Management</h3>
+                </a>
+                <a href="#" class="active">
+                    <span class="material-icons-sharp"> assignment </span>
+                    <h3>Leave Applications</h3>
                 </a>
                 <a href="#">
                     <span class="material-icons-sharp"> logout </span>
@@ -65,7 +63,6 @@
                         <span class="material-icons-sharp active"> light_mode </span>
                         <span class="material-icons-sharp"> dark_mode </span>
                     </div>
-                    <!-- Notification Bell -->
                     <div class="notification-bell">
                         <span class="material-icons-sharp" id="notification-bell-icon"> notifications </span>
                         <span class="notification-count" id="notification-count">0</span>
@@ -73,117 +70,67 @@
                 </div>
             </div>
 
-
-            <div class="insights">
-                <!-- PENDING APPLICATIONS -->
-                <div class="sales">
-                    <span class="material-icons-sharp"> pending_actions </span>
-                    <div class="middle">
-                        <div class="left">
-                            <h3>Pending Applications</h3>
-                            <h1 id="pending-count">0</h1>
-                        </div>
-                        <div class="progress">
-                            <svg>
-                                <circle cx="38" cy="38" r="36"></circle>
-                            </svg>
-                            <div class="number">
-                                <p id="pending-percentage">0%</p>
-                            </div>
-                        </div>
-                    </div>
-                    <small class="text-muted"> Last 24 hours </small>
-                </div>
-
-                <!-- APPROVED APPLICATIONS -->
-                <div class="expenses">
-                    <span class="material-icons-sharp"> check_circle </span>
-                    <div class="middle">
-                        <div class="left">
-                            <h3>Approved Applications</h3>
-                            <h1 id="approved-count">0</h1>
-                        </div>
-                        <div class="progress">
-                            <svg>
-                                <circle cx="38" cy="38" r="36"></circle>
-                            </svg>
-                            <div class="number">
-                                <p id="approved-percentage">0%</p>
-                            </div>
-                        </div>
-                    </div>
-                    <small class="text-muted"> Last 24 hours </small>
-                </div>
-
-                <!-- REJECTED APPLICATIONS -->
-                <div class="income">
-                    <span class="material-icons-sharp"> cancel </span>
-                    <div class="middle">
-                        <div class="left">
-                            <h3>Rejected Applications</h3>
-                            <h1 id="rejected-count">0</h1>
-                        </div>
-                        <div class="progress">
-                            <svg>
-                                <circle cx="38" cy="38" r="36"></circle>
-                            </svg>
-                            <div class="number">
-                                <p id="rejected-percentage">0%</p>
-                            </div>
-                        </div>
-                    </div>
-                    <small class="text-muted"> Last 24 hours </small>
-                </div>
+            <!-- Status Notification -->
+            <div id="status-notification" class="status-notification">
+                <p id="status-notification-message"></p>
             </div>
 
-            <div class="recent-orders">
-                <div class="orders-header">
-                    <button id="back-to-all-btn" class="back-button" style="display: none;">
-                        <span class="material-icons-sharp">arrow_back</span>
-                        Back
-                    </button>
-
-                    <h2>New Applications</h2>
-
-                    <div class="controls">
-                        <div class="search-bar">
-                            <input type="text" placeholder="Search applications..." id="application-search" />
-                            <span class="material-icons-sharp">search</span>
-                        </div>
-
-                        <div class="dropdown">
-                            <span class="material-icons-sharp" id="sort-icon" style="cursor:pointer;">sort</span>
-                            <div id="sort-options" class="dropdown-content">
-                                <div data-filter="all">All</div>
-                                <div data-filter="pending">Pending</div>
-                                <div data-filter="approved">Approved</div>
-                                <div data-filter="rejected">Rejected</div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <table id="leave-applications-table">
-                        <thead>
-                            <tr>
-                                <th>Applicant Name</th>
-                                <th>Subject</th>
-                                <th>Start Date</th>
-                                <th>End Date</th>
-                                <th>Status</th>
-                                <th></th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <!-- Leave applications will be injected via JS -->
-                        </tbody>
-                    </table>
-
-                    <a href="#">Show All</a>
+            <!-- Filters -->
+            <div class="filters">
+                <div class="filter-group">
+                    <label for="status-filter">Status:</label>
+                    <select id="status-filter">
+                        <option value="">All Status</option>
+                        <option value="Pending">Pending</option>
+                        <option value="Approved">Approved</option>
+                        <option value="Rejected">Rejected</option>
+                    </select>
                 </div>
+                <div class="filter-group">
+                    <label for="date-filter">Date Range:</label>
+                    <input type="date" id="date-filter-start" placeholder="Start Date">
+                    <input type="date" id="date-filter-end" placeholder="End Date">
+                </div>
+                <div class="filter-group">
+                    <label for="employee-filter">Employee:</label>
+                    <input type="text" id="employee-filter" placeholder="Search by employee name or ID">
+                </div>
+                <button id="clear-filters" class="clear-filters-btn">Clear Filters</button>
+            </div>
+
+            <!-- Leave Applications Table -->
+            <div class="table-container">
+                <table class="leave-table">
+                    <thead>
+                        <tr>
+                            <th>Employee</th>
+                            <th>Start Date</th>
+                            <th>End Date</th>
+                            <th>Reason</th>
+                            <th>Status</th>
+                            <th>Applied On</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="leave-applications-tbody">
+                        <!-- Leave applications will be loaded here -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Loading indicator -->
+            <div id="loading" class="loading" style="display: none;">
+                <div class="spinner"></div>
+                <p>Loading leave applications...</p>
+            </div>
+
+            <!-- No data message -->
+            <div id="no-data" class="no-data" style="display: none;">
+                <p>No leave applications found.</p>
             </div>
         </main>
+
         <div class="right">
-            <!-- Notification Drawer -->
             <div class="notification-drawer" id="notification-drawer">
                 <h2>Notifications</h2>
                 <div class="notifications-list" id="notifications-list">
@@ -193,54 +140,46 @@
         </div>
     </div>
 
-    <!-- Leave Application Detail Modal -->
-    <div id="leave-detail-modal" class="modal">
+    <!-- Leave Details Modal -->
+    <div id="leave-details-modal" class="modal" style="display: none;">
         <div class="modal-content">
-            <span class="close-button">&times;</span>
-            <h2 class="modal-title">Leave Application</h2>
-
-            <div class="modal-section">
-                <div class="modal-row">
-                    <span class="material-icons-sharp">person</span>
-                    <strong>Applicant:</strong>
-                    <span id="modal-applicant"></span>
-                </div>
-                <div class="modal-row">
-                    <span class="material-icons-sharp">subject</span>
-                    <strong>Subject:</strong>
-                    <span id="modal-subject"></span>
-                </div>
-                <div class="modal-row">
-                    <span class="material-icons-sharp">event</span>
-                    <strong>Start Date:</strong>
-                    <span id="modal-start-date"></span>
-                </div>
-                <div class="modal-row">
-                    <span class="material-icons-sharp">event_available</span>
-                    <strong>End Date:</strong>
-                    <span id="modal-end-date"></span>
-                </div>
-                <div class="modal-row">
-                    <span class="material-icons-sharp">info</span>
-                    <strong>Status:</strong>
-                    <span id="modal-status"></span>
-                </div>
-            </div>
-
-            <div class="modal-section">
-                <div class="modal-row description-row">
-                    <span class="material-icons-sharp">description</span>
-                    <strong>Description:</strong>
-                    <p id="modal-description" class="modal-description"></p>
-                </div>
-            </div>
-
-            <div class="modal-actions">
-                <button id="approve-btn" class="success">Approve</button>
-                <button id="reject-btn" class="danger">Reject</button>
-            </div>
+            <span class="close-icon" id="close-leave-details">&times;</span>
+            <h2>Leave Application Details</h2>
+            <div id="leave-details-content"></div>
         </div>
     </div>
+
+    <!-- Approval Modal -->
+    <div id="approval-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <span class="close-icon" id="close-approval-modal">&times;</span>
+            <h2>Update Leave Status</h2>
+            <form id="approval-form">
+                <div class="form-group">
+                    <label for="approval-status">Status:</label>
+                    <select id="approval-status" required>
+                        <option value="">Select Status</option>
+                        <option value="Approved">Approve</option>
+                        <option value="Rejected">Reject</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="approval-remark">Remark (Optional):</label>
+                    <textarea id="approval-remark" rows="3" placeholder="Add any remarks or comments..."></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="submit-btn">Update Status</button>
+                    <button type="button" class="cancel-btn" id="cancel-approval">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="../js/common.js"></script>
+    <script src="../js/notification.js"></script>
+    <script src="../js/api/leaveAPI.js"></script>
+    <script src="../js/chatbot.js"></script>
+    <script src="js/leave_applications.js"></script>
 
     <!-- Chatbot Toggle Button -->
     <button id="chatbot-toggle-btn">💬</button>
@@ -248,7 +187,7 @@
     <!-- Chatbot Panel -->
     <div id="chatbot-panel">
         <header>
-            Admin Assistant
+            HR Assistant
             <button id="close-btn">&times;</button>
         </header>
         <div id="messages"></div>
@@ -257,11 +196,6 @@
             <button type="submit" id="send-button">Send</button>
         </form>
     </div>
-
-    <script src="../js/common.js"></script>
-    <script src="../js/notification.js"></script>
-    <script src="../js/chatbot.js"></script>
-    <script src="js/leave_applications.js"></script>
 </body>
 
 </html>

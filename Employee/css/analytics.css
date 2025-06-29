@@ -945,11 +945,46 @@ table tr:last-child td {
     z-index: 1000;
 }
 
+/* Custom Status Notification Style */
+.status-notification {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background-color: var(--color-success);
+    color: var(--color-white);
+    padding: 1rem 1.5rem;
+    border-radius: var(--border-radius-2);
+    box-shadow: var(--box-shadow);
+    z-index: 1050;
+    transform: translateY(150%);
+    opacity: 0;
+    transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1), opacity 0.4s ease;
+    pointer-events: none;
+}
+
+.status-notification p {
+    margin: 0;
+    font-weight: 500;
+}
+
+.status-notification.show {
+    transform: translateY(0);
+    opacity: 1;
+}
+
+.status-notification.error {
+    background-color: var(--color-danger);
+    color: white;
+}
+
+.status-notification.error p {
+    color: white;
+}
+
 @keyframes slideIn {
     from { transform: translateY(100%); opacity: 0; }
     to { transform: translateY(0); opacity: 1; }
 }
-
 
 /* Remove scroll ONLY for Profile Overview */
 .table-wrapper.no-scroll-profile {

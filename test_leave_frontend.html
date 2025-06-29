@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leave Application Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .test-button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .test-button:hover {
+            background: #0056b3;
+        }
+        .result {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 5px;
+            background: #f8f9fa;
+            border-left: 4px solid #007bff;
+        }
+        .error {
+            border-left-color: #dc3545;
+            background: #f8d7da;
+        }
+        .success {
+            border-left-color: #28a745;
+            background: #d4edda;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>Leave Application System Test</h1>
+        
+        <div class="test-section">
+            <h3>1. Test Employee Data Loading</h3>
+            <button class="test-button" onclick="testEmployeeData()">Test Employee Data API</button>
+            <div id="employee-result" class="result"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>2. Test HR Data Loading</h3>
+            <button class="test-button" onclick="testHRData()">Test HR Data API</button>
+            <div id="hr-result" class="result"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>3. Test Leave Application Submission</h3>
+            <button class="test-button" onclick="testLeaveSubmission()">Test Leave Submission</button>
+            <div id="leave-result" class="result"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>4. Test Leave Applications Fetching</h3>
+            <button class="test-button" onclick="testLeaveFetching()">Test Fetching Leaves</button>
+            <div id="fetch-result" class="result"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>5. Test Leave Statistics</h3>
+            <button class="test-button" onclick="testLeaveStats()">Test Leave Statistics</button>
+            <div id="stats-result" class="result"></div>
+        </div>
+    </div>
+
+    <script>
+        // Include the leaveAPI functions
+        const leaveAPI = {
+            async getEmployeeData(employeeId) {
+                try {
+                    const response = await fetch(`/api/leaves/employee-data/${employeeId}`);
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return await response.json();
+                } catch (error) {
+                    throw error;
+                }
+            },
+
+            async getHRData() {
+                try {
+                    const response = await fetch('/api/leaves/hr-data');
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return await response.json();
+                } catch (error) {
+                    throw error;
+                }
+            },
+
+            async applyLeave(leaveData) {
+                try {
+                    const response = await fetch('/api/leaves/apply', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(leaveData)
+                    });
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return await response.json();
+                } catch (error) {
+                    throw error;
+                }
+            },
+
+            async getAllLeaves() {
+                try {
+                    const response = await fetch('/api/leaves/all');
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return await response.json();
+                } catch (error) {
+                    throw error;
+                }
+            },
+
+            async getLeaveStats() {
+                try {
+                    const response = await fetch('/api/leaves/stats');
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return await response.json();
+                } catch (error) {
+                    throw error;
+                }
+            }
+        };
+
+        async function testEmployeeData() {
+            const resultDiv = document.getElementById('employee-result');
+            resultDiv.innerHTML = 'Testing...';
+            resultDiv.className = 'result';
+
+            try {
+                const response = await leaveAPI.getEmployeeData('emp001');
+                resultDiv.innerHTML = `<strong>Success!</strong><br>Employee: ${response.employee.emp_first_name} ${response.employee.emp_last_name}<br>ID: ${response.employee.emp_user_id}`;
+                resultDiv.className = 'result success';
+            } catch (error) {
+                resultDiv.innerHTML = `<strong>Error:</strong> ${error.message}`;
+                resultDiv.className = 'result error';
+            }
+        }
+
+        async function testHRData() {
+            const resultDiv = document.getElementById('hr-result');
+            resultDiv.innerHTML = 'Testing...';
+            resultDiv.className = 'result';
+
+            try {
+                const response = await leaveAPI.getHRData();
+                resultDiv.innerHTML = `<strong>Success!</strong><br>HR: ${response.hrEmployee.emp_first_name} ${response.hrEmployee.emp_last_name}<br>ID: ${response.hrEmployee.emp_user_id}`;
+                resultDiv.className = 'result success';
+            } catch (error) {
+                resultDiv.innerHTML = `<strong>Error:</strong> ${error.message}`;
+                resultDiv.className = 'result error';
+            }
+        }
+
+        async function testLeaveSubmission() {
+            const resultDiv = document.getElementById('leave-result');
+            resultDiv.innerHTML = 'Testing...';
+            resultDiv.className = 'result';
+
+            try {
+                const leaveData = {
+                    employeeId: 'emp001',
+                    subject: 'Test Leave Application',
+                    description: 'This is a test leave application from the frontend test page.',
+                    startDate: '2025-01-15',
+                    endDate: '2025-01-16',
+                    leaveType: 'Annual Leave'
+                };
+
+                const response = await leaveAPI.applyLeave(leaveData);
+                resultDiv.innerHTML = `<strong>Success!</strong><br>Leave ID: ${response.leaveId}<br>Status: ${response.status}`;
+                resultDiv.className = 'result success';
+            } catch (error) {
+                resultDiv.innerHTML = `<strong>Error:</strong> ${error.message}`;
+                resultDiv.className = 'result error';
+            }
+        }
+
+        async function testLeaveFetching() {
+            const resultDiv = document.getElementById('fetch-result');
+            resultDiv.innerHTML = 'Testing...';
+            resultDiv.className = 'result';
+
+            try {
+                const response = await leaveAPI.getAllLeaves();
+                resultDiv.innerHTML = `<strong>Success!</strong><br>Total leaves: ${response.leaves.length}`;
+                resultDiv.className = 'result success';
+            } catch (error) {
+                resultDiv.innerHTML = `<strong>Error:</strong> ${error.message}`;
+                resultDiv.className = 'result error';
+            }
+        }
+
+        async function testLeaveStats() {
+            const resultDiv = document.getElementById('stats-result');
+            resultDiv.innerHTML = 'Testing...';
+            resultDiv.className = 'result';
+
+            try {
+                const response = await leaveAPI.getLeaveStats();
+                resultDiv.innerHTML = `<strong>Success!</strong><br>Pending: ${response.pending}<br>Approved: ${response.approved}<br>Rejected: ${response.rejected}`;
+                resultDiv.className = 'result success';
+            } catch (error) {
+                resultDiv.innerHTML = `<strong>Error:</strong> ${error.message}`;
+                resultDiv.className = 'result error';
+            }
+        }
+    </script>
+</body>
+</html> 

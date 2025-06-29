@@ -768,5 +768,13 @@ table.attendance-table tbody td {
 .status-notification.show {
     transform: translateY(0);
     opacity: 1;
-    pointer-events: auto;
+}
+
+.status-notification.error {
+    background-color: var(--color-danger);
+    color: white;
+}
+
+.status-notification.error p {
+    color: white;
 }

@@ -124,7 +124,7 @@ function showNotification(message, type = "success") {
         transform: translateX(100%);
         transition: transform 0.3s ease;
     `;
-    
+
     // Set background color based on type
     if (type === "success") {
         notification.style.background = "#28a745";
@@ -133,14 +133,14 @@ function showNotification(message, type = "success") {
     } else {
         notification.style.background = "#17a2b8";
     }
-    
+
     document.body.appendChild(notification);
-    
+
     // Animate in
     setTimeout(() => {
         notification.style.transform = "translateX(0)";
     }, 100);
-    
+
     // Remove after 3 seconds
     setTimeout(() => {
         notification.style.transform = "translateX(100%)";
@@ -274,7 +274,15 @@ function createTeamCard(team, onOpen) {
         if (descShort.length > 160) descShort = descShort.slice(0, 160);
         descShort += '...';
     }
-    
+
+    // Calculate team progress based on projects
+    let teamProgress = 0;
+    if (team.projects && team.projects.length > 0) {
+        const totalProjects = team.projects.length;
+        const completedProjects = team.projects.filter(p => p.proj_status === 2).length;
+        teamProgress = Math.round((completedProjects / totalProjects) * 100);
+    }
+
     card.innerHTML = `
     <div class="project-header">
         <h3 style="font-size:1.25rem;">${team.team_name}</h3>
@@ -294,9 +302,15 @@ function createTeamCard(team, onOpen) {
         <div></div>
         <div class="avatar-stack" style="display:flex;align-items:center;">
             <span style="margin-left:8px;font-weight:600;color:#7380ec;font-size:1.1em;">
-                ${team.project_count || 0}
+                ${team.project_count || 0} Projects
             </span>
         </div>
+    </div>
+    <div style="display:flex;flex-direction:column;align-items:flex-start;margin-top:0.3em;">
+        <div class="progress-bar" style="background:#eee;border-radius:8px;height:10px;width:100%;margin:0.3rem 0 0.3rem 0;">
+            <div style="width:${teamProgress}%;background:${teamProgress === 100 ? '#28a745' : '#7380ec'};height:100%;border-radius:8px;transition:width 0.3s;"></div>
+        </div>
+        <span style="font-size:0.9em;color:#7d8da1;margin-top:0.2em;">${teamProgress}% Complete</span>
     </div>
     <div style="display:flex;flex-direction:column;align-items:flex-end;margin-top:0.4em;position:relative;">
         <span style="font-size:0.97em;color:#7d8da1;margin-bottom:0.1em;">${team.team_created_at ? formatDateTime(new Date(team.team_created_at)) : 'N/A'}</span>
@@ -395,6 +409,14 @@ function createProjectCard(project, onOpen) {
     let endDate = project.proj_deadline ? formatDateTime(project.proj_deadline) : 'N/A';
     let createdAt = project.proj_created_at ? formatDateTime(project.proj_created_at) : '';
 
+    // Calculate project progress based on tasks
+    let projectProgress = 0;
+    if (project.tasks && project.tasks.length > 0) {
+        const totalTasks = project.tasks.length;
+        const completedTasks = project.tasks.filter(t => t.task_status === 2).length;
+        projectProgress = Math.round((completedTasks / totalTasks) * 100);
+    }
+
     card.innerHTML = `
                 <div class="project-header">
             <h3 style="font-size:1.25rem;">${project.proj_name}</h3>
@@ -416,9 +438,23 @@ function createProjectCard(project, onOpen) {
             <span title="Start date" style="font-size:0.97em;color:#7d8da1;"><b>Start:</b> ${startDate}</span>
             <span title="Due date" style="font-size:0.97em;color:#7d8da1;margin-top:0.3em;"><b>Due:</b> ${endDate}</span>
                     </div>
+        <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-top:0.3em;">
+                    <div></div>
+            <div class="task-count" style="display:flex;align-items:center;">
+                <span style="font-weight:600;color:#7380ec;font-size:1.1em;">
+                    ${project.tasks ? project.tasks.length : 0} Tasks
+                        </span>
+                    </div>
+                </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-start;margin-top:0.3em;">
+                    <div class="progress-bar" style="background:#eee;border-radius:8px;height:10px;width:100%;margin:0.3rem 0 0.3rem 0;">
+                <div style="width:${projectProgress}%;background:${projectProgress === 100 ? '#28a745' : '#7380ec'};height:100%;border-radius:8px;transition:width 0.3s;"></div>
+                    </div>
+            <span style="font-size:0.9em;color:#7d8da1;margin-top:0.2em;">${projectProgress}% Complete</span>
+        </div>
         <div style="font-size:0.97em;color:#7d8da1;margin-bottom:0.3em;">
             <b>Status:</b> ${status}
-                </div>
+        </div>
         <div style="font-size:0.97em;color:#7d8da1;margin-bottom:0.3em;">
             <b>Created At:</b> ${createdAt}
                 </div>
@@ -512,13 +548,13 @@ function createTaskCard(task, onOpen) {
         if (now > new Date(task.task_deadline)) status = 'Delayed';
     }
 
-    // Progress bar (subtasks completed / total) - placeholder for now
+    // Progress bar (subtasks completed / total) - improved calculation
     let progress = 0;
     if (task.subtasks && task.subtasks.length > 0) {
-        const completed = task.subtasks.filter(st => st.completed).length;
+        const completed = task.subtasks.filter(st => st.subtask_status === 2).length;
         progress = Math.round((completed / task.subtasks.length) * 100);
     } else {
-        progress = task.progress || 0;
+        progress = task.task_progress || 0;
     }
 
     // Employee name from database
@@ -542,32 +578,19 @@ function createTaskCard(task, onOpen) {
                     <span style="font-size:0.97em;color:#7d8da1;"><b>Employee:</b> ${empName}</span>
                     <span title="Deadline" style="font-size:0.97em;color:#7d8da1;"><b>Deadline:</b> ${task.task_deadline ? formatDateTime(task.task_deadline) : 'N/A'}</span>
                 </div>
-                <div style="display:flex;justify-content:space-between;align-items:flex-end;">
+                <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-top:0.3em;">
                     <div></div>
-                    <div class="subtask-avatars" style="display:flex;align-items:center;gap:0.3em;">
-                        <div class="avatar-stack" style="display:flex;align-items:center;">
-                            ${(task.subtasks || []).slice(0, 3).map((st, i) => `
-                                <span class="avatar-dot" style="
-                                    display:inline-block;
-                                    width:26px;height:26px;
-                                    border-radius:50%;
-                                    background:${['#7380ec', '#41f1b6', '#ffbb55'][i % 3]};
-                                    border:2px solid #fff;
-                                    margin-left:-10px;
-                                    z-index:${10 - i};
-                                    box-shadow:0 1px 4px rgba(0,0,0,0.07);
-                                " title="${st.name}"></span>
-                            `).join('')}
-                        </div>
-                        <span style="margin-left:8px;font-weight:600;color:#7380ec;font-size:1.1em;">
-                            ${task.subtasks ? task.subtasks.length : 0}
+                    <div class="subtask-count" style="display:flex;align-items:center;">
+                        <span style="font-weight:600;color:#7380ec;font-size:1.1em;">
+                            ${task.subtasks ? task.subtasks.length : 0} Subtasks
                         </span>
                     </div>
                 </div>
-                <div style="display:flex;flex-direction:column;align-items:flex-start;">
+                <div style="display:flex;flex-direction:column;align-items:flex-start;margin-top:0.3em;">
                     <div class="progress-bar" style="background:#eee;border-radius:8px;height:10px;width:100%;margin:0.3rem 0 0.3rem 0;">
-                        <div style="width:${progress}%;background:#7380ec;height:100%;border-radius:8px;transition:width 0.3s;"></div>
+                        <div style="width:${progress}%;background:${progress === 100 ? '#28a745' : '#7380ec'};height:100%;border-radius:8px;transition:width 0.3s;"></div>
                     </div>
+                    <span style="font-size:0.9em;color:#7d8da1;margin-top:0.2em;">${progress}% Complete</span>
                 </div>
                 <div style="display:flex;justify-content:space-between;align-items:center;margin-top:0.3em;">
                     <span class="status-label" style="padding:2px 12px;border-radius:8px;font-size:1em;background:${status === 'Completed' ? '#28a745' : status === 'Delayed' ? '#dc3545' : '#f0ad4e'};color:white;">
@@ -673,24 +696,29 @@ async function createSubtaskCard(subtask) {
         if (now > new Date(subtask.subtask_deadline)) status = 'Delayed';
     }
 
-    // Progress bar (optional)
-    let progress = subtask.progress || 0;
+    // Progress bar - show 100% if completed, otherwise use subtask progress
+    let progress = subtask.subtask_status === 2 ? 100 : (subtask.subtask_progress || 0);
 
-    // Employee assignments
+    // Employee assignments: use assigned_employees from backend only
     let assignedEmployees = subtask.assigned_employees || 'Not assigned';
 
     // Load attachments for this subtask
     let attachments = [];
+    let employeeAttachments = [];
     try {
-        console.log('🔍 Loading attachments for subtask card:', subtask.subtask_id);
         const response = await fetch(`/api/projects/subtask-attachments/${subtask.subtask_id}`);
         if (response.ok) {
             attachments = await response.json();
-            console.log('🔍 Attachments for subtask card:', attachments.length, 'files');
+            // Separate admin attachments from employee attachments
+            const adminUserId = getAdminUserId();
+            employeeAttachments = attachments.filter(att => att.subatt_uploaded_by !== adminUserId);
+            attachments = attachments.filter(att => att.subatt_uploaded_by === adminUserId);
         }
     } catch (error) {
-        console.error('❌ Error loading attachments for subtask card:', error);
+        console.error('❌ Error loading attachments:', error);
     }
+
+    console.log('🔍 Rendering subtask details with', attachments.length, 'admin attachments and', employeeAttachments.length, 'employee attachments');
 
     // Attachments display
     let attachmentLinks = '';
@@ -721,7 +749,7 @@ async function createSubtaskCard(subtask) {
                 ${attachmentLinks ? `<div style="font-size:0.97em;color:#7d8da1;margin-bottom:0.3em;"><b>Attachment(s):</b> ${attachmentLinks}</div>` : ''}
                 <div style="display:flex;flex-direction:column;align-items:flex-start;">
                     <div class="progress-bar" style="background:#eee;border-radius:8px;height:10px;width:100%;margin:0.3rem 0 0.3rem 0;">
-                        <div style="width:${progress}%;background:#7380ec;height:100%;border-radius:8px;transition:width 0.3s;"></div>
+                        <div style="width:${progress}%;background:${progress === 100 ? '#28a745' : '#7380ec'};height:100%;border-radius:8px;transition:width 0.3s;"></div>
                     </div>
                 </div>
                 <div style="display:flex;justify-content:space-between;align-items:center;margin-top:0.3em;">
@@ -868,6 +896,22 @@ async function renderTasks() {
 
     // Load tasks from backend
     const tasks = await loadTasksByProject(currentProject.proj_id);
+
+    // Load subtasks for each task to enable progress calculations
+    for (let task of tasks) {
+        try {
+            const subtasksResponse = await fetch(`/api/projects/subtasks/${task.task_id}`);
+            if (subtasksResponse.ok) {
+                task.subtasks = await subtasksResponse.json();
+            } else {
+                task.subtasks = [];
+            }
+        } catch (error) {
+            console.error(`❌ Error loading subtasks for task ${task.task_id}:`, error);
+            task.subtasks = [];
+        }
+    }
+
     currentProject.tasks = tasks;
 
     // Show tasks for current project
@@ -895,7 +939,7 @@ async function loadSubtasksForCurrentTask() {
 // Load subtasks for a task from backend
 async function loadSubtasksByTask(taskId) {
     console.log('🔍 Loading subtasks for task ID:', taskId);
-    
+
     try {
         const response = await fetch(`/api/projects/subtasks/${taskId}`);
         if (!response.ok) {
@@ -958,7 +1002,7 @@ function openTeamFolder(team) {
     console.log('🔍 Team clicked:', team);
     console.log('🔍 Team ID:', team.team_id);
     console.log('🔍 Team name:', team.team_name);
-    
+
     currentTeam = team;
     loadProjectsByTeam(team.team_id);
 }
@@ -1085,7 +1129,7 @@ function showModal(type, subtaskToEdit = null) {
         const teamDescLabel = document.getElementById('input-team-desc-label');
         if (teamDescLabel) teamDescLabel.style.display = 'block';
         if (inputLeaderId) {
-        inputLeaderId.style.display = 'block';
+            inputLeaderId.style.display = 'block';
             inputLeaderId.style.display = '';
             inputLeaderId.removeAttribute('hidden');
         }
@@ -1095,7 +1139,7 @@ function showModal(type, subtaskToEdit = null) {
             leaderIdLabel.removeAttribute('hidden');
         }
         if (leaderIdSuggestions) {
-        leaderIdSuggestions.style.display = 'block';
+            leaderIdSuggestions.style.display = 'block';
         }
         if (inputTeamName) inputTeamName.focus();
         if (subtaskToEdit) {
@@ -1162,11 +1206,17 @@ function showModal(type, subtaskToEdit = null) {
         modalTitle.textContent = 'Create New Subtask';
         const createBtn = document.getElementById('create-btn');
         if (createBtn) createBtn.textContent = 'Create';
-        
+
+        console.log('🔍 DEBUG: Before resetting selectedEmployees');
+        debugSelectedEmployees();
+
         // Reset selected employees array for new subtask creation
         selectedEmployees = [];
         console.log('🔍 Frontend: Subtask modal opened, selectedEmployees reset:', selectedEmployees);
-        
+
+        console.log('🔍 DEBUG: After resetting selectedEmployees');
+        debugSelectedEmployees();
+
         if (inputSubtaskName) inputSubtaskName.style.display = 'block';
         const inputSubtaskNameLabel = document.getElementById('input-subtask-name-label');
         if (inputSubtaskNameLabel) inputSubtaskNameLabel.style.display = 'block';
@@ -1197,7 +1247,7 @@ function showModal(type, subtaskToEdit = null) {
             }
         }, 100);
     }
-    
+
     projectModal.setAttribute('aria-hidden', 'false');
     projectModal.classList.add('active');
     projectModal.style.display = 'flex';
@@ -1212,6 +1262,9 @@ function showModal(type, subtaskToEdit = null) {
 
 // Close modal function
 function closeModal() {
+    console.log('🔍 DEBUG: Before closing modal');
+    debugSelectedEmployees();
+
     projectModal.style.display = 'none';
     projectModal.classList.remove('active');
     projectModal.setAttribute('aria-hidden', 'true');
@@ -1225,10 +1278,13 @@ function closeModal() {
     modalForm.removeAttribute('data-editing-task-name');
     modalForm.removeAttribute('data-editing-subtask');
     modalForm.removeAttribute('data-editing-subtask-name');
-    
+
     // Reset selected employees array
     selectedEmployees = [];
     console.log('🔍 Frontend: Modal closed, selectedEmployees reset:', selectedEmployees);
+
+    console.log('🔍 DEBUG: After closing modal');
+    debugSelectedEmployees();
 }
 
 // Open modal to create root level project
@@ -1479,12 +1535,13 @@ async function showSubtaskDetails(subtask) {
     }
     let priority = subtask.subtask_priority || 'Medium';
     let priorityColor = priority === 'High' ? '#ff4d4f' : priority === 'Medium' ? '#ffbb55' : '#41f1b6';
-    
+
     // Employee assignments
     let assignedEmployees = subtask.assigned_employees || 'Not assigned';
 
     // Load attachments for this subtask
     let attachments = [];
+    let employeeAttachments = [];
     try {
         console.log('🔍 Fetching attachments for subtask ID:', subtask.subtask_id);
         const response = await fetch(`/api/projects/subtask-attachments/${subtask.subtask_id}`);
@@ -1492,6 +1549,11 @@ async function showSubtaskDetails(subtask) {
         if (response.ok) {
             attachments = await response.json();
             console.log('🔍 Attachments loaded:', attachments);
+
+            // Separate admin attachments from employee attachments
+            const adminUserId = getAdminUserId();
+            employeeAttachments = attachments.filter(att => att.subatt_uploaded_by !== adminUserId);
+            attachments = attachments.filter(att => att.subatt_uploaded_by === adminUserId);
         } else {
             console.error('❌ Failed to load attachments, status:', response.status);
         }
@@ -1499,7 +1561,7 @@ async function showSubtaskDetails(subtask) {
         console.error('❌ Error loading attachments:', error);
     }
 
-    console.log('🔍 Rendering subtask details with', attachments.length, 'attachments');
+    console.log('🔍 Rendering subtask details with', attachments.length, 'admin attachments and', employeeAttachments.length, 'employee attachments');
 
     content.innerHTML = `
                 <div style="margin-bottom: 2rem;">
@@ -1542,7 +1604,7 @@ async function showSubtaskDetails(subtask) {
 
                 ${attachments && attachments.length > 0 ? `
                 <div style="background:#f8f9fa;padding:1.5rem;border-radius:1rem;margin-bottom:1.2rem;">
-                    <h3 style="color:#363949;margin-bottom:0.8rem;">Attachments (${attachments.length})</h3>
+                    <h3 style="color:#363949;margin-bottom:0.8rem;">Admin Attachments (${attachments.length})</h3>
                     <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
                         ${attachments.map(attachment => `
                             <a href="${attachment.subatt_file_path}" target="_blank" class="download-attachment" style="display:inline-flex;align-items:center;gap:0.5rem;padding:0.5rem 1rem;background:#7380ec;color:white;border-radius:0.5rem;text-decoration:none;">
@@ -1552,10 +1614,50 @@ async function showSubtaskDetails(subtask) {
                         `).join('')}
                     </div>
                 </div>
-                ` : '<div style="background:#f8f9fa;padding:1.5rem;border-radius:1rem;margin-bottom:1.2rem;"><h3 style="color:#363949;margin-bottom:0.8rem;">Attachments</h3><p style="color:#677483;">No attachments found.</p></div>'}
+                ` : ''}
 
-                <div style="margin-top:2rem;display:flex;justify-content:center;align-items:center;">
+                ${employeeAttachments && employeeAttachments.length > 0 ? `
+                <div style="background:#e8f5e8;padding:1.5rem;border-radius:1rem;margin-bottom:1.2rem;border-left:4px solid #28a745;">
+                    <h3 style="color:#28a745;margin-bottom:0.8rem;">📎 Employee Attachments (${employeeAttachments.length})</h3>
+                    <p style="color:#677483;margin-bottom:1rem;font-style:italic;">Files submitted by employee for this subtask:</p>
+                    <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
+                        ${employeeAttachments.map(attachment => `
+                            <div style="display:flex;align-items:center;gap:0.5rem;padding:0.5rem 1rem;background:#28a745;color:white;border-radius:0.5rem;">
+                                <span class="material-icons-sharp">description</span>
+                                <span>${attachment.subatt_file_name}</span>
+                                <a href="${attachment.subatt_file_path}" target="_blank" style="color:white;text-decoration:none;margin-left:0.5rem;">
+                                    <span class="material-icons-sharp" style="font-size:1.2rem;">open_in_new</span>
+                                </a>
+                                <a href="${attachment.subatt_file_path}" download style="color:white;text-decoration:none;">
+                                    <span class="material-icons-sharp" style="font-size:1.2rem;">download</span>
+                                </a>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+                ` : ''}
+
+                ${subtask.subtask_completion_feedback ? `
+                <div style="background:#fff3cd;padding:1.5rem;border-radius:1rem;margin-bottom:1.2rem;border-left:4px solid #ffc107;">
+                    <h3 style="color:#856404;margin-bottom:0.8rem;">💬 Admin Feedback</h3>
+                    <p style="color:#677483;white-space:pre-line;">${subtask.subtask_completion_feedback}</p>
+                    </div>
+                ` : ''}
+
+                ${status === 'Completed' && employeeAttachments.length > 0 ? `
+                <div style="background:#f8f9fa;padding:1.5rem;border-radius:1rem;margin-bottom:1.2rem;">
+                    <h3 style="color:#363949;margin-bottom:0.8rem;">💬 Provide Feedback</h3>
+                    <textarea id="admin-feedback" placeholder="Provide feedback on the submitted work..." style="width:100%;min-height:100px;padding:0.8rem;border:1px solid #ddd;border-radius:0.5rem;resize:vertical;font-family:inherit;"></textarea>
+                    <div style="margin-top:1rem;display:flex;gap:0.5rem;">
+                        <button id="submit-feedback-btn" style="background:#28a745;color:white;padding:0.5rem 1rem;border:none;border-radius:0.5rem;cursor:pointer;">Submit Feedback</button>
+                        <button id="clear-feedback-btn" style="background:#6c757d;color:white;padding:0.5rem 1rem;border:none;border-radius:0.5rem;cursor:pointer;">Clear</button>
+                    </div>
+                </div>
+                ` : ''}
+
+                <div style="margin-top:2rem;display:flex;justify-content:center;align-items:center;gap:1rem;">
                     <button id="update-subtask-btn" style="background:#7380ec;color:#fff;padding:0.4em 1em;border-radius:0.5em;border:none;font-size:0.98em;cursor:pointer;min-width:90px;">Update Subtask</button>
+                    ${status === 'Completed' ? '<button id="reopen-subtask-btn" style="background:#ffc107;color:#000;padding:0.4em 1em;border-radius:0.5em;border:none;font-size:0.98em;cursor:pointer;min-width:90px;">Reopen Subtask</button>' : ''}
                 </div>
             `;
 
@@ -1565,6 +1667,84 @@ async function showSubtaskDetails(subtask) {
     const closeBtn = document.getElementById('close-subtask-details');
     closeBtn.onclick = () => modal.style.display = 'none';
     modal.onclick = (e) => { if (e.target === modal) modal.style.display = 'none'; };
+
+    // Submit feedback button handler
+    const submitFeedbackBtn = document.getElementById('submit-feedback-btn');
+    if (submitFeedbackBtn) {
+        submitFeedbackBtn.onclick = async function () {
+            const feedback = document.getElementById('admin-feedback').value.trim();
+            if (!feedback) {
+                showNotification('Please enter feedback before submitting', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/projects/subtask-feedback/${subtask.subtask_id}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        feedback: feedback,
+                        admin_user_id: getAdminUserId()
+                    })
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    showNotification('Feedback submitted successfully!', 'success');
+                    // Refresh the modal content to show the feedback
+                    showSubtaskDetails(subtask);
+                } else {
+                    showNotification(result.message || 'Failed to submit feedback', 'error');
+                }
+            } catch (error) {
+                console.error('Error submitting feedback:', error);
+                showNotification('Failed to submit feedback. Please try again.', 'error');
+            }
+        };
+    }
+
+    // Clear feedback button handler
+    const clearFeedbackBtn = document.getElementById('clear-feedback-btn');
+    if (clearFeedbackBtn) {
+        clearFeedbackBtn.onclick = function () {
+            document.getElementById('admin-feedback').value = '';
+        };
+    }
+
+    // Reopen subtask button handler
+    const reopenSubtaskBtn = document.getElementById('reopen-subtask-btn');
+    if (reopenSubtaskBtn) {
+        reopenSubtaskBtn.onclick = async function () {
+            if (confirm('Are you sure you want to reopen this subtask? The employee will be notified.')) {
+                try {
+                    const response = await fetch(`/api/projects/reopen-subtask/${subtask.subtask_id}`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            admin_user_id: getAdminUserId()
+                        })
+                    });
+
+                    const result = await response.json();
+                    if (result.success) {
+                        showNotification('Subtask reopened successfully!', 'success');
+                        modal.style.display = 'none';
+                        // Refresh the subtasks list
+                        await loadSubtasksForCurrentTask();
+                    } else {
+                        showNotification(result.message || 'Failed to reopen subtask', 'error');
+                    }
+                } catch (error) {
+                    console.error('Error reopening subtask:', error);
+                    showNotification('Failed to reopen subtask. Please try again.', 'error');
+                }
+            }
+        };
+    }
 
     // Update subtask button handler
     content.querySelector('#update-subtask-btn').onclick = function () {
@@ -1589,34 +1769,34 @@ async function handleTeamUpdate() {
     const teamDescription = inputTeamDesc.value.trim();
     let leaderIdRaw = inputLeaderId.value.trim();
     let leaderId = leaderIdRaw;
-    
+
     // Extract leader ID from format "Name (ID)"
     const match = leaderIdRaw.match(/\(([^)]+)\)$/);
     if (match) {
         leaderId = match[1];
     }
-    
+
     if (!teamName) {
         alert('Please enter a team name.');
         inputTeamName.focus();
         return;
     }
-    
+
     const adminUserId = getAdminUserId();
     if (!adminUserId) {
         alert('No admin user ID found. Please log in again.');
         return;
     }
-    
+
     // Get the team ID from the form data
     const editingTeamName = modalForm.getAttribute('data-editing-team-name');
     const teamToUpdate = teams.find(t => t.team_name === editingTeamName);
-    
+
     if (!teamToUpdate) {
         showNotification('Team not found for update', 'error');
-            return;
-        }
-    
+        return;
+    }
+
     try {
         const response = await fetch(`/api/projects/update-team/${teamToUpdate.team_id}`, {
             method: 'PUT',
@@ -1630,9 +1810,9 @@ async function handleTeamUpdate() {
                 admin_user_id: adminUserId
             })
         });
-        
+
         const result = await response.json();
-        
+
         if (result.success) {
             showNotification('Team updated successfully!', 'success');
             closeModal();
@@ -1664,21 +1844,36 @@ function projectExistsInList(list, name) {
 async function loadProjectsByTeam(teamId) {
     console.log('🔍 Loading projects for team ID:', teamId);
     console.log('🔍 Current team object:', currentTeam);
-    
+
     try {
         const url = `/api/projects/by-team/${teamId}`;
         console.log('🔍 Fetching from URL:', url);
-        
+
         const res = await fetch(url);
         console.log('🔍 Response status:', res.status);
-        
+
         if (!res.ok) {
             throw new Error(`HTTP error! status: ${res.status}`);
         }
-        
+
         const projects = await res.json();
         console.log('🔍 Projects received:', projects);
-        
+
+        // Load tasks for each project to enable progress calculations
+        for (let project of projects) {
+            try {
+                const tasksResponse = await fetch(`/api/projects/tasks/${project.proj_id}`);
+                if (tasksResponse.ok) {
+                    project.tasks = await tasksResponse.json();
+                } else {
+                    project.tasks = [];
+                }
+            } catch (error) {
+                console.error(`❌ Error loading tasks for project ${project.proj_id}:`, error);
+                project.tasks = [];
+            }
+        }
+
         currentTeam.projects = projects;
         renderProjects();
     } catch (err) {
@@ -1700,10 +1895,10 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 
     console.log('🔍 Page loaded, admin user ID:', emp_user_id);
-    
+
     // Set modal reference after DOM is loaded
     projectModal = document.getElementById("modal");
-    
+
     // Add event listeners for modal
     if (closeModalBtn) {
         closeModalBtn.addEventListener('click', () => {
@@ -1715,7 +1910,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             closeModal();
         });
     }
-    
+
     // Add event listeners for create buttons
     if (createProjectBtn) {
         createProjectBtn.addEventListener('click', () => {
@@ -1737,7 +1932,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             showModal('task');
         });
     }
-    
+
     // Add event listeners for back buttons
     if (backToTeamsBtn) {
         backToTeamsBtn.addEventListener('click', () => {
@@ -1759,10 +1954,10 @@ document.addEventListener("DOMContentLoaded", async () => {
             goBackToTasks();
         });
     }
-    
+
     // Load employees and teams for this admin
     await Promise.all([loadEmployees(), loadTeams()]);
-    
+
     // Initialize flatpickr date pickers
     if (typeof flatpickr !== 'undefined') {
         flatpickr("#input-startdate", {
@@ -1825,7 +2020,7 @@ async function loadEmployees() {
 // Load tasks for a project
 async function loadTasksByProject(projectId) {
     console.log('🔍 Loading tasks for project ID:', projectId);
-    
+
     try {
         const response = await fetch(`/api/projects/tasks/${projectId}`);
         if (!response.ok) {
@@ -1855,3 +2050,726 @@ function debugSelectedEmployees() {
 }
 
 let selectedEmployees = [];
+function setupEmployeeAutocomplete() {
+    const input = document.getElementById('input-subtask-empid');
+    const suggestions = document.getElementById('subtask-empid-suggestions');
+    const selectedDiv = document.getElementById('selected-employees');
+
+    console.log('🔍 setupEmployeeAutocomplete called');
+    console.log('🔍 Global employees array:', employees);
+    console.log('🔍 Global employees length:', employees.length);
+
+    // Filter employees to only show those with IDs starting with "emp"
+    const employeeEmployees = employees.filter(emp => emp.id.startsWith('emp'));
+    console.log('🔍 Filtered employeeEmployees:', employeeEmployees);
+    console.log('🔍 Filtered employeeEmployees length:', employeeEmployees.length);
+
+    console.log('🔍 Current selectedEmployees before setup:', selectedEmployees);
+    console.log('🔍 Current selectedEmployees length:', selectedEmployees.length);
+
+    // Helper to render selected chips
+    function renderSelected() {
+        console.log('🔍 renderSelected called, selectedEmployees:', selectedEmployees);
+        selectedDiv.innerHTML = '';
+        selectedEmployees.forEach(emp => {
+            const chip = document.createElement('span');
+            chip.className = 'selected-employee-chip';
+            chip.textContent = `${emp.name} (${emp.id})`;
+            chip.style.cssText = `
+                display: inline-block;
+                background: #7380ec;
+                color: white;
+                padding: 0.3em 0.8em;
+                border-radius: 1rem;
+                font-size: 0.9em;
+                margin: 0.2em;
+                position: relative;
+            `;
+            const remove = document.createElement('span');
+            remove.className = 'remove-chip';
+            remove.textContent = '×';
+            remove.style.cssText = `
+                margin-left: 0.5em;
+                cursor: pointer;
+                font-weight: bold;
+                font-size: 1.1em;
+            `;
+            remove.onclick = () => {
+                selectedEmployees = selectedEmployees.filter(e => e.id !== emp.id);
+                console.log('🔍 Employee removed, new selectedEmployees:', selectedEmployees);
+                renderSelected();
+            };
+            chip.appendChild(remove);
+            selectedDiv.appendChild(chip);
+        });
+    }
+
+    // Helper to show suggestions
+    input.oninput = function () {
+        const val = input.value.trim().toLowerCase();
+        suggestions.innerHTML = '';
+        if (!val) return;
+
+        const filtered = employeeEmployees.filter(emp =>
+            emp.id.toLowerCase().includes(val) ||
+            emp.name.toLowerCase().includes(val)
+        ).filter(emp => !selectedEmployees.some(e => e.id === emp.id));
+
+        if (filtered.length === 0) {
+            const noResults = document.createElement('div');
+            noResults.className = 'autocomplete-suggestion';
+            noResults.textContent = 'No employees found';
+            noResults.style.color = '#999';
+            noResults.style.fontStyle = 'italic';
+            suggestions.appendChild(noResults);
+        } else {
+            filtered.forEach(emp => {
+                const div = document.createElement('div');
+                div.className = 'autocomplete-suggestion';
+                div.innerHTML = `
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span>${emp.name}</span>
+                        <span style="color: #7380ec; font-size: 0.9em;">${emp.id}</span>
+                    </div>
+                `;
+                div.onclick = () => {
+                    console.log('🔍 Employee clicked:', emp);
+                    console.log('🔍 selectedEmployees before adding:', selectedEmployees);
+                    selectedEmployees.push(emp);
+                    console.log('🔍 selectedEmployees after adding:', selectedEmployees);
+                    renderSelected();
+                    input.value = '';
+                    suggestions.innerHTML = '';
+                    suggestions.style.display = 'none';
+                };
+                suggestions.appendChild(div);
+            });
+        }
+
+        suggestions.style.display = filtered.length > 0 || val.length > 0 ? 'block' : 'none';
+    };
+
+    // Hide suggestions on blur
+    input.onblur = function () {
+        setTimeout(() => {
+            suggestions.innerHTML = '';
+            suggestions.style.display = 'none';
+        }, 150);
+    };
+
+    // On Enter, select first suggestion if available
+    input.onkeydown = function (e) {
+        if (e.key === 'Enter' && suggestions.firstChild && !suggestions.firstChild.textContent.includes('No employees found')) {
+            e.preventDefault();
+            suggestions.firstChild.click();
+        }
+    };
+
+    // If editing, pre-fill selected employees
+    if (modalForm.getAttribute('data-editing-subtask') === 'true') {
+        const editingName = modalForm.getAttribute('data-editing-subtask-name');
+        const subtask = currentTask.subtasks.find(st => st.subtask_name === editingName);
+        if (subtask && subtask.assigned_employees && subtask.assigned_employees !== 'Not assigned') {
+            // Parse assigned employees from the string format "Name (ID), Name2 (ID2)"
+            const employeeStrings = subtask.assigned_employees.split(', ');
+            selectedEmployees = employeeStrings.map(empStr => {
+                const match = empStr.match(/^(.+?) \((.+?)\)$/);
+                if (match) {
+                    return { name: match[1], id: match[2] };
+                }
+                return null;
+            }).filter(emp => emp !== null);
+            renderSelected();
+        }
+    } else {
+        // Don't reset selectedEmployees here since we already reset it when modal opens
+        // selectedEmployees = [];
+        renderSelected();
+    }
+} // <-- This closes setupEmployeeAutocomplete properly
+
+// Setup leader autocomplete for team creation
+function setupLeaderAutocomplete() {
+    const input = document.getElementById('input-leader-id');
+    const suggestions = document.getElementById('leader-id-suggestions');
+
+    if (!input || !suggestions) {
+        console.warn('Leader autocomplete elements not found');
+        return;
+    }
+
+    // Filter employees to only show those with IDs starting with "emp"
+    const employeeEmployees = employees.filter(emp => emp.id.startsWith('emp'));
+
+    // Helper to show suggestions
+    input.oninput = function () {
+        const val = input.value.trim().toLowerCase();
+        suggestions.innerHTML = '';
+        if (!val) {
+            suggestions.style.display = 'none';
+            return;
+        }
+
+        const filtered = employeeEmployees.filter(emp =>
+            emp.id.toLowerCase().includes(val) ||
+            emp.name.toLowerCase().includes(val)
+        );
+
+        if (filtered.length === 0) {
+            const noResults = document.createElement('div');
+            noResults.className = 'autocomplete-suggestion';
+            noResults.textContent = 'No employees found';
+            noResults.style.color = '#999';
+            noResults.style.fontStyle = 'italic';
+            suggestions.appendChild(noResults);
+        } else {
+            filtered.forEach(emp => {
+                const div = document.createElement('div');
+                div.className = 'autocomplete-suggestion';
+                div.innerHTML = `
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span>${emp.name}</span>
+                        <span style="color: #7380ec; font-size: 0.9em;">${emp.id}</span>
+                    </div>
+                `;
+                div.onclick = () => {
+                    input.value = `${emp.name} (${emp.id})`;
+                    suggestions.innerHTML = '';
+                    suggestions.style.display = 'none';
+                };
+                suggestions.appendChild(div);
+            });
+        }
+
+        suggestions.style.display = filtered.length > 0 || val.length > 0 ? 'block' : 'none';
+    };
+
+    // Hide suggestions on blur
+    input.onblur = function () {
+        setTimeout(() => {
+            suggestions.innerHTML = '';
+            suggestions.style.display = 'none';
+        }, 150);
+    };
+
+    // On Enter, select first suggestion if available
+    input.onkeydown = function (e) {
+        if (e.key === 'Enter' && suggestions.firstChild && !suggestions.firstChild.textContent.includes('No employees found')) {
+            e.preventDefault();
+            suggestions.firstChild.click();
+        }
+    };
+}
+
+// Setup task employee autocomplete for task creation
+function setupTaskEmployeeAutocomplete() {
+    const input = document.getElementById('input-task-empid');
+    const suggestions = document.getElementById('task-empid-suggestions');
+
+    if (!input || !suggestions) {
+        console.warn('Task employee autocomplete elements not found');
+        return;
+    }
+
+    // Filter employees to only show those with IDs starting with "emp"
+    const employeeEmployees = employees.filter(emp => emp.id.startsWith('emp'));
+
+    // Helper to show suggestions
+    input.oninput = function () {
+        const val = input.value.trim().toLowerCase();
+        suggestions.innerHTML = '';
+        if (!val) {
+            suggestions.style.display = 'none';
+            return;
+        }
+
+        const filtered = employeeEmployees.filter(emp =>
+            emp.id.toLowerCase().includes(val) ||
+            emp.name.toLowerCase().includes(val)
+        );
+
+        if (filtered.length === 0) {
+            const noResults = document.createElement('div');
+            noResults.className = 'autocomplete-suggestion';
+            noResults.textContent = 'No employees found';
+            noResults.style.color = '#999';
+            noResults.style.fontStyle = 'italic';
+            suggestions.appendChild(noResults);
+        } else {
+            filtered.forEach(emp => {
+                const div = document.createElement('div');
+                div.className = 'autocomplete-suggestion';
+                div.innerHTML = `
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span>${emp.name}</span>
+                        <span style="color: #7380ec; font-size: 0.9em;">${emp.id}</span>
+                    </div>
+                `;
+                div.onclick = () => {
+                    input.value = `${emp.name} (${emp.id})`;
+                    suggestions.innerHTML = '';
+                    suggestions.style.display = 'none';
+                };
+                suggestions.appendChild(div);
+            });
+        }
+
+        suggestions.style.display = filtered.length > 0 || val.length > 0 ? 'block' : 'none';
+    };
+
+    // Hide suggestions on blur
+    input.onblur = function () {
+        setTimeout(() => {
+            suggestions.innerHTML = '';
+            suggestions.style.display = 'none';
+        }, 150);
+    };
+
+    // On Enter, select first suggestion if available
+    input.onkeydown = function (e) {
+        if (e.key === 'Enter' && suggestions.firstChild && !suggestions.firstChild.textContent.includes('No employees found')) {
+            e.preventDefault();
+            suggestions.firstChild.click();
+        }
+    };
+}
+
+// Form submission handler
+modalForm.addEventListener('submit', async function (e) {
+    e.preventDefault();
+
+    const type = modalForm.getAttribute('data-type');
+
+    if (type === 'team') {
+        const isEditing = modalForm.getAttribute('data-editing-team') === 'true';
+        if (isEditing) {
+            await handleTeamUpdate();
+        } else {
+            await handleTeamCreation();
+        }
+    } else if (type === 'project') {
+        // Handle project creation (DB logic)
+        const name = inputName.value.trim();
+        const description = inputDescription.value.trim();
+        const client = inputClient.value.trim();
+        const startdate = inputStartDate.value;
+        const deadline = inputDeadline.value;
+        const status = 1; // Default status (can be changed to a select if needed)
+        const adminUserId = getAdminUserId();
+        const teamId = currentTeam && currentTeam.team_id;
+
+        if (!name) {
+            alert('Please enter a project name.');
+            inputName.focus();
+            return;
+        }
+        if (!client) {
+            alert('Please enter a client name.');
+            inputClient.focus();
+            return;
+        }
+        if (!startdate) {
+            alert('Please select a start date.');
+            inputStartDate.focus();
+            return;
+        }
+        if (!deadline) {
+            alert('Please select a deadline.');
+            inputDeadline.focus();
+            return;
+        }
+        if (!teamId) {
+            alert('No team selected for creating a project.');
+            closeModal();
+            return;
+        }
+
+        // Send to backend
+        try {
+            const res = await fetch('/api/projects/create', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    proj_name: name,
+                    proj_description: description,
+                    proj_status: status,
+                    proj_start_date: startdate,
+                    proj_deadline: deadline,
+                    proj_created_by: adminUserId,
+                    team_id: teamId
+                })
+            });
+            const result = await res.json();
+            if (result.success) {
+                showNotification('Project created successfully!', 'success');
+                closeModal();
+                // Reload projects for this team
+                await loadProjectsByTeam(teamId);
+            } else {
+                showNotification(result.error || 'Failed to create project', 'error');
+            }
+        } catch (err) {
+            showNotification('Failed to create project. Please try again.', 'error');
+        }
+    } else if (type === 'task') {
+        // Handle task creation (DB logic)
+        const taskName = inputTaskName.value.trim();
+        const taskDesc = inputTaskDesc.value.trim();
+        const taskDeadline = inputTaskDeadline.value;
+        const taskPriority = inputTaskPriority.value;
+        let taskEmpidRaw = inputTaskEmpid.value.trim();
+        let taskEmpid = taskEmpidRaw;
+        const match = taskEmpidRaw.match(/\(([^)]+)\)$/);
+        if (match) {
+            taskEmpid = match[1];
+        }
+
+        if (!taskName) {
+            alert('Please enter a task name.');
+            inputTaskName.focus();
+            return;
+        }
+        if (!taskDeadline) {
+            alert('Please select a task deadline.');
+            inputTaskDeadline.focus();
+            return;
+        }
+        if (!taskEmpid) {
+            alert('Please select an employee.');
+            inputTaskEmpid.focus();
+            return;
+        }
+        if (!currentProject) {
+            alert('No project is open to add a task.');
+            closeModal();
+            return;
+        }
+
+        const adminUserId = getAdminUserId();
+        if (!adminUserId) {
+            alert('No admin user ID found. Please log in again.');
+            return;
+        }
+
+        // Send to backend
+        try {
+            const res = await fetch('/api/projects/create-task', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    task_name: taskName,
+                    task_description: taskDesc,
+                    task_priority: taskPriority,
+                    task_employee_id: taskEmpid,
+                    task_deadline: taskDeadline,
+                    project_id: currentProject.proj_id,
+                    admin_user_id: adminUserId
+                })
+            });
+            const result = await res.json();
+            if (result.success) {
+                showNotification('Task created successfully!', 'success');
+                closeModal();
+                // Reload tasks for this project
+                await loadTasksForCurrentProject();
+            } else {
+                showNotification(result.error || 'Failed to create task', 'error');
+            }
+        } catch (err) {
+            showNotification('Failed to create task. Please try again.', 'error');
+        }
+    } else if (type === 'subtask') {
+        // Handle subtask creation with file uploads
+        console.log('🔍 Starting subtask creation...');
+        debugSelectedEmployees(); // Debug call
+        console.log('🔍 Frontend: selectedEmployees array before processing:', selectedEmployees);
+        console.log('🔍 Frontend: selectedEmployees length:', selectedEmployees.length);
+
+        const subtaskName = inputSubtaskName.value.trim();
+        const subtaskDesc = inputSubtaskDesc.value.trim();
+        const subtaskDeadline = inputSubtaskDeadline.value;
+        const subtaskPriority = inputSubtaskPriority.value;
+        const subtaskEmpids = selectedEmployees.map(e => e.id);
+        const subtaskAttachment = inputSubtaskAttachment.files ? Array.from(inputSubtaskAttachment.files) : [];
+
+        console.log('🔍 Frontend: selectedEmployees array:', selectedEmployees);
+        console.log('🔍 Frontend: subtaskEmpids array:', subtaskEmpids);
+        console.log('🔍 Frontend: selectedEmployees length:', selectedEmployees.length);
+
+        debugSelectedEmployees(); // Debug call before form submission
+
+        if (!subtaskName) {
+            alert('Please enter a subtask name.');
+            inputSubtaskName.focus();
+            return;
+        }
+        if (!selectedEmployees.length) {
+            alert('Please select at least one employee.');
+            inputSubtaskEmpid.focus();
+            return;
+        }
+        if (!subtaskDeadline) {
+            alert('Please select a subtask deadline.');
+            inputSubtaskDeadline.focus();
+            return;
+        }
+        if (!currentTask) {
+            alert('No Task is open to add subtask.');
+            closeModal();
+            return;
+        }
+
+        const adminUserId = getAdminUserId();
+        if (!adminUserId) {
+            alert('No admin user ID found. Please log in again.');
+            return;
+        }
+
+        // Create FormData for file upload
+        const formData = new FormData();
+        formData.append('subtask_name', subtaskName);
+        formData.append('subtask_description', subtaskDesc);
+        formData.append('task_id', currentTask.task_id);
+        formData.append('employee_ids', JSON.stringify(subtaskEmpids));
+        formData.append('subtask_deadline', subtaskDeadline);
+        formData.append('subtask_priority', subtaskPriority);
+        formData.append('admin_user_id', adminUserId);
+
+        // Append files
+        for (let i = 0; i < subtaskAttachment.length; i++) {
+            formData.append('attachments', subtaskAttachment[i]);
+        }
+
+        // Send to backend
+        try {
+            console.log('🔍 Creating subtask with data:', {
+                subtaskName,
+                subtaskDesc,
+                taskId: currentTask.task_id,
+                subtaskEmpids,
+                subtaskDeadline,
+                subtaskPriority,
+                adminUserId,
+                fileCount: subtaskAttachment.length
+            });
+
+            console.log('🔍 Sending request to /api/projects/create-subtask');
+            const res = await fetch('/api/projects/create-subtask', {
+                method: 'POST',
+                body: formData
+            });
+
+            console.log('🔍 Response status:', res.status);
+            const result = await res.json();
+            console.log('🔍 Response result:', result);
+
+            if (result.success) {
+                showNotification('Subtask created successfully!', 'success');
+                closeModal();
+                // Reload subtasks for this task
+                console.log('🔍 Reloading subtasks...');
+                await loadSubtasksForCurrentTask();
+            } else {
+                showNotification(result.error || 'Failed to create subtask', 'error');
+            }
+        } catch (err) {
+            console.error('❌ Subtask creation error:', err);
+            showNotification('Failed to create subtask. Please try again.', 'error');
+        }
+    }
+});
+
+// Handle team creation with backend API
+async function handleTeamCreation() {
+    const teamName = inputTeamName.value.trim();
+    const teamDescription = inputTeamDesc.value.trim();
+    let leaderIdRaw = inputLeaderId.value.trim();
+    let leaderId = leaderIdRaw;
+
+    // Extract leader ID from format "Name (ID)"
+    const match = leaderIdRaw.match(/\(([^)]+)\)$/);
+    if (match) {
+        leaderId = match[1];
+    }
+
+    if (!teamName) {
+        alert('Please enter a team name.');
+        inputTeamName.focus();
+        return;
+    }
+
+    const adminUserId = getAdminUserId();
+    if (!adminUserId) {
+        alert('No admin user ID found. Please log in again.');
+        return;
+    }
+
+    try {
+        const response = await fetch('/api/projects/create-team', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                team_name: teamName,
+                team_description: teamDescription,
+                leader_id: leaderId || null,
+                admin_user_id: adminUserId
+            })
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            showNotification('Team created successfully!', 'success');
+            closeModal();
+            // Reload teams to show the new team
+            await loadTeams();
+        } else {
+            showNotification(result.error || 'Failed to create team', 'error');
+        }
+    } catch (error) {
+        console.error('Team creation error:', error);
+        showNotification('Failed to create team. Please try again.', 'error');
+    }
+}
+
+// Delete functions
+async function deleteTeam(teamId) {
+    const adminUserId = getAdminUserId();
+    if (!adminUserId) {
+        showNotification('No admin user ID found. Please log in again.', 'error');
+        return;
+    }
+
+    try {
+        const response = await fetch(`/api/projects/delete-team/${teamId}`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                admin_user_id: adminUserId
+            })
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            showNotification('Team deleted successfully!', 'success');
+            // Reload teams to reflect the deletion
+            await loadTeams();
+        } else {
+            showNotification(result.error || 'Failed to delete team', 'error');
+        }
+    } catch (error) {
+        console.error('Team deletion error:', error);
+        showNotification('Failed to delete team. Please try again.', 'error');
+    }
+}
+
+async function deleteProject(projectId) {
+    const adminUserId = getAdminUserId();
+    if (!adminUserId) {
+        showNotification('No admin user ID found. Please log in again.', 'error');
+        return;
+    }
+
+    try {
+        const response = await fetch(`/api/projects/delete-project/${projectId}`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                admin_user_id: adminUserId
+            })
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            showNotification('Project deleted successfully!', 'success');
+            // Reload projects for current team
+            if (currentTeam) {
+                await loadProjectsByTeam(currentTeam.team_id);
+            }
+        } else {
+            showNotification(result.error || 'Failed to delete project', 'error');
+        }
+    } catch (error) {
+        console.error('Project deletion error:', error);
+        showNotification('Failed to delete project. Please try again.', 'error');
+    }
+}
+
+async function deleteTask(taskId) {
+    const adminUserId = getAdminUserId();
+    if (!adminUserId) {
+        showNotification('No admin user ID found. Please log in again.', 'error');
+        return;
+    }
+
+    try {
+        const response = await fetch(`/api/projects/delete-task/${taskId}`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                admin_user_id: adminUserId
+            })
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            showNotification('Task deleted successfully!', 'success');
+            // Reload tasks for current project
+            if (currentProject) {
+                await loadTasksForCurrentProject();
+            }
+        } else {
+            showNotification(result.error || 'Failed to delete task', 'error');
+        }
+    } catch (error) {
+        console.error('Task deletion error:', error);
+        showNotification('Failed to delete task. Please try again.', 'error');
+    }
+}
+
+async function deleteSubtask(subtaskId) {
+    const adminUserId = getAdminUserId();
+    if (!adminUserId) {
+        showNotification('No admin user ID found. Please log in again.', 'error');
+        return;
+    }
+
+    try {
+        const response = await fetch(`/api/projects/delete-subtask/${subtaskId}`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                admin_user_id: adminUserId
+            })
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            showNotification('Subtask deleted successfully!', 'success');
+            // Reload subtasks for current task
+            if (currentTask) {
+                await loadSubtasksForCurrentTask();
+            }
+        } else {
+            showNotification(result.error || 'Failed to delete subtask', 'error');
+        }
+    } catch (error) {
+        console.error('Subtask deletion error:', error);
+        showNotification('Failed to delete subtask. Please try again.', 'error');
+    }
+}
+

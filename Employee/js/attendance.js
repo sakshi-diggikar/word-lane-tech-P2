@@ -1,72 +1,109 @@
 // Employee view calendar visibility
-const currentEmployeeId = "EMP001";
-const currentEmployeeName = "Alice Johnson";
+let currentEmployeeId = null;
+let currentEmployeeName = null;
+let currentEmployeeData = null;
+let hrEmployeeData = null;
+
+// Load employee data on page load
+async function loadEmployeeData() {
+    try {
+        // Get employee user ID from session storage or use default (use lowercase to match database)
+        const employeeUserId = sessionStorage.getItem("emp_user_id") || "emp001";
+        
+        // Load employee data
+        const employeeResponse = await leaveAPI.getEmployeeData(employeeUserId);
+        currentEmployeeData = employeeResponse.employee;
+        currentEmployeeId = currentEmployeeData.emp_user_id;
+        currentEmployeeName = `${currentEmployeeData.emp_first_name} ${currentEmployeeData.emp_last_name}`;
+        
+        // Load HR data
+        const hrResponse = await leaveAPI.getHRData();
+        hrEmployeeData = hrResponse.hrEmployee;
+        
+        console.log('Employee data loaded:', currentEmployeeData);
+        console.log('HR data loaded:', hrEmployeeData);
+        
+    } catch (error) {
+        console.error('Error loading employee data:', error);
+        // Fallback to dummy data if API fails
+        currentEmployeeId = "emp001";
+        currentEmployeeName = "Ravi Kumar";
+        // Try to load HR data separately
+        try {
+            const hrResponse = await leaveAPI.getHRData();
+            hrEmployeeData = hrResponse.hrEmployee;
+        } catch (hrError) {
+            console.error('Error loading HR data:', hrError);
+            hrEmployeeData = { emp_first_name: "Mithilesh", emp_last_name: "jumnake" };
+        }
+    }
+}
 
 // Dummy attendance data for the current employee, including time in/out
 // This data will be filtered for display in the table (past dates only)
 const employeeAttendanceData = [
-    { employeeId: "EMP001", date: "2025-05-01", status: "present", timeIn: "09:00 AM", timeOut: "05:00 PM" },
-    { employeeId: "EMP001", date: "2025-05-02", status: "present", timeIn: "09:15 AM", timeOut: "05:00 PM" },
-    { employeeId: "EMP001", date: "2025-05-03", status: "weekend", timeIn: "", timeOut: "" },
-    { employeeId: "EMP001", date: "2025-05-04", status: "weekend", timeIn: "", timeOut: "" },
-    { employeeId: "EMP001", date: "2025-05-05", status: "present", timeIn: "09:00 AM", timeOut: "05:00 PM" },
-    { employeeId: "EMP001", date: "2025-05-06", status: "absent", timeIn: "", timeOut: "" },
-    { employeeId: "EMP001", date: "2025-05-07", status: "leave", timeIn: "", timeOut: "" },
-    { employeeId: "EMP001", date: "2025-05-08", status: "holiday", timeIn: "", timeOut: "" },
-    { employeeId: "EMP001", date: "2025-05-09", status: "present", timeIn: "09:05 AM", timeOut: "05:00 PM" },
-    { employeeId: "EMP001", date: "2025-05-10", status: "weekend", timeIn: "", timeOut: "" },
-    { employeeId: "EMP001", date: "2025-05-11", status: "weekend", timeIn: "", timeOut: "" },
-    { employeeId: "EMP001", date: "2025-05-12", status: "late", timeIn: "10:30 AM", timeOut: "05:00 PM" },
-    { employeeId: "EMP001", date: "2025-05-13", status: "half-day", timeIn: "01:00 PM", timeOut: "05:00 PM" },
-    { employeeId: "EMP001", date: "2025-05-14", status: "present", timeIn: "09:00 AM", timeOut: "05:00 PM" },
-    { employeeId: "EMP001", date: "2025-05-15", status: "present", timeIn: "09:00 AM", timeOut: "05:00 PM" },
-    { employeeId: "EMP001", date: "2025-05-16", status: "present", timeIn: "09:00 AM", timeOut: "05:00 PM" },
-    { employeeId: "EMP001", date: "2025-05-17", status: "weekend", timeIn: "", timeOut: "" },
-    { employeeId: "EMP001", date: "2025-05-18", status: "weekend", timeIn: "", timeOut: "" },
-    { employeeId: "EMP001", date: "2025-05-19", status: "present", timeIn: "09:00 AM", timeOut: "05:00 PM" },
-    { employeeId: "EMP001", date: "2025-05-20", status: "present", timeIn: "09:00 AM", timeOut: "05:00 PM" },
-    { employeeId: "EMP001", date: "2025-05-21", status: "present", timeIn: "09:00 AM", timeOut: "05:00 PM" },
-    { employeeId: "EMP001", date: "2025-05-22", status: "present", timeIn: "09:00 AM", timeOut: "05:00 PM" },
-    { employeeId: "EMP001", date: "2025-05-23", status: "present", timeIn: "09:00 AM", timeOut: "05:00 PM" },
-    { employeeId: "EMP001", date: "2025-05-24", status: "weekend", timeIn: "", timeOut: "" },
-    { employeeId: "EMP001", date: "2025-05-25", status: "weekend", timeIn: "", timeOut: "" },
-    { employeeId: "EMP001", date: "2025-05-26", status: "present", timeIn: "09:00 AM", timeOut: "05:00 PM" },
-    { employeeId: "EMP001", date: "2025-05-27", status: "present", timeIn: "09:00 AM", timeOut: "05:00 PM" },
-    { employeeId: "EMP001", date: "2025-05-28", status: "present", timeIn: "09:00 AM", timeOut: "05:00 PM" },
-    { employeeId: "EMP001", date: "2025-05-29", status: "present", timeIn: "09:00 AM", timeOut: "05:00 PM" },
-    { employeeId: "EMP001", date: "2025-05-30", status: "present", timeIn: "09:00 AM", timeOut: "05:00 PM" },
-    { employeeId: "EMP001", date: "2025-05-31", status: "present", timeIn: "09:00 AM", timeOut: "05:00 PM" },
+    { employeeId: "emp001", date: "2025-05-01", status: "present", timeIn: "09:00 AM", timeOut: "05:00 PM" },
+    { employeeId: "emp001", date: "2025-05-02", status: "present", timeIn: "09:15 AM", timeOut: "05:00 PM" },
+    { employeeId: "emp001", date: "2025-05-03", status: "weekend", timeIn: "", timeOut: "" },
+    { employeeId: "emp001", date: "2025-05-04", status: "weekend", timeIn: "", timeOut: "" },
+    { employeeId: "emp001", date: "2025-05-05", status: "present", timeIn: "09:00 AM", timeOut: "05:00 PM" },
+    { employeeId: "emp001", date: "2025-05-06", status: "absent", timeIn: "", timeOut: "" },
+    { employeeId: "emp001", date: "2025-05-07", status: "leave", timeIn: "", timeOut: "" },
+    { employeeId: "emp001", date: "2025-05-08", status: "holiday", timeIn: "", timeOut: "" },
+    { employeeId: "emp001", date: "2025-05-09", status: "present", timeIn: "09:05 AM", timeOut: "05:00 PM" },
+    { employeeId: "emp001", date: "2025-05-10", status: "weekend", timeIn: "", timeOut: "" },
+    { employeeId: "emp001", date: "2025-05-11", status: "weekend", timeIn: "", timeOut: "" },
+    { employeeId: "emp001", date: "2025-05-12", status: "late", timeIn: "10:30 AM", timeOut: "05:00 PM" },
+    { employeeId: "emp001", date: "2025-05-13", status: "half-day", timeIn: "01:00 PM", timeOut: "05:00 PM" },
+    { employeeId: "emp001", date: "2025-05-14", status: "present", timeIn: "09:00 AM", timeOut: "05:00 PM" },
+    { employeeId: "emp001", date: "2025-05-15", status: "present", timeIn: "09:00 AM", timeOut: "05:00 PM" },
+    { employeeId: "emp001", date: "2025-05-16", status: "present", timeIn: "09:00 AM", timeOut: "05:00 PM" },
+    { employeeId: "emp001", date: "2025-05-17", status: "weekend", timeIn: "", timeOut: "" },
+    { employeeId: "emp001", date: "2025-05-18", status: "weekend", timeIn: "", timeOut: "" },
+    { employeeId: "emp001", date: "2025-05-19", status: "present", timeIn: "09:00 AM", timeOut: "05:00 PM" },
+    { employeeId: "emp001", date: "2025-05-20", status: "present", timeIn: "09:00 AM", timeOut: "05:00 PM" },
+    { employeeId: "emp001", date: "2025-05-21", status: "present", timeIn: "09:00 AM", timeOut: "05:00 PM" },
+    { employeeId: "emp001", date: "2025-05-22", status: "present", timeIn: "09:00 AM", timeOut: "05:00 PM" },
+    { employeeId: "emp001", date: "2025-05-23", status: "present", timeIn: "09:00 AM", timeOut: "05:00 PM" },
+    { employeeId: "emp001", date: "2025-05-24", status: "weekend", timeIn: "", timeOut: "" },
+    { employeeId: "emp001", date: "2025-05-25", status: "weekend", timeIn: "", timeOut: "" },
+    { employeeId: "emp001", date: "2025-05-26", status: "present", timeIn: "09:00 AM", timeOut: "05:00 PM" },
+    { employeeId: "emp001", date: "2025-05-27", status: "present", timeIn: "09:00 AM", timeOut: "05:00 PM" },
+    { employeeId: "emp001", date: "2025-05-28", status: "present", timeIn: "09:00 AM", timeOut: "05:00 PM" },
+    { employeeId: "emp001", date: "2025-05-29", status: "present", timeIn: "09:00 AM", timeOut: "05:00 PM" },
+    { employeeId: "emp001", date: "2025-05-30", status: "present", timeIn: "09:00 AM", timeOut: "05:00 PM" },
+    { employeeId: "emp001", date: "2025-05-31", status: "present", timeIn: "09:00 AM", timeOut: "05:00 PM" },
     // --- June 2025 Data ---
-    { employeeId: "EMP001", date: "2025-06-01", status: "weekend", timeIn: "", timeOut: "" },
-    { employeeId: "EMP001", date: "2025-06-02", status: "present", timeIn: "09:00 AM", timeOut: "05:00 PM" }, // Monday
-    { employeeId: "EMP001", date: "2025-06-03", status: "absent", timeIn: "", timeOut: "" },
-    { employeeId: "EMP001", date: "2025-06-04", status: "leave", timeIn: "", timeOut: "" },
-    { employeeId: "EMP001", date: "2025-06-05", status: "holiday", timeIn: "", timeOut: "" },
-    { employeeId: "EMP001", date: "2025-06-06", status: "present", timeIn: "09:05 AM", timeOut: "05:00 PM" },
-    { employeeId: "EMP001", date: "2025-06-07", status: "weekend", timeIn: "", timeOut: "" },
-    { employeeId: "EMP001", date: "2025-06-08", status: "weekend", timeIn: "", timeOut: "" },
-    { employeeId: "EMP001", date: "2025-06-09", status: "late", timeIn: "10:30 AM", timeOut: "05:00 PM" }, // Monday
-    { employeeId: "EMP001", date: "2025-06-10", status: "half-day", timeIn: "01:00 PM", timeOut: "05:00 PM" },
-    { employeeId: "EMP001", date: "2025-06-11", status: "present", timeIn: "09:00 AM", timeOut: "05:00 PM" },
-    { employeeId: "EMP001", date: "2025-06-12", status: "present", timeIn: "09:00 AM", timeOut: "05:00 PM" },
-    { employeeId: "EMP001", date: "2025-06-13", status: "present", timeIn: "09:00 AM", timeOut: "05:00 PM" },
-    { employeeId: "EMP001", date: "2025-06-14", status: "weekend", timeIn: "", timeOut: "" },
-    { employeeId: "EMP001", date: "2025-06-15", status: "weekend", timeIn: "", timeOut: "" },
-    { employeeId: "EMP001", date: "2025-06-16", status: "present", timeIn: "09:00 AM", timeOut: "05:00 PM" }, // Monday
-    { employeeId: "EMP001", date: "2025-06-17", status: "present", timeIn: "09:00 AM", timeOut: "05:00 PM" },
-    { employeeId: "EMP001", date: "2025-06-18", status: "present", timeIn: "09:00 AM", timeOut: "05:00 PM" },
-    { employeeId: "EMP001", date: "2025-06-19", status: "leave", timeIn: "", timeOut: "" },
-    { employeeId: "EMP001", date: "2025-06-20", status: "present", timeIn: "09:00 AM", timeOut: "05:00 PM" },
-    { employeeId: "EMP001", date: "2025-06-21", status: "weekend", timeIn: "", timeOut: "" },
-    { employeeId: "EMP001", date: "2025-06-22", status: "weekend", timeIn: "", timeOut: "" },
-    { employeeId: "EMP001", date: "2025-06-23", status: "present", timeIn: "09:00 AM", timeOut: "05:00 PM" }, // Monday
-    { employeeId: "EMP001", date: "2025-06-24", status: "late", timeIn: "09:45 AM", timeOut: "06:00 PM" },
-    { employeeId: "EMP001", date: "2025-06-25", status: "present", timeIn: "09:00 AM", timeOut: "05:00 PM" },
-    { employeeId: "EMP001", date: "2025-06-26", status: "present", timeIn: "09:00 AM", timeOut: "05:00 PM" },
-    { employeeId: "EMP001", date: "2025-06-27", status: "half-day", timeIn: "09:00 AM", timeOut: "01:00 PM" },
-    { employeeId: "EMP001", date: "2025-06-28", status: "weekend", timeIn: "", timeOut: "" },
-    { employeeId: "EMP001", date: "2025-06-29", status: "weekend", timeIn: "", timeOut: "" },
-    { employeeId: "EMP001", date: "2025-06-30", status: "present", timeIn: "09:00 AM", timeOut: "05:00 PM" } // Monday
+    { employeeId: "emp001", date: "2025-06-01", status: "weekend", timeIn: "", timeOut: "" },
+    { employeeId: "emp001", date: "2025-06-02", status: "present", timeIn: "09:00 AM", timeOut: "05:00 PM" }, // Monday
+    { employeeId: "emp001", date: "2025-06-03", status: "absent", timeIn: "", timeOut: "" },
+    { employeeId: "emp001", date: "2025-06-04", status: "leave", timeIn: "", timeOut: "" },
+    { employeeId: "emp001", date: "2025-06-05", status: "holiday", timeIn: "", timeOut: "" },
+    { employeeId: "emp001", date: "2025-06-06", status: "present", timeIn: "09:05 AM", timeOut: "05:00 PM" },
+    { employeeId: "emp001", date: "2025-06-07", status: "weekend", timeIn: "", timeOut: "" },
+    { employeeId: "emp001", date: "2025-06-08", status: "weekend", timeIn: "", timeOut: "" },
+    { employeeId: "emp001", date: "2025-06-09", status: "late", timeIn: "10:30 AM", timeOut: "05:00 PM" }, // Monday
+    { employeeId: "emp001", date: "2025-06-10", status: "half-day", timeIn: "01:00 PM", timeOut: "05:00 PM" },
+    { employeeId: "emp001", date: "2025-06-11", status: "present", timeIn: "09:00 AM", timeOut: "05:00 PM" },
+    { employeeId: "emp001", date: "2025-06-12", status: "present", timeIn: "09:00 AM", timeOut: "05:00 PM" },
+    { employeeId: "emp001", date: "2025-06-13", status: "present", timeIn: "09:00 AM", timeOut: "05:00 PM" },
+    { employeeId: "emp001", date: "2025-06-14", status: "weekend", timeIn: "", timeOut: "" },
+    { employeeId: "emp001", date: "2025-06-15", status: "weekend", timeIn: "", timeOut: "" },
+    { employeeId: "emp001", date: "2025-06-16", status: "present", timeIn: "09:00 AM", timeOut: "05:00 PM" }, // Monday
+    { employeeId: "emp001", date: "2025-06-17", status: "present", timeIn: "09:00 AM", timeOut: "05:00 PM" },
+    { employeeId: "emp001", date: "2025-06-18", status: "present", timeIn: "09:00 AM", timeOut: "05:00 PM" },
+    { employeeId: "emp001", date: "2025-06-19", status: "leave", timeIn: "", timeOut: "" },
+    { employeeId: "emp001", date: "2025-06-20", status: "present", timeIn: "09:00 AM", timeOut: "05:00 PM" },
+    { employeeId: "emp001", date: "2025-06-21", status: "weekend", timeIn: "", timeOut: "" },
+    { employeeId: "emp001", date: "2025-06-22", status: "weekend", timeIn: "", timeOut: "" },
+    { employeeId: "emp001", date: "2025-06-23", status: "present", timeIn: "09:00 AM", timeOut: "05:00 PM" }, // Monday
+    { employeeId: "emp001", date: "2025-06-24", status: "late", timeIn: "09:45 AM", timeOut: "06:00 PM" },
+    { employeeId: "emp001", date: "2025-06-25", status: "present", timeIn: "09:00 AM", timeOut: "05:00 PM" },
+    { employeeId: "emp001", date: "2025-06-26", status: "present", timeIn: "09:00 AM", timeOut: "05:00 PM" },
+    { employeeId: "emp001", date: "2025-06-27", status: "half-day", timeIn: "09:00 AM", timeOut: "01:00 PM" },
+    { employeeId: "emp001", date: "2025-06-28", status: "weekend", timeIn: "", timeOut: "" },
+    { employeeId: "emp001", date: "2025-06-29", status: "weekend", timeIn: "", timeOut: "" },
+    { employeeId: "emp001", date: "2025-06-30", status: "present", timeIn: "09:00 AM", timeOut: "05:00 PM" } // Monday
 ];
 
 // New: Public Holidays/Festivals data
@@ -311,8 +348,15 @@ function hideLeaveApplicationButtons() {
 
 // Event handler for "Leave Application" button
 function handleApplyLeaveClick() {
+    if (!currentEmployeeData || !hrEmployeeData) {
+        showNotification('Employee data not loaded. Please refresh the page.', 'error');
+        return;
+    }
+    
     document.getElementById('emp-id').value = currentEmployeeId;
     document.getElementById('employee-name').value = currentEmployeeName;
+    document.getElementById('receiver-name').value = `${hrEmployeeData.emp_first_name} ${hrEmployeeData.emp_last_name}`;
+    
     if (selectedDates.length > 0) {
         document.getElementById('start-date').value = selectedDates[0];
         document.getElementById('end-date').value = selectedDates[selectedDates.length - 1];
@@ -333,6 +377,7 @@ function hideLeaveDrawer() {
 document.addEventListener('DOMContentLoaded', function () {
     console.log("Attendance script loaded and DOM is ready.");
 
+    loadEmployeeData();
     renderCalendar(calendarMonthOffset);
 
     const markAttendanceBtn = document.getElementById('mark-attendance-btn');
@@ -381,26 +426,56 @@ document.addEventListener('DOMContentLoaded', function () {
     // Show notification on leave application submit
     const leaveForm = document.getElementById('leave-application-form');
     if (leaveForm) {
-        leaveForm.addEventListener('submit', function (e) {
+        leaveForm.addEventListener('submit', async function (e) {
             e.preventDefault();
-            // You can add your form submission logic here (AJAX, etc.)
-            if (statusNotification && statusMessage) {
-                statusMessage.textContent = "Leave application sent successfully!";
-                statusNotification.classList.add('show');
-                setTimeout(() => {
-                    statusNotification.classList.remove('show');
-                }, 3000);
-            } else {
-                alert("Leave application sent successfully!");
+            
+            try {
+                // Get form data
+                const formData = new FormData(leaveForm);
+                const leaveData = {
+                    employee_id: currentEmployeeData.emp_id, // Use numeric emp_id for database
+                    leave_start_date: formData.get('start-date'),
+                    leave_end_date: formData.get('end-date'),
+                    leave_reason: formData.get('leave-description')
+                };
+
+                // Submit leave application using API
+                const result = await leaveAPI.submitLeaveApplication(leaveData);
+                
+                // Show success notification
+                if (statusNotification && statusMessage) {
+                    statusMessage.textContent = result.message || "Leave application sent successfully!";
+                    statusNotification.classList.add('show');
+                    setTimeout(() => {
+                        statusNotification.classList.remove('show');
+                    }, 3000);
+                } else {
+                    alert(result.message || "Leave application sent successfully!");
+                }
+                
+                // Hide the leave drawer after submission
+                hideLeaveDrawer();
+                // Clear calendar selection and hide leave application buttons
+                clearCalendarSelection();
+                selectedDates = [];
+                hideLeaveApplicationButtons();
+                // Reset the leave application form fields
+                leaveForm.reset();
+                
+            } catch (error) {
+                console.error('Error submitting leave application:', error);
+                
+                // Show error notification
+                if (statusNotification && statusMessage) {
+                    statusMessage.textContent = error.message || "Failed to submit leave application. Please try again.";
+                    statusNotification.classList.add('show', 'error');
+                    setTimeout(() => {
+                        statusNotification.classList.remove('show', 'error');
+                    }, 5000);
+                } else {
+                    alert(error.message || "Failed to submit leave application. Please try again.");
+                }
             }
-            // Hide the leave drawer after submission
-            hideLeaveDrawer();
-            // Clear calendar selection and hide leave application buttons
-            clearCalendarSelection();
-            selectedDates = [];
-            hideLeaveApplicationButtons();
-            // Reset the leave application form fields
-            leaveForm.reset();
         });
     }
 
@@ -418,3 +493,109 @@ document.addEventListener('DOMContentLoaded', function () {
     if (filterStatusEl) filterStatusEl.addEventListener("change", applyGeneralFilters);
     applyGeneralFilters();
 });
+
+// Show notification function
+function showNotification(message, type = 'success') {
+    const statusNotification = document.getElementById('status-notification');
+    const statusMessage = document.getElementById('status-notification-message');
+    
+    if (statusMessage) statusMessage.textContent = message;
+    if (statusNotification) {
+        statusNotification.className = `status-notification ${type}`;
+        statusNotification.classList.add('show');
+        
+        setTimeout(() => {
+            statusNotification.classList.remove('show');
+        }, type === 'error' ? 5000 : 3000);
+    } else {
+        // Fallback to alert if notification element not found
+        alert(message);
+    }
+}
+
+// Handle leave application form submission
+document.getElementById('leave-application-form').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    
+    // Get the correct employee ID from the database
+    try {
+        const employeeResponse = await fetch(`/api/leaves/employee-data/${currentEmployeeId}`);
+        if (!employeeResponse.ok) {
+            showNotification('Error loading employee data. Please try again.', 'error');
+            return;
+        }
+        
+        const employeeData = await employeeResponse.json();
+        const employeeId = employeeData.employee.emp_id;
+        
+        const leaveData = {
+            employee_id: employeeId,
+            leave_start_date: formData.get('start-date'),
+            leave_end_date: formData.get('end-date'),
+            leave_reason: formData.get('leave-description')
+        };
+
+        const response = await leaveAPI.applyLeave(leaveData);
+        
+        if (response.success) {
+            showNotification('Leave application submitted successfully!', 'success');
+            hideLeaveDrawer();
+            
+            // Reset form
+            this.reset();
+            
+            // Update analytics if on analytics page
+            if (window.location.pathname.includes('analytics.html')) {
+                // Trigger analytics update
+                window.dispatchEvent(new CustomEvent('leaveApplicationSubmitted'));
+            }
+        } else {
+            showNotification(response.message || 'Failed to submit leave application', 'error');
+        }
+    } catch (error) {
+        console.error('Error submitting leave application:', error);
+        showNotification('Error submitting leave application. Please try again.', 'error');
+    }
+});
+
+// Check for leave status updates
+async function checkLeaveStatusUpdates() {
+    try {
+        // First get employee data to get the correct employee ID
+        const employeeResponse = await fetch(`/api/leaves/employee-data/${currentEmployeeId}`);
+        if (!employeeResponse.ok) {
+            console.error('Failed to load employee data for status check');
+            return;
+        }
+        
+        const employeeData = await employeeResponse.json();
+        const employeeId = employeeData.employee.emp_id;
+        
+        const response = await fetch(`/api/leaves/employee/${employeeId}`);
+        if (response.ok) {
+            const data = await response.json();
+            const currentLeaves = data.leaves || [];
+            
+            // Check for status changes (this would need to be enhanced with local storage to track previous state)
+            const pendingLeaves = currentLeaves.filter(leave => leave.leave_status === 'Pending');
+            const approvedLeaves = currentLeaves.filter(leave => leave.leave_status === 'Approved');
+            const rejectedLeaves = currentLeaves.filter(leave => leave.leave_status === 'Rejected');
+            
+            // Show notifications for new status changes
+            if (approvedLeaves.length > 0) {
+                showNotification(`${approvedLeaves.length} leave application(s) approved!`, 'success');
+            }
+            
+            if (rejectedLeaves.length > 0) {
+                showNotification(`${rejectedLeaves.length} leave application(s) rejected.`, 'error');
+            }
+        }
+    } catch (error) {
+        console.error('Error checking leave status updates:', error);
+    }
+}
+
+// Start checking for leave status updates
+setInterval(checkLeaveStatusUpdates, 60000); // Check every minute

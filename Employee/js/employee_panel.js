@@ -1,50 +1,45 @@
 // Employee Panel JavaScript
 
-document.addEventListener("DOMContentLoaded", () => {
-    // Sample data for employee tasks
-    const employeeTasks = [
-        {
-            taskId: "TASK001",
-            taskName: "Frontend Development",
-            project: "E-commerce Platform",
-            dueDate: "2024-01-15",
-            status: "in-progress",
-            priority: "high"
-        },
-        {
-            taskId: "TASK002",
-            taskName: "API Integration",
-            project: "Mobile App",
-            dueDate: "2024-01-20",
-            status: "pending",
-            priority: "medium"
-        },
-        {
-            taskId: "TASK003",
-            taskName: "Database Optimization",
-            project: "CRM System",
-            dueDate: "2024-01-18",
-            status: "completed",
-            priority: "low"
-        },
-        {
-            taskId: "TASK004",
-            taskName: "UI/UX Design",
-            project: "Dashboard Redesign",
-            dueDate: "2024-01-25",
-            status: "pending",
-            priority: "high"
-        },
-        {
-            taskId: "TASK005",
-            taskName: "Testing & QA",
-            project: "Payment Gateway",
-            dueDate: "2024-01-22",
-            status: "in-progress",
-            priority: "medium"
-        }
-    ];
+document.addEventListener("DOMContentLoaded", async () => {
+    // Get employee user ID from session storage
+    const employeeUserId = sessionStorage.getItem("emp_user_id");
+    if (!employeeUserId) {
+        alert("Login required");
+        window.location.href = "../login.html";
+        return;
+    }
 
+    console.log('🔍 Employee panel loaded for user:', employeeUserId);
+
+    // Function to fetch employee statistics
+    async function fetchEmployeeStats() {
+        try {
+            const response = await fetch(`/api/projects/employee-stats/${employeeUserId}`);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            const data = await response.json();
+            return data.stats;
+        } catch (error) {
+            console.error('Failed to fetch employee stats:', error);
+            return null;
+        }
+    }
+
+    // Function to fetch employee tasks
+    async function fetchEmployeeTasks() {
+        try {
+            const response = await fetch(`/api/projects/employee-tasks/${employeeUserId}`);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            const data = await response.json();
+            return data.tasks;
+        } catch (error) {
+            console.error('Failed to fetch employee tasks:', error);
+            return [];
+        }
+    }
 
      function animateCountUp(el, target, duration = 500) {
         let start = 0;
@@ -93,50 +88,59 @@ document.addEventListener("DOMContentLoaded", () => {
 
         requestAnimationFrame(animate);
     }
-    // Function to populate the table
-    function populateTable(data) {
+
+    // Function to populate the table with real data
+    function populateTable(tasks) {
         const tbody = document.querySelector("#recent-orders--table tbody");
         if (!tbody) return;
 
         tbody.innerHTML = "";
 
-        data.forEach(task => {
+        if (tasks.length === 0) {
             const row = document.createElement("tr");
             row.innerHTML = `
-                <td>${task.taskId}</td>
-                <td>${task.taskName}</td>
-                <td>${task.project}</td>
-                <td>${task.dueDate}</td>
-                <td><span class="status-badge ${task.status}">${task.status}</span></td>
-                <td><span class="priority-badge ${task.priority}">${task.priority}</span></td>
-    
-                    <td class="primary details-btn" style="cursor:pointer;">Details</td>
-                
+                <td colspan="7" style="text-align: center; padding: 2rem; color: #677483;">
+                    No tasks assigned yet
+                </td>
             `;
             tbody.appendChild(row);
+            return;
+        }
 
-            
+        tasks.forEach(task => {
+            const row = document.createElement("tr");
+            row.innerHTML = `
+                <td>${task.task_id}</td>
+                <td>${task.task_name}</td>
+                <td>${task.proj_name || 'N/A'}</td>
+                <td>${task.task_deadline ? new Date(task.task_deadline).toLocaleDateString() : 'N/A'}</td>
+                <td><span class="status-badge ${task.status_text}">${task.status_text}</span></td>
+                <td><span class="priority-badge ${task.priority_text}">${task.priority_text}</span></td>
+                <td class="primary details-btn" style="cursor:pointer;">Details</td>
+            `;
+            tbody.appendChild(row);
         });
 
-        // ✨ Add click event to each "Details" cell
+        // Add click event to each "Details" cell
         const detailButtons = tbody.querySelectorAll('.details-btn');
         detailButtons.forEach((btn, i) => {
             btn.addEventListener('click', () => {
-                showTaskDetails(data[i]);
+                showTaskDetails(tasks[i]);
             });
         });
-
     }
 
     // Search functionality
     const searchInput = document.getElementById("task-search");
+    let allTasks = []; // Store all tasks for filtering
+
     if (searchInput) {
         searchInput.addEventListener("input", (e) => {
             const searchTerm = e.target.value.toLowerCase();
-            const filteredData = employeeTasks.filter(task =>
-                task.taskName.toLowerCase().includes(searchTerm) ||
-                task.project.toLowerCase().includes(searchTerm) ||
-                task.taskId.toLowerCase().includes(searchTerm)
+            const filteredData = allTasks.filter(task =>
+                task.task_name.toLowerCase().includes(searchTerm) ||
+                (task.proj_name && task.proj_name.toLowerCase().includes(searchTerm)) ||
+                task.task_id.toString().includes(searchTerm)
             );
             populateTable(filteredData);
         });
@@ -163,11 +167,11 @@ document.addEventListener("DOMContentLoaded", () => {
         sortOptionElements.forEach(option => {
             option.addEventListener("click", () => {
                 const filter = option.getAttribute("data-filter");
-                let filteredData = employeeTasks;
+                let filteredData = allTasks;
 
                 if (filter !== "all") {
-                    filteredData = employeeTasks.filter(task =>
-                        task.status === filter
+                    filteredData = allTasks.filter(task =>
+                        task.status_text === filter
                     );
                 }
 
@@ -177,50 +181,65 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // Initialize table
-    populateTable(employeeTasks);
+    // Update insights data with real data
+    async function updateInsights() {
+        const stats = await fetchEmployeeStats();
+        if (!stats) {
+            console.error('Failed to load employee stats');
+            return;
+        }
 
-    // Update insights data
-    function updateInsights() {
         const myTasks = document.querySelector(".insights .sales h1");
         const workHours = document.querySelector(".insights .expenses h1");
         const performance = document.querySelector(".insights .income h1");
 
-         if (myTasks) animateCountUp(myTasks, 15);
-        if (workHours) animateCountUp(workHours, 42);
-        if (performance) animateCountUp(performance, 92);
+        // Update task count
+        if (myTasks) {
+            animateCountUp(myTasks, stats.total_tasks);
+            myTasks.textContent = stats.total_tasks;
+        }
 
-        animateCircularProgress(".insights .sales", 73);
-        animateCircularProgress(".insights .expenses", 84);
-        animateCircularProgress(".insights .income", 92);
+        // Update work hours (placeholder - could be calculated from attendance)
+        if (workHours) {
+            animateCountUp(workHours, 42); // Placeholder
+            workHours.textContent = "42";
+        }
 
-        if (myTasks) myTasks.textContent = "15";
-        if (workHours) workHours.textContent = "42";
-        if (performance) performance.textContent = "92%";
+        // Update performance based on task completion rate
+        if (performance) {
+            animateCountUp(performance, stats.task_completion_rate);
+            performance.textContent = `${stats.task_completion_rate}%`;
+        }
+
+        // Animate progress circles
+        animateCircularProgress(".insights .sales", stats.task_completion_rate);
+        animateCircularProgress(".insights .expenses", 84); // Placeholder
+        animateCircularProgress(".insights .income", stats.task_completion_rate);
     }
 
-    updateInsights();
+    // Initialize the page
+    async function initializePage() {
+        // Load tasks
+        allTasks = await fetchEmployeeTasks();
+        populateTable(allTasks);
 
-    // Simulate task updates
-    setInterval(() => {
-        // Randomly update task status
-        const randomTask = employeeTasks[Math.floor(Math.random() * employeeTasks.length)];
-        const statuses = ["pending", "in-progress", "completed"];
-        randomTask.status = statuses[Math.floor(Math.random() * statuses.length)];
+        // Update insights
+        await updateInsights();
+    }
 
-        populateTable(employeeTasks);
-    }, 45000);
+    // Initialize the page
+    await initializePage();
 
     // Add click handlers for action buttons
 
 
     function showTaskDetails(task) {
         // Populate modal fields
-        document.getElementById('modal-project-id').textContent = task.taskId;
-        document.getElementById('modal-project-name').textContent = task.project;
-        document.getElementById('modal-task-name').textContent = task.taskName;
-        document.getElementById('modal-due-on').textContent = task.dueDate;
-        document.getElementById('modal-status').textContent = task.status;
+        document.getElementById('modal-project-id').textContent = task.task_id;
+        document.getElementById('modal-project-name').textContent = task.proj_name || 'N/A';
+        document.getElementById('modal-task-name').textContent = task.task_name;
+        document.getElementById('modal-due-on').textContent = task.task_deadline ? new Date(task.task_deadline).toLocaleDateString() : 'N/A';
+        document.getElementById('modal-status').textContent = task.status_text;
         document.getElementById('modal-employee-name').textContent = "John Doe"; // Example static name
 
         document.getElementById('taskDetailsModal').style.display = 'flex';
