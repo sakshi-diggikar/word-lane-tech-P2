@@ -1606,37 +1606,37 @@ async function showSubtaskDetails(subtask) {
     console.log('🔍 Rendering subtask details with', attachments.length, 'admin attachments and', employeeAttachments.length, 'employee attachments');
 
     content.innerHTML = `
-        <div style="margin-bottom: 2rem;">
-            <div style="display:flex;align-items:center;justify-content:space-between;gap:1rem;">
+                <div style="margin-bottom: 2rem;">
+                    <div style="display:flex;align-items:center;justify-content:space-between;gap:1rem;">
                 <h2 style="color:#7380ec;font-size:1.8rem;margin-bottom:0;">${subtaskDetails.subtask_name}</h2>
-                <div style="display:flex;align-items:center;gap:0.7rem;">
-                    <span class="priority-label" style="padding:4px 12px;border-radius:8px;font-size:1em;background:${priorityColor};color:white;">
-                        ${priority}
-                    </span>
-                    <span class="status-label" style="padding:4px 12px;border-radius:8px;font-size:1em;background:${status === 'Completed' ? '#28a745' : status === 'Delayed' ? '#dc3545' : '#f0ad4e'};color:white;">
-                        ${status}
-                    </span>
+                        <div style="display:flex;align-items:center;gap:0.7rem;">
+                            <span class="priority-label" style="padding:4px 12px;border-radius:8px;font-size:1em;background:${priorityColor};color:white;">
+                                ${priority}
+                            </span>
+                            <span class="status-label" style="padding:4px 12px;border-radius:8px;font-size:1em;background:${status === 'Completed' ? '#28a745' : status === 'Delayed' ? '#dc3545' : '#f0ad4e'};color:white;">
+                                ${status}
+                            </span>
+                        </div>
+                    </div>
                 </div>
-            </div>
-        </div>
-        <div style="background:#f8f9fa;padding:1.5rem;border-radius:1rem;margin-bottom:1.5rem;">
-            <h3 style="color:#363949;margin-bottom:0.8rem;">Subtask Details</h3>
+                <div style="background:#f8f9fa;padding:1.5rem;border-radius:1rem;margin-bottom:1.5rem;">
+                    <h3 style="color:#363949;margin-bottom:0.8rem;">Subtask Details</h3>
             <p style="color:#677483;white-space:pre-line;margin-bottom:1rem;">${subtaskDetails.subtask_description || 'No details provided.'}</p>
-            <div style="display:grid;grid-template-columns:auto 1fr;gap:1rem;margin-top:1rem;">
-                <strong style="color:#363949;">Employee(s):</strong>
-                <span style="color:#677483;">
-                    ${assignedEmployees}
-                </span>
-                <strong style="color:#363949;">Deadline:</strong>
+                    <div style="display:grid;grid-template-columns:auto 1fr;gap:1rem;margin-top:1rem;">
+                        <strong style="color:#363949;">Employee(s):</strong>
+                        <span style="color:#677483;">
+                            ${assignedEmployees}
+                        </span>
+                        <strong style="color:#363949;">Deadline:</strong>
                 <span style="color:#677483;">${subtaskDetails.subtask_deadline ? formatDateTime(subtaskDetails.subtask_deadline) : 'N/A'}</span>
-                <strong style="color:#363949;">Created:</strong>
+                        <strong style="color:#363949;">Created:</strong>
                 <span style="color:#677483;">${subtaskDetails.subtask_created_at ? formatDateTime(subtaskDetails.subtask_created_at) : 'N/A'}</span>
-                <strong style="color:#363949;">Subtask ID:</strong>
+                        <strong style="color:#363949;">Subtask ID:</strong>
                 <span style="color:#677483;">${subtaskDetails.subtask_id || 'N/A'}</span>
-                <strong style="color:#363949;">Task ID:</strong>
+                        <strong style="color:#363949;">Task ID:</strong>
                 <span style="color:#677483;">${subtaskDetails.task_id || 'N/A'}</span>
-            </div>
-        </div>
+                    </div>
+                </div>
         <!-- (rest of the modal rendering remains unchanged) -->
     `;
     // ... (rest of the modal logic remains unchanged)
@@ -1892,7 +1892,8 @@ async function loadEmployees() {
         }
         const data = await response.json();
         employees = data.map(emp => ({
-            id: emp.emp_user_id,
+            id: emp.emp_user_id, // keep for display/autocomplete
+            emp_id: emp.emp_id, // numeric primary key
             name: `${emp.emp_first_name} ${emp.emp_last_name}`
         }));
         console.log('🔍 Employees loaded:', employees);
@@ -2373,7 +2374,7 @@ modalForm.addEventListener('submit', async function(e) {
         const subtaskDesc = inputSubtaskDesc.value.trim();
         const subtaskDeadline = inputSubtaskDeadline.value;
         const subtaskPriority = inputSubtaskPriority.value;
-        const subtaskEmpids = selectedEmployees.map(e => e.id);
+        const subtaskEmpids = selectedEmployees.map(e => e.emp_id);
         const subtaskAttachment = inputSubtaskAttachment.files ? Array.from(inputSubtaskAttachment.files) : [];
         
         console.log('🔍 Frontend: selectedEmployees array:', selectedEmployees);

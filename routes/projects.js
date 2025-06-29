@@ -809,7 +809,7 @@ router.get("/tasks/:project_id", async (req, res) => {
             `SELECT t.*, 
                 CONCAT(e.emp_first_name, ' ', e.emp_last_name, ' (', e.emp_user_id, ')') as employee_name
              FROM tasks t
-             LEFT JOIN employees e ON t.employee_id = e.emp_id
+             LEFT JOIN employees e ON t.task_employee_id = e.emp_id
              WHERE t.task_project_id = ?
              ORDER BY t.task_created_at DESC`,
             [project_id]
@@ -828,7 +828,7 @@ router.get("/tasks/:project_id", async (req, res) => {
 router.get("/employees", async (req, res) => {
     try {
         const [employees] = await db.query(
-            `SELECT emp_user_id, emp_first_name, emp_last_name 
+            `SELECT emp_id, emp_user_id, emp_first_name, emp_last_name 
              FROM employees 
              WHERE emp_user_id LIKE 'emp%' 
              ORDER BY emp_first_name, emp_last_name`
@@ -963,7 +963,7 @@ router.get("/employee/tasks/:project_id/:employee_id", async (req, res) => {
                     CONCAT(e.emp_first_name, ' ', e.emp_last_name) as employee_name,
                     COUNT(DISTINCT s.subtask_id) as subtask_count
              FROM tasks t
-             LEFT JOIN employees e ON t.task_employee_id = e.emp_id
+             LEFT JOIN employees e ON t.task_employee_id = e.emp_user_id
              LEFT JOIN subtasks s ON t.task_id = s.task_id
              LEFT JOIN subtask_assignment sa ON s.subtask_id = sa.subtask_id
              WHERE t.task_project_id = ? AND (t.task_employee_id = ? OR sa.employee_id = ? OR s.employee_id = ?)
