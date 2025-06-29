@@ -1,0 +1,10 @@
+// Render assigned employees
+const assignedEmployeeIDs = [...new Set(subtask.assigned_employee_ids)]; // Ensure unique IDs
+const employeeDisplay = assignedEmployeeIDs.map(id => {
+    const emp = employees.find(emp => emp.id === id);
+    return emp ? `${emp.name} (${id})` : '';
+}).join(', ');
+// Render into the UI
+(taskCardsContainer.appendChild(taskCard).innerHTML = `
+    Employee(s): ${employeeDisplay || 'N/A'}
+`);

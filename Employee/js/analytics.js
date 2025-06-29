@@ -229,27 +229,20 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    // Load leave applications from API
+    // Load leave applications
     async function loadLeaveApplications() {
         try {
-            // First get employee data to get the correct employee ID
-            const employeeResponse = await fetch(`/api/leaves/employee-data/${currentEmployeeId}`);
-            if (!employeeResponse.ok) {
-                console.error('Failed to load employee data');
-                return;
-            }
-            
-            const employeeData = await employeeResponse.json();
-            const employeeId = employeeData.employee.emp_id;
-            
-            // Now get leave applications using the employee ID
-            const response = await fetch(`/api/leaves/employee/${employeeId}`);
-            if (response.ok) {
-                const data = await response.json();
-                leaveApplications = data.leaves || [];
+            const response = await leaveAPI.getEmployeeLeaves(currentEmployeeId);
+            if (response.success) {
+                leaveApplications = response.leaves || [];
+                
+                // Check for status changes and show notifications
+                checkLeaveStatusChanges(leaveApplications);
+                
+                // Update leave analytics
                 updateLeaveAnalytics();
             } else {
-                console.error('Failed to load leave applications');
+                console.error('Failed to load leave applications:', response.message);
             }
         } catch (error) {
             console.error('Error loading leave applications:', error);
@@ -784,5 +777,45 @@ document.addEventListener('DOMContentLoaded', function () {
     } else {
         lightIcon?.classList.add('active');
         darkIcon?.classList.remove('active');
+    }
+
+    // Check for leave status changes and show notifications
+    function checkLeaveStatusChanges(currentLeaves) {
+        if (!window.previousLeaveStatuses) {
+            window.previousLeaveStatuses = {};
+            currentLeaves.forEach(leave => {
+                window.previousLeaveStatuses[leave.leave_id] = leave.leave_status;
+            });
+            return;
+        }
+
+        currentLeaves.forEach(leave => {
+            const previousStatus = window.previousLeaveStatuses[leave.leave_id];
+            const currentStatus = leave.leave_status;
+            
+            if (previousStatus && previousStatus !== currentStatus) {
+                // Status changed - show notification
+                if (currentStatus === 'Approved') {
+                    showNotification('Your leave application has been approved!', 'success');
+                    playNotificationSound();
+                } else if (currentStatus === 'Rejected') {
+                    showNotification('Your leave application has been rejected.', 'error');
+                    playNotificationSound();
+                }
+            }
+            
+            // Update previous status
+            window.previousLeaveStatuses[leave.leave_id] = currentStatus;
+        });
+    }
+
+    // Play notification sound
+    function playNotificationSound() {
+        try {
+            const audio = new Audio('../audio/notification.mp3');
+            audio.play().catch(e => console.log('Could not play notification sound:', e));
+        } catch (error) {
+            console.log('Error playing notification sound:', error);
+        }
     }
 });

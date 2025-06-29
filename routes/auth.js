@@ -4,20 +4,19 @@ const pool = require("../db");
 const bcrypt = require("bcrypt");
 
 router.post("/login", async (req, res) => {
-    const { user_id, password } = req.body;
+    const { emp_user_id, emp_password } = req.body;
 
-    if (!user_id || !password)
+    if (!emp_user_id || !emp_password)
         return res.status(400).json({ success: false, message: "Missing credentials" });
 
     try {
-        const [rows] = await pool.query("SELECT * FROM employees WHERE emp_user_id = ?", [user_id]);
+        const [rows] = await pool.query("SELECT * FROM employees WHERE emp_user_id = ?", [emp_user_id]);
         if (rows.length === 0)
             return res.status(401).json({ success: false, message: "User not found" });
 
         const user = rows[0];
 
-        const isValid = await bcrypt.compare(password, user.emp_password_hash);
-
+        const isValid = await bcrypt.compare(emp_password, user.emp_password_hash);
 
         if (!isValid)
             return res.status(401).json({ success: false, message: "Invalid password" });
@@ -31,14 +30,12 @@ router.post("/login", async (req, res) => {
         res.json({
             success: true,
             name: `${user.emp_first_name} ${user.emp_last_name}`,
-            emp_user_id: user.emp_user_id, //  necessary for sessionStorage
+            emp_user_id: user.emp_user_id,
             redirect: redirectTo,
         });
-        
 
     } catch (err) {
         console.error("Login error:", err.stack || err.message || err);
-
         res.status(500).json({ success: false, message: "Server error" });
     }
 });

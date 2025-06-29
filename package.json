@@ -19,6 +19,7 @@
   },
   "homepage": "https://github.com/sakshi-diggikar/Outliine-route-code#readme",
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.839.0",
     "aws-sdk": "^2.1692.0",
     "bcrypt": "^6.0.0",
     "body-parser": "^2.2.0",

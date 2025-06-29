@@ -34,7 +34,7 @@ document.addEventListener('DOMContentLoaded', function () {
             const res = await fetch("http://localhost:3000/api/auth/login" , {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ user_id, password }),
+                body: JSON.stringify({ emp_user_id: user_id, emp_password: password }),
             });
 
             const data = await res.json();

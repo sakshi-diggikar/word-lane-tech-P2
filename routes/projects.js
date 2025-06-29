@@ -4,7 +4,7 @@ const express = require("express");
 const router = express.Router();
 const multer = require("multer");
 const db = require("../db"); //  DB pool
-const { createS3Folder, uploadFileToS3 } = require("../utils/s3Utils");
+const { createS3Folder, uploadFileToS3, deleteS3Folder } = require("../utils/s3Utils");
 const { s3 } = require("../s3"); // Fixed S3 import
 
 require("dotenv").config();
@@ -112,7 +112,42 @@ async function updateProjectsTable() {
 // Fix foreign key constraints for existing tables
 async function fixForeignKeyConstraints() {
     try {
-        // 1. Find and drop wrong constraint for subtask_assignment
+        // 1. Find and drop wrong constraint for subtasks table
+        const [subtasksConstraints] = await db.query(`
+            SELECT CONSTRAINT_NAME 
+            FROM information_schema.KEY_COLUMN_USAGE 
+            WHERE TABLE_SCHEMA = DATABASE() 
+              AND TABLE_NAME = 'subtasks' 
+              AND COLUMN_NAME = 'employee_id' 
+              AND REFERENCED_COLUMN_NAME = 'emp_id'
+        `);
+        for (const row of subtasksConstraints) {
+            try {
+                await db.query(`ALTER TABLE subtasks DROP FOREIGN KEY ${row.CONSTRAINT_NAME}`);
+                console.log(`Dropped subtasks constraint: ${row.CONSTRAINT_NAME}`);
+            } catch (dropError) {
+                console.log(`Could not drop subtasks constraint ${row.CONSTRAINT_NAME}:`, dropError.message);
+            }
+        }
+        
+        // 2. Add correct constraint for subtasks (if not exists)
+        const [existingSubtasks] = await db.query(`
+            SELECT * FROM information_schema.KEY_COLUMN_USAGE 
+            WHERE TABLE_SCHEMA = DATABASE() 
+              AND TABLE_NAME = 'subtasks' 
+              AND COLUMN_NAME = 'employee_id' 
+              AND REFERENCED_COLUMN_NAME = 'emp_user_id'
+        `);
+        if (existingSubtasks.length === 0) {
+            try {
+                await db.query(`ALTER TABLE subtasks ADD CONSTRAINT subtask_employee_fk FOREIGN KEY (employee_id) REFERENCES employees(emp_user_id) ON DELETE SET NULL`);
+                console.log("Added subtasks employee foreign key constraint");
+            } catch (addError) {
+                console.log("Could not add subtasks employee foreign key constraint:", addError.message);
+            }
+        }
+
+        // 3. Find and drop wrong constraint for subtask_assignment
         const [subtaskAssignmentConstraints] = await db.query(`
             SELECT CONSTRAINT_NAME 
             FROM information_schema.KEY_COLUMN_USAGE 
@@ -130,7 +165,7 @@ async function fixForeignKeyConstraints() {
             }
         }
         
-        // 2. Add correct constraint for subtask_assignment (if not exists)
+        // 4. Add correct constraint for subtask_assignment (if not exists)
         const [existingAssignment] = await db.query(`
             SELECT * FROM information_schema.KEY_COLUMN_USAGE 
             WHERE TABLE_SCHEMA = DATABASE() 
@@ -147,7 +182,7 @@ async function fixForeignKeyConstraints() {
             }
         }
         
-        // 3. Find and drop wrong constraint for subtask_attachment
+        // 5. Find and drop wrong constraint for subtask_attachment
         const [subtaskAttachmentConstraints] = await db.query(`
             SELECT CONSTRAINT_NAME 
             FROM information_schema.KEY_COLUMN_USAGE 
@@ -165,7 +200,7 @@ async function fixForeignKeyConstraints() {
             }
         }
         
-        // 4. Add correct constraint for subtask_attachment (if not exists)
+        // 6. Add correct constraint for subtask_attachment (if not exists)
         const [existingAttachment] = await db.query(`
             SELECT * FROM information_schema.KEY_COLUMN_USAGE 
             WHERE TABLE_SCHEMA = DATABASE() 
@@ -769,24 +804,20 @@ router.get("/by-team/:team_id", async (req, res) => {
  */
 router.get("/tasks/:project_id", async (req, res) => {
     const { project_id } = req.params;
-    console.log('🔍 Backend: Fetching tasks for project_id:', project_id);
-    
     try {
         const [tasks] = await db.query(
             `SELECT t.*, 
-                    CONCAT(e.emp_first_name, ' ', e.emp_last_name) as employee_name,
-                    e.emp_user_id as employee_user_id
-             FROM tasks t 
-             LEFT JOIN employees e ON t.task_employee_id = e.emp_user_id 
-             WHERE t.task_project_id = ? 
+                CONCAT(e.emp_first_name, ' ', e.emp_last_name, ' (', e.emp_user_id, ')') as employee_name
+             FROM tasks t
+             LEFT JOIN employees e ON t.employee_id = e.emp_id
+             WHERE t.task_project_id = ?
              ORDER BY t.task_created_at DESC`,
             [project_id]
         );
-        console.log('🔍 Backend: Found', tasks.length, 'tasks for project', project_id);
         res.json(tasks);
-    } catch (err) {
-        console.error("❌ Backend: Fetch tasks error:", err);
-        res.status(500).json({ error: "Failed to fetch tasks for project" });
+    } catch (error) {
+        console.error('Fetch tasks error:', error);
+        res.status(500).json({ error: 'Failed to fetch tasks' });
     }
 });
 
@@ -1384,15 +1415,17 @@ router.post("/create-subtask", upload.array('attachments'), async (req, res) => 
             return res.status(400).json({ success: false, error: "No employees selected" });
         }
 
-        // Validate employees exist (and ensure we use emp_user_id)
+        // Convert emp_user_id to emp_id for all selected employees
+        let employeeDbIds = [];
         for (const empUserId of employeeIdsArray) {
             const [empRows] = await db.query(
-                "SELECT emp_user_id FROM employees WHERE emp_user_id = ?",
+                "SELECT emp_id, emp_user_id FROM employees WHERE emp_user_id = ?",
                 [empUserId]
             );
             if (empRows.length === 0) {
                 return res.status(400).json({ success: false, error: `Invalid employee ID: ${empUserId}` });
             }
+            employeeDbIds.push({ emp_id: empRows[0].emp_id, emp_user_id: empRows[0].emp_user_id });
         }
 
         // Create S3 folder structure: admin_id/team_name/project_name/task_name/subtask_name/
@@ -1400,26 +1433,26 @@ router.post("/create-subtask", upload.array('attachments'), async (req, res) => 
         await createS3Folder(s3FolderPath);
 
         // Insert subtask into database
-        // If only one employee, set employee_id (emp_user_id), else set to NULL
-        let primaryEmployeeUserId = null;
-        if (employeeIdsArray.length === 1) {
-            primaryEmployeeUserId = employeeIdsArray[0];
+        // If only one employee, set employee_id (emp_id), else set to NULL
+        let primaryEmployeeDbId = null;
+        if (employeeDbIds.length === 1) {
+            primaryEmployeeDbId = employeeDbIds[0].emp_id;
         }
         const [result] = await db.query(
             `INSERT INTO subtasks 
             (subtask_name, subtask_description, task_id, employee_id, subtask_status, subtask_priority, subtask_deadline, subtask_created_at, subtask_updated_at) 
             VALUES (?, ?, ?, ?, 1, ?, ?, NOW(), NOW())`,
-            [subtask_name, subtask_description, task_id, primaryEmployeeUserId, subtask_priority, subtask_deadline]
+            [subtask_name, subtask_description, task_id, primaryEmployeeDbId, subtask_priority, subtask_deadline]
         );
         const subtask_id = result.insertId;
 
-        // Insert employee assignments ONLY for selected employees (using emp_user_id)
-        for (const empUserId of employeeIdsArray) {
+        // Insert employee assignments ONLY for selected employees (using emp_id)
+        for (const emp of employeeDbIds) {
             await db.query(
                 `INSERT INTO subtask_assignment 
                 (subtask_id, employee_id, subass_assigned_at, subass_updated_at) 
                 VALUES (?, ?, NOW(), NOW())`,
-                [subtask_id, empUserId]
+                [subtask_id, emp.emp_id]
             );
         }
 
@@ -1444,10 +1477,10 @@ router.post("/create-subtask", upload.array('attachments'), async (req, res) => 
             }
         }
 
-        // Notify only assigned employees
-        for (const empUserId of employeeIdsArray) {
+        // Notify only assigned employees (use emp_user_id for notification)
+        for (const emp of employeeDbIds) {
             await addNotification({
-                user_id: empUserId,
+                user_id: emp.emp_user_id,
                 type: 'subtask_assigned',
                 message: `New Subtask assigned: ${subtask_name}. Tap to view.`,
                 link: `/Employee/projects.html?subtask_id=${subtask_id}`
@@ -1460,7 +1493,7 @@ router.post("/create-subtask", upload.array('attachments'), async (req, res) => 
                     GROUP_CONCAT(CONCAT(e.emp_first_name, ' ', e.emp_last_name, ' (', e.emp_user_id, ')') SEPARATOR ', ') as assigned_employees
              FROM subtasks s 
              LEFT JOIN subtask_assignment sa ON s.subtask_id = sa.subtask_id
-             LEFT JOIN employees e ON sa.employee_id = e.emp_user_id
+             LEFT JOIN employees e ON sa.employee_id = e.emp_id
              WHERE s.subtask_id = ?
              GROUP BY s.subtask_id`,
             [subtask_id]
@@ -1487,10 +1520,12 @@ router.get("/subtasks/:task_id", async (req, res) => {
     try {
         const [subtasks] = await db.query(
             `SELECT s.*, 
-                GROUP_CONCAT(CONCAT(e.emp_first_name, ' ', e.emp_last_name, ' (', e.emp_user_id, ')') SEPARATOR ', ') as assigned_employees
+                CONCAT(e.emp_first_name, ' ', e.emp_last_name, ' (', e.emp_user_id, ')') as primary_employee,
+                GROUP_CONCAT(CONCAT(e2.emp_first_name, ' ', e2.emp_last_name, ' (', e2.emp_user_id, ')') SEPARATOR ', ') as assigned_employees
              FROM subtasks s
+             LEFT JOIN employees e ON s.employee_id = e.emp_id
              LEFT JOIN subtask_assignment sa ON s.subtask_id = sa.subtask_id
-             LEFT JOIN employees e ON sa.employee_id = e.emp_user_id
+             LEFT JOIN employees e2 ON sa.employee_id = e2.emp_user_id
              WHERE s.task_id = ?
              GROUP BY s.subtask_id
              ORDER BY s.subtask_created_at DESC`,
@@ -1504,63 +1539,136 @@ router.get("/subtasks/:task_id", async (req, res) => {
 });
 
 /**
- * GET /api/projects/subtask-attachments/:subtask_id
- * Fetch all attachments for a specific subtask
+ * GET /api/projects/employee/subtasks/:task_id/:employee_id
+ * Fetch subtasks for a specific task that are assigned to a specific employee
  */
-router.get("/subtask-attachments/:subtask_id", async (req, res) => {
+router.get("/employee/subtasks/:task_id/:employee_id", async (req, res) => {
+    const { task_id, employee_id } = req.params;
+    
+    try {
+        // Validate employee exists
+        const [empRows] = await db.query("SELECT emp_user_id FROM employees WHERE emp_user_id = ?", [employee_id]);
+        if (empRows.length === 0) {
+            return res.status(404).json({ error: "Employee not found" });
+        }
+
+        // Get subtasks for this task that are assigned to this employee
+        const [subtasks] = await db.query(
+            `SELECT s.*, 
+                GROUP_CONCAT(CONCAT(e.emp_first_name, ' ', e.emp_last_name, ' (', e.emp_user_id, ')') SEPARATOR ', ') as assigned_employees,
+                CASE 
+                    WHEN s.subtask_status = 1 THEN 'Pending'
+                    WHEN s.subtask_status = 2 THEN 'In Progress'
+                    WHEN s.subtask_status = 3 THEN 'Completed'
+                    WHEN s.subtask_status = 4 THEN 'On Hold'
+                    WHEN s.subtask_status = 5 THEN 'Cancelled'
+                    ELSE 'Unknown'
+                END as status_text,
+                CASE 
+                    WHEN s.subtask_priority = 'High' THEN 'high'
+                    WHEN s.subtask_priority = 'Medium' THEN 'medium'
+                    ELSE 'low'
+                END as priority_text
+             FROM subtasks s
+             LEFT JOIN subtask_assignment sa ON s.subtask_id = sa.subtask_id
+             LEFT JOIN employees e ON sa.employee_id = e.emp_user_id
+             WHERE s.task_id = ? AND (sa.employee_id = ? OR s.employee_id = ?)
+             GROUP BY s.subtask_id
+             ORDER BY s.subtask_created_at DESC`,
+            [task_id, employee_id, employee_id]
+        );
+        
+        res.json(subtasks);
+    } catch (error) {
+        console.error("Fetch employee subtasks error:", error);
+        res.status(500).json({ error: "Failed to fetch employee subtasks" });
+    }
+});
+
+/**
+ * GET /api/projects/subtask/:subtask_id
+ * Fetch a single subtask with assigned employee name
+ */
+router.get('/subtask/:subtask_id', async (req, res) => {
     const { subtask_id } = req.params;
     try {
-        const [attachments] = await db.query(
-            `SELECT * FROM subtask_attachment WHERE subatt_subtask_id = ? ORDER BY subatt_created_at DESC`,
+        const [rows] = await db.query(
+            `SELECT s.*, 
+                CONCAT(e.emp_first_name, ' ', e.emp_last_name, ' (', e.emp_user_id, ')') as primary_employee,
+                GROUP_CONCAT(CONCAT(e2.emp_first_name, ' ', e2.emp_last_name, ' (', e2.emp_user_id, ')') SEPARATOR ', ') as assigned_employees
+             FROM subtasks s
+             LEFT JOIN employees e ON s.employee_id = e.emp_id
+             LEFT JOIN subtask_assignment sa ON s.subtask_id = sa.subtask_id
+             LEFT JOIN employees e2 ON sa.employee_id = e2.emp_user_id
+             WHERE s.subtask_id = ?
+             GROUP BY s.subtask_id`,
             [subtask_id]
         );
-        res.json(attachments);
+        if (rows.length === 0) {
+            return res.status(404).json({ error: 'Subtask not found' });
+        }
+        res.json(rows[0]);
     } catch (error) {
-        console.error("Fetch subtask attachments error:", error);
-        res.status(500).json({ error: "Failed to fetch subtask attachments" });
+        console.error('Fetch subtask error:', error);
+        res.status(500).json({ error: 'Failed to fetch subtask' });
     }
 });
 
 /**
  * DELETE /api/projects/delete-subtask/:subtask_id
- * Delete a subtask and all its assignments/attachments
+ * Delete a subtask and all its assignments/attachments (DB + S3)
  */
 router.delete("/delete-subtask/:subtask_id", async (req, res) => {
     const { subtask_id } = req.params;
     const { admin_user_id } = req.body;
-    
     try {
         // Validate admin user
         if (!admin_user_id) {
             return res.status(400).json({ success: false, error: "Admin user ID required" });
         }
-
-        // Get subtask details for notifications
+        // Get subtask details for notifications and S3 path
         const [subtaskRows] = await db.query(
-            `SELECT s.*, t.task_name, p.proj_name 
+            `SELECT s.*, t.task_name, p.proj_name, tm.team_name, p.proj_created_by
              FROM subtasks s 
              JOIN tasks t ON s.task_id = t.task_id 
              JOIN projects p ON t.task_project_id = p.proj_id 
+             JOIN teams tm ON p.team_id = tm.team_id
              WHERE s.subtask_id = ?`,
             [subtask_id]
         );
-        
         if (subtaskRows.length === 0) {
             return res.status(404).json({ success: false, error: "Subtask not found" });
         }
-        
         const subtask = subtaskRows[0];
-
         // Get assigned employees for notifications
         const [assignmentRows] = await db.query(
             `SELECT sa.employee_id FROM subtask_assignment sa WHERE sa.subtask_id = ?`,
             [subtask_id]
         );
-
-        // Delete subtask (this will cascade to assignments and attachments due to foreign keys)
+        // 1. Delete all attachments (DB + S3)
+        const [attachments] = await db.query(
+            `SELECT subatt_id, subatt_file_path FROM subtask_attachment WHERE subatt_subtask_id = ?`,
+            [subtask_id]
+        );
+        for (const att of attachments) {
+            // Delete file from S3
+            if (att.subatt_file_path) {
+                try {
+                    // Extract S3 key from URL
+                    const url = new URL(att.subatt_file_path);
+                    const key = url.pathname.startsWith('/') ? url.pathname.slice(1) : url.pathname;
+                    await deleteS3Folder(key.substring(0, key.lastIndexOf('/'))); // delete folder containing the file
+                } catch (e) { console.error('S3 file delete error:', e); }
+            }
+        }
+        // Delete attachment records from DB
+        await db.query(`DELETE FROM subtask_attachment WHERE subatt_subtask_id = ?`, [subtask_id]);
+        // 2. Delete the subtask (cascades to assignments)
         await db.query("DELETE FROM subtasks WHERE subtask_id = ?", [subtask_id]);
-
-        // Notify assigned employees
+        // 3. Delete the S3 folder for the subtask
+        const s3Path = `${subtask.proj_created_by}/${subtask.team_name}/${subtask.proj_name}/${subtask.task_name}/${subtask.subtask_name}`;
+        try { await deleteS3Folder(s3Path); } catch (e) { console.error('S3 delete error:', e); }
+        // 4. Notify assigned employees
         for (const assignment of assignmentRows) {
             await addNotification({
                 user_id: assignment.employee_id,
@@ -1569,11 +1677,150 @@ router.delete("/delete-subtask/:subtask_id", async (req, res) => {
                 link: `/Employee/projects.html`
             });
         }
-
         res.json({ success: true, message: "Subtask deleted successfully" });
     } catch (error) {
         console.error("Delete subtask error:", error);
         res.status(500).json({ success: false, error: "Failed to delete subtask" });
+    }
+});
+
+/**
+ * POST /api/projects/delete-subtasks
+ * Bulk delete subtasks (DB + S3)
+ * Body: { subtask_ids: [1,2,3,...] }
+ */
+router.post('/delete-subtasks', async (req, res) => {
+    const { subtask_ids } = req.body;
+    if (!Array.isArray(subtask_ids) || subtask_ids.length === 0) {
+        return res.status(400).json({ success: false, error: 'No subtask IDs provided' });
+    }
+    let deleted = 0, failed = 0, errors = [];
+    for (const subtask_id of subtask_ids) {
+        try {
+            // Get subtask details for S3 path
+            const [rows] = await db.query(`
+                SELECT s.subtask_id, s.subtask_name, t.task_name, p.proj_name, tm.team_name, p.proj_created_by
+                FROM subtasks s
+                JOIN tasks t ON s.task_id = t.task_id
+                JOIN projects p ON t.task_project_id = p.proj_id
+                JOIN teams tm ON p.team_id = tm.team_id
+                WHERE s.subtask_id = ?
+            `, [subtask_id]);
+            if (!rows.length) { failed++; errors.push(`Subtask ${subtask_id} not found`); continue; }
+            const subtask = rows[0];
+            // Delete all attachments (DB + S3)
+            const [attachments] = await db.query(
+                `SELECT subatt_id, subatt_file_path FROM subtask_attachment WHERE subatt_subtask_id = ?`,
+                [subtask_id]
+            );
+            for (const att of attachments) {
+                if (att.subatt_file_path) {
+                    try {
+                        const url = new URL(att.subatt_file_path);
+                        const key = url.pathname.startsWith('/') ? url.pathname.slice(1) : url.pathname;
+                        await deleteS3Folder(key.substring(0, key.lastIndexOf('/')));
+                    } catch (e) { console.error('S3 file delete error:', e); }
+                }
+            }
+            await db.query(`DELETE FROM subtask_attachment WHERE subatt_subtask_id = ?`, [subtask_id]);
+            // Delete from DB (cascades to assignments)
+            await db.query('DELETE FROM subtasks WHERE subtask_id = ?', [subtask_id]);
+            // S3 path: admin_id/team_name/project_name/task_name/subtask_name
+            const s3Path = `${subtask.proj_created_by}/${subtask.team_name}/${subtask.proj_name}/${subtask.task_name}/${subtask.subtask_name}`;
+            try { await deleteS3Folder(s3Path); } catch (e) { console.error('S3 delete error:', e); }
+            deleted++;
+        } catch (err) {
+            failed++;
+            errors.push(`Subtask ${subtask_id}: ${err.message}`);
+        }
+    }
+    res.json({ success: true, deleted, failed, errors });
+});
+
+/**
+ * PUT /api/projects/update-subtask/:subtask_id
+ * Update subtask details, assigned employees, and attachments
+ * Accepts multipart/form-data for attachments
+ */
+router.put('/update-subtask/:subtask_id', upload.array('attachments'), async (req, res) => {
+    const { subtask_id } = req.params;
+    const {
+        subtask_name,
+        subtask_description,
+        subtask_deadline,
+        subtask_priority,
+        employee_ids, // JSON array or comma-separated
+        admin_user_id,
+        removed_attachment_ids // JSON array of subatt_id to delete
+    } = req.body;
+    const files = req.files || [];
+    try {
+        // 1. Update subtask fields
+        await db.query(
+            `UPDATE subtasks SET subtask_name=?, subtask_description=?, subtask_deadline=?, subtask_priority=?, subtask_updated_at=NOW() WHERE subtask_id=?`,
+            [subtask_name, subtask_description, subtask_deadline, subtask_priority, subtask_id]
+        );
+        // 2. Update assigned employees
+        let employeeIdsArray = [];
+        if (employee_ids) {
+            try { employeeIdsArray = JSON.parse(employee_ids); } catch { employeeIdsArray = employee_ids.split(',').map(id => id.trim()); }
+        }
+        if (Array.isArray(employeeIdsArray) && employeeIdsArray.length > 0) {
+            // Remove old assignments
+            await db.query(`DELETE FROM subtask_assignment WHERE subtask_id = ?`, [subtask_id]);
+            // Add new assignments
+            for (const empUserId of employeeIdsArray) {
+                await db.query(
+                    `INSERT INTO subtask_assignment (subtask_id, employee_id, subass_assigned_at, subass_updated_at) VALUES (?, ?, NOW(), NOW())`,
+                    [subtask_id, empUserId]
+                );
+            }
+        }
+        // 3. Remove deleted attachments (DB + S3)
+        if (removed_attachment_ids) {
+            let ids = [];
+            try { ids = JSON.parse(removed_attachment_ids); } catch { ids = removed_attachment_ids.split(',').map(x => x.trim()); }
+            if (ids.length > 0) {
+                const [rows] = await db.query(`SELECT subatt_id, subatt_file_path FROM subtask_attachment WHERE subatt_id IN (${ids.map(() => '?').join(',')})`, ids);
+                for (const att of rows) {
+                    if (att.subatt_file_path) {
+                        try {
+                            const url = new URL(att.subatt_file_path);
+                            const key = url.pathname.startsWith('/') ? url.pathname.slice(1) : url.pathname;
+                            await deleteS3Folder(key.substring(0, key.lastIndexOf('/')));
+                        } catch (e) { console.error('S3 file delete error:', e); }
+                    }
+                }
+                await db.query(`DELETE FROM subtask_attachment WHERE subatt_id IN (${ids.map(() => '?').join(',')})`, ids);
+            }
+        }
+        // 4. Upload new attachments (admin uploads only)
+        // Get S3 folder path
+        const [subtaskRow] = await db.query(
+            `SELECT s.*, t.task_name, p.proj_name, tm.team_name, tm.team_created_by FROM subtasks s JOIN tasks t ON s.task_id = t.task_id JOIN projects p ON t.task_project_id = p.proj_id JOIN teams tm ON p.team_id = tm.team_id WHERE s.subtask_id = ?`,
+            [subtask_id]
+        );
+        if (subtaskRow.length > 0 && files.length > 0) {
+            const s3FolderPath = `${subtaskRow[0].team_created_by}/${subtaskRow[0].team_name}/${subtaskRow[0].proj_name}/${subtaskRow[0].task_name}/${subtaskRow[0].subtask_name}`;
+            for (const file of files) {
+                try {
+                    const s3Url = await uploadFileToS3(s3FolderPath, file);
+                    await db.query(
+                        `INSERT INTO subtask_attachment (subatt_subtask_id, subatt_file_name, subatt_file_type, subatt_file_path, subatt_uploaded_by, subatt_created_at, subatt_updated_at) VALUES (?, ?, ?, ?, ?, NOW(), NOW())`,
+                        [subtask_id, file.originalname, file.mimetype, s3Url, admin_user_id]
+                    );
+                } catch (uploadError) { console.error('File upload error:', uploadError); }
+            }
+        }
+        // 5. Return updated subtask
+        const [subtaskRows] = await db.query(
+            `SELECT s.*, GROUP_CONCAT(CONCAT(e.emp_first_name, ' ', e.emp_last_name, ' (', e.emp_user_id, ')') SEPARATOR ', ') as assigned_employees FROM subtasks s LEFT JOIN subtask_assignment sa ON s.subtask_id = sa.subtask_id LEFT JOIN employees e ON sa.employee_id = e.emp_id WHERE s.subtask_id = ? GROUP BY s.subtask_id`,
+            [subtask_id]
+        );
+        res.json({ success: true, message: 'Subtask updated successfully', subtask: subtaskRows[0] });
+    } catch (error) {
+        console.error('Update subtask error:', error);
+        res.status(500).json({ success: false, error: 'Failed to update subtask' });
     }
 });
 

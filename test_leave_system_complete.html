@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Complete Leave System Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        .test-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .test-button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .test-button:hover {
+            background: #0056b3;
+        }
+        .result {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 5px;
+            background: #f8f9fa;
+            border-left: 4px solid #007bff;
+        }
+        .error {
+            border-left-color: #dc3545;
+            background: #f8d7da;
+        }
+        .success {
+            border-left-color: #28a745;
+            background: #d4edda;
+        }
+        .status-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .status-card {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            text-align: center;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .status-card:hover {
+            transform: translateY(-2px);
+        }
+        .status-card.pending { border-left: 4px solid #ffc107; }
+        .status-card.approved { border-left: 4px solid #28a745; }
+        .status-card.rejected { border-left: 4px solid #dc3545; }
+        .status-card.total { border-left: 4px solid #007bff; }
+        .card-value {
+            font-size: 2rem;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        .leave-list {
+            margin-top: 10px;
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .leave-item {
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .leave-item:last-child {
+            border-bottom: none;
+        }
+        .status-pending { color: #ffc107; font-weight: bold; }
+        .status-approved { color: #28a745; font-weight: bold; }
+        .status-rejected { color: #dc3545; font-weight: bold; }
+        .notification-area {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: 300px;
+            z-index: 1000;
+        }
+        .notification {
+            background: white;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            border-left: 4px solid #007bff;
+            animation: slideIn 0.3s ease;
+        }
+        .notification.success { border-left-color: #28a745; }
+        .notification.error { border-left-color: #dc3545; }
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>Complete Leave Application System Test</h1>
+        
+        <!-- Notification Area -->
+        <div class="notification-area" id="notification-area"></div>
+        
+        <div class="test-section">
+            <h3>1. System Status</h3>
+            <button class="test-button" onclick="testSystemStatus()">Check System Status</button>
+            <div id="system-result" class="result"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>2. Employee Data</h3>
+            <button class="test-button" onclick="testEmployeeData()">Load Employee Data</button>
+            <div id="employee-result" class="result"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>3. HR Data</h3>
+            <button class="test-button" onclick="testHRData()">Load HR Data</button>
+            <div id="hr-result" class="result"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>4. Leave Applications Overview</h3>
+            <button class="test-button" onclick="loadAllLeaves()">Load All Leave Applications</button>
+            <div id="all-leaves-result" class="result"></div>
+            
+            <!-- Status Cards -->
+            <div class="status-cards" id="status-cards">
+                <div class="status-card pending" onclick="filterByStatus('Pending')">
+                    <h4>Pending</h4>
+                    <div class="card-value" id="pending-count">0</div>
+                </div>
+                <div class="status-card approved" onclick="filterByStatus('Approved')">
+                    <h4>Approved</h4>
+                    <div class="card-value" id="approved-count">0</div>
+                </div>
+                <div class="status-card rejected" onclick="filterByStatus('Rejected')">
+                    <h4>Rejected</h4>
+                    <div class="card-value" id="rejected-count">0</div>
+                </div>
+                <div class="status-card total" onclick="filterByStatus('All')">
+                    <h4>Total</h4>
+                    <div class="card-value" id="total-count">0</div>
+                </div>
+            </div>
+            
+            <div id="filtered-leaves-list" class="leave-list"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>5. Employee Leave Applications</h3>
+            <button class="test-button" onclick="loadEmployeeLeaves()">Load Employee Leaves</button>
+            <div id="employee-leaves-result" class="result"></div>
+            <div id="employee-leaves-list" class="leave-list"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>6. Submit Test Leave Application</h3>
+            <button class="test-button" onclick="submitTestLeave()">Submit Test Leave</button>
+            <div id="submit-result" class="result"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>7. Test Leave Approval/Rejection</h3>
+            <div id="pending-leaves-for-approval" class="leave-list"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>8. Real-time Monitoring</h3>
+            <button class="test-button" onclick="startRealTimeMonitoring()">Start Monitoring</button>
+            <button class="test-button" onclick="stopRealTimeMonitoring()">Stop Monitoring</button>
+            <div id="realtime-result" class="result"></div>
+        </div>
+    </div>
+
+    <script>
+        let currentEmployeeId = 'emp001';
+        let allLeaves = [];
+        let filteredLeaves = [];
+        let realTimeInterval = null;
+
+        // Show notification function
+        function showNotification(message, type = 'success') {
+            const notificationArea = document.getElementById('notification-area');
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.textContent = message;
+            
+            notificationArea.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.remove();
+            }, type === 'error' ? 5000 : 3000);
+        }
+
+        async function testSystemStatus() {
+            const resultDiv = document.getElementById('system-result');
+            resultDiv.innerHTML = 'Testing...';
+            resultDiv.className = 'result';
+
+            try {
+                const response = await fetch('/api/leaves/all');
+                if (response.ok) {
+                    resultDiv.innerHTML = '<strong>Success!</strong><br>System is running and leave API is accessible';
+                    resultDiv.className = 'result success';
+                } else {
+                    resultDiv.innerHTML = `<strong>Error:</strong> HTTP ${response.status}`;
+                    resultDiv.className = 'result error';
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<strong>Error:</strong> ${error.message}`;
+                resultDiv.className = 'result error';
+            }
+        }
+
+        async function testEmployeeData() {
+            const resultDiv = document.getElementById('employee-result');
+            resultDiv.innerHTML = 'Testing...';
+            resultDiv.className = 'result';
+
+            try {
+                const response = await fetch(`/api/leaves/employee-data/${currentEmployeeId}`);
+                if (response.ok) {
+                    const data = await response.json();
+                    resultDiv.innerHTML = `<strong>Success!</strong><br>Employee: ${data.employee.emp_first_name} ${data.employee.emp_last_name}<br>ID: ${data.employee.emp_user_id} (DB ID: ${data.employee.emp_id})`;
+                    resultDiv.className = 'result success';
+                } else {
+                    resultDiv.innerHTML = `<strong>Error:</strong> HTTP ${response.status}`;
+                    resultDiv.className = 'result error';
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<strong>Error:</strong> ${error.message}`;
+                resultDiv.className = 'result error';
+            }
+        }
+
+        async function testHRData() {
+            const resultDiv = document.getElementById('hr-result');
+            resultDiv.innerHTML = 'Testing...';
+            resultDiv.className = 'result';
+
+            try {
+                const response = await fetch('/api/leaves/hr-data');
+                if (response.ok) {
+                    const data = await response.json();
+                    resultDiv.innerHTML = `<strong>Success!</strong><br>HR: ${data.hrEmployee.emp_first_name} ${data.hrEmployee.emp_last_name}<br>ID: ${data.hrEmployee.emp_user_id} (DB ID: ${data.hrEmployee.emp_id})`;
+                    resultDiv.className = 'result success';
+                } else {
+                    resultDiv.innerHTML = `<strong>Error:</strong> HTTP ${response.status}`;
+                    resultDiv.className = 'result error';
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<strong>Error:</strong> ${error.message}`;
+                resultDiv.className = 'result error';
+            }
+        }
+
+        async function loadAllLeaves() {
+            const resultDiv = document.getElementById('all-leaves-result');
+            const listDiv = document.getElementById('filtered-leaves-list');
+            resultDiv.innerHTML = 'Loading...';
+            resultDiv.className = 'result';
+
+            try {
+                const response = await fetch('/api/leaves/all');
+                if (response.ok) {
+                    const data = await response.json();
+                    allLeaves = data.leaves || [];
+                    filteredLeaves = [...allLeaves];
+                    
+                    resultDiv.innerHTML = `<strong>Success!</strong><br>Found ${allLeaves.length} leave application(s)`;
+                    resultDiv.className = 'result success';
+                    
+                    updateStatusCards();
+                    displayLeavesList(allLeaves, listDiv);
+                    updatePendingLeavesForApproval();
+                } else {
+                    resultDiv.innerHTML = `<strong>Error:</strong> HTTP ${response.status}`;
+                    resultDiv.className = 'result error';
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<strong>Error:</strong> ${error.message}`;
+                resultDiv.className = 'result error';
+            }
+        }
+
+        async function loadEmployeeLeaves() {
+            const resultDiv = document.getElementById('employee-leaves-result');
+            const listDiv = document.getElementById('employee-leaves-list');
+            resultDiv.innerHTML = 'Loading...';
+            resultDiv.className = 'result';
+
+            try {
+                // First get employee data
+                const empResponse = await fetch(`/api/leaves/employee-data/${currentEmployeeId}`);
+                if (!empResponse.ok) {
+                    throw new Error('Failed to load employee data');
+                }
+                
+                const empData = await empResponse.json();
+                const employeeId = empData.employee.emp_id;
+                
+                // Then get leave applications
+                const response = await fetch(`/api/leaves/employee/${employeeId}`);
+                if (response.ok) {
+                    const data = await response.json();
+                    const leaves = data.leaves || [];
+                    
+                    resultDiv.innerHTML = `<strong>Success!</strong><br>Found ${leaves.length} leave application(s) for employee`;
+                    resultDiv.className = 'result success';
+                    
+                    displayLeavesList(leaves, listDiv);
+                } else {
+                    resultDiv.innerHTML = `<strong>Error:</strong> HTTP ${response.status}`;
+                    resultDiv.className = 'result error';
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<strong>Error:</strong> ${error.message}`;
+                resultDiv.className = 'result error';
+            }
+        }
+
+        async function submitTestLeave() {
+            const resultDiv = document.getElementById('submit-result');
+            resultDiv.innerHTML = 'Submitting...';
+            resultDiv.className = 'result';
+
+            try {
+                // Get employee ID first
+                const empResponse = await fetch(`/api/leaves/employee-data/${currentEmployeeId}`);
+                if (!empResponse.ok) {
+                    throw new Error('Failed to load employee data');
+                }
+                
+                const empData = await empResponse.json();
+                const employeeId = empData.employee.emp_id;
+                
+                // Submit test leave
+                const leaveData = {
+                    employee_id: employeeId,
+                    leave_start_date: '2025-01-25',
+                    leave_end_date: '2025-01-27',
+                    leave_reason: 'Test leave application from complete system test'
+                };
+
+                const response = await fetch('/api/leaves/apply', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(leaveData)
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    resultDiv.innerHTML = `<strong>Success!</strong><br>Leave ID: ${data.leave_id}<br>Status: ${data.message}`;
+                    resultDiv.className = 'result success';
+                    showNotification('Test leave application submitted successfully!', 'success');
+                    
+                    // Reload all leaves to update the view
+                    await loadAllLeaves();
+                } else {
+                    const errorData = await response.json();
+                    resultDiv.innerHTML = `<strong>Error:</strong> ${errorData.message}`;
+                    resultDiv.className = 'result error';
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<strong>Error:</strong> ${error.message}`;
+                resultDiv.className = 'result error';
+            }
+        }
+
+        function updateStatusCards() {
+            const stats = {
+                pending: allLeaves.filter(leave => leave.leave_status === 'Pending').length,
+                approved: allLeaves.filter(leave => leave.leave_status === 'Approved').length,
+                rejected: allLeaves.filter(leave => leave.leave_status === 'Rejected').length,
+                total: allLeaves.length
+            };
+
+            document.getElementById('pending-count').textContent = stats.pending;
+            document.getElementById('approved-count').textContent = stats.approved;
+            document.getElementById('rejected-count').textContent = stats.rejected;
+            document.getElementById('total-count').textContent = stats.total;
+        }
+
+        function filterByStatus(status) {
+            if (status === 'All') {
+                filteredLeaves = [...allLeaves];
+            } else {
+                filteredLeaves = allLeaves.filter(leave => leave.leave_status === status);
+            }
+            
+            displayLeavesList(filteredLeaves, document.getElementById('filtered-leaves-list'));
+        }
+
+        function displayLeavesList(leaves, container) {
+            container.innerHTML = '';
+            
+            if (leaves.length === 0) {
+                container.innerHTML = '<div class="leave-item">No leave applications found</div>';
+                return;
+            }
+            
+            leaves.forEach(leave => {
+                const start = new Date(leave.leave_start_date);
+                const end = new Date(leave.leave_end_date);
+                const days = Math.ceil((end - start) / (1000 * 60 * 60 * 24)) + 1;
+                const appliedDate = new Date(leave.leave_created_at).toLocaleDateString();
+                
+                const item = document.createElement('div');
+                item.className = 'leave-item';
+                item.innerHTML = `
+                    <div>
+                        <strong>${leave.employee_name || `Employee ID: ${leave.employee_id}`}</strong><br>
+                        <small>${start.toLocaleDateString()} - ${end.toLocaleDateString()} (${days} days)</small><br>
+                        <small>${leave.leave_reason}</small>
+                    </div>
+                    <div>
+                        <span class="status-${leave.leave_status.toLowerCase()}">${leave.leave_status}</span><br>
+                        <small>Applied: ${appliedDate}</small>
+                        ${leave.leave_status === 'Pending' ? `
+                            <br><button onclick="approveLeave(${leave.leave_id})" style="background: #28a745; color: white; border: none; padding: 5px 10px; border-radius: 3px; margin: 2px;">Approve</button>
+                            <button onclick="rejectLeave(${leave.leave_id})" style="background: #dc3545; color: white; border: none; padding: 5px 10px; border-radius: 3px; margin: 2px;">Reject</button>
+                        ` : ''}
+                    </div>
+                `;
+                container.appendChild(item);
+            });
+        }
+
+        function updatePendingLeavesForApproval() {
+            const pendingLeaves = allLeaves.filter(leave => leave.leave_status === 'Pending');
+            displayLeavesList(pendingLeaves, document.getElementById('pending-leaves-for-approval'));
+        }
+
+        async function approveLeave(leaveId) {
+            try {
+                const hrResponse = await fetch('/api/leaves/hr-data');
+                if (!hrResponse.ok) {
+                    throw new Error('Failed to get HR data');
+                }
+                const hrData = await hrResponse.json();
+                const hrEmployeeId = hrData.hrEmployee.emp_id;
+
+                const response = await fetch(`/api/leaves/${leaveId}/status`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        status: 'Approved',
+                        approved_by: hrEmployeeId,
+                        approval_remark: 'Approved via test interface'
+                    })
+                });
+
+                if (response.ok) {
+                    showNotification('Leave application approved successfully!', 'success');
+                    await loadAllLeaves();
+                } else {
+                    showNotification('Failed to approve leave application', 'error');
+                }
+            } catch (error) {
+                showNotification('Error approving leave application', 'error');
+            }
+        }
+
+        async function rejectLeave(leaveId) {
+            try {
+                const hrResponse = await fetch('/api/leaves/hr-data');
+                if (!hrResponse.ok) {
+                    throw new Error('Failed to get HR data');
+                }
+                const hrData = await hrResponse.json();
+                const hrEmployeeId = hrData.hrEmployee.emp_id;
+
+                const response = await fetch(`/api/leaves/${leaveId}/status`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        status: 'Rejected',
+                        approved_by: hrEmployeeId,
+                        approval_remark: 'Rejected via test interface'
+                    })
+                });
+
+                if (response.ok) {
+                    showNotification('Leave application rejected successfully!', 'error');
+                    await loadAllLeaves();
+                } else {
+                    showNotification('Failed to reject leave application', 'error');
+                }
+            } catch (error) {
+                showNotification('Error rejecting leave application', 'error');
+            }
+        }
+
+        function startRealTimeMonitoring() {
+            const resultDiv = document.getElementById('realtime-result');
+            resultDiv.innerHTML = 'Starting real-time monitoring...';
+            resultDiv.className = 'result success';
+            
+            realTimeInterval = setInterval(async () => {
+                try {
+                    const response = await fetch('/api/leaves/all');
+                    if (response.ok) {
+                        const data = await response.json();
+                        const newLeaves = data.leaves || [];
+                        
+                        // Check for new applications
+                        if (newLeaves.length > allLeaves.length) {
+                            const newCount = newLeaves.length - allLeaves.length;
+                            showNotification(`${newCount} new leave application(s) received!`, 'success');
+                        }
+                        
+                        // Check for status changes
+                        newLeaves.forEach(newLeave => {
+                            const oldLeave = allLeaves.find(l => l.leave_id === newLeave.leave_id);
+                            if (oldLeave && oldLeave.leave_status !== newLeave.leave_status) {
+                                showNotification(`Leave application ${newLeave.leave_id} status changed from ${oldLeave.leave_status} to ${newLeave.leave_status}`, 'success');
+                            }
+                        });
+                        
+                        allLeaves = newLeaves;
+                        updateStatusCards();
+                    }
+                } catch (error) {
+                    console.error('Error in real-time monitoring:', error);
+                }
+            }, 10000); // Check every 10 seconds
+        }
+
+        function stopRealTimeMonitoring() {
+            if (realTimeInterval) {
+                clearInterval(realTimeInterval);
+                realTimeInterval = null;
+                const resultDiv = document.getElementById('realtime-result');
+                resultDiv.innerHTML = 'Real-time monitoring stopped';
+                resultDiv.className = 'result';
+            }
+        }
+
+        // Auto-load system status on page load
+        window.addEventListener('load', testSystemStatus);
+    </script>
+</body>
+</html> 

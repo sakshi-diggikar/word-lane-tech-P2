@@ -75,6 +75,46 @@
                 <p id="status-notification-message"></p>
             </div>
 
+            <!-- Status Cards -->
+            <div class="status-cards">
+                <div class="status-card pending-card" onclick="filterByStatus('Pending')">
+                    <div class="card-icon">
+                        <span class="material-icons-sharp">pending</span>
+                    </div>
+                    <div class="card-content">
+                        <h3>Pending Applications</h3>
+                        <div class="card-value" id="pending-count">0</div>
+                    </div>
+                </div>
+                <div class="status-card approved-card" onclick="filterByStatus('Approved')">
+                    <div class="card-icon">
+                        <span class="material-icons-sharp">check_circle</span>
+                    </div>
+                    <div class="card-content">
+                        <h3>Approved Applications</h3>
+                        <div class="card-value" id="approved-count">0</div>
+                    </div>
+                </div>
+                <div class="status-card rejected-card" onclick="filterByStatus('Rejected')">
+                    <div class="card-icon">
+                        <span class="material-icons-sharp">cancel</span>
+                    </div>
+                    <div class="card-content">
+                        <h3>Rejected Applications</h3>
+                        <div class="card-value" id="rejected-count">0</div>
+                    </div>
+                </div>
+                <div class="status-card total-card" onclick="clearFilters()">
+                    <div class="card-icon">
+                        <span class="material-icons-sharp">list</span>
+                    </div>
+                    <div class="card-content">
+                        <h3>Total Applications</h3>
+                        <div class="card-value" id="total-count">0</div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Filters -->
             <div class="filters">
                 <div class="filter-group">
@@ -146,32 +186,6 @@
             <span class="close-icon" id="close-leave-details">&times;</span>
             <h2>Leave Application Details</h2>
             <div id="leave-details-content"></div>
-        </div>
-    </div>
-
-    <!-- Approval Modal -->
-    <div id="approval-modal" class="modal" style="display: none;">
-        <div class="modal-content">
-            <span class="close-icon" id="close-approval-modal">&times;</span>
-            <h2>Update Leave Status</h2>
-            <form id="approval-form">
-                <div class="form-group">
-                    <label for="approval-status">Status:</label>
-                    <select id="approval-status" required>
-                        <option value="">Select Status</option>
-                        <option value="Approved">Approve</option>
-                        <option value="Rejected">Reject</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label for="approval-remark">Remark (Optional):</label>
-                    <textarea id="approval-remark" rows="3" placeholder="Add any remarks or comments..."></textarea>
-                </div>
-                <div class="form-actions">
-                    <button type="submit" class="submit-btn">Update Status</button>
-                    <button type="button" class="cancel-btn" id="cancel-approval">Cancel</button>
-                </div>
-            </form>
         </div>
     </div>
 
